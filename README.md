@@ -1,0 +1,55 @@
+# MangaBlade
+
+## Project Structure
+
+```text
+MangaBlade/
+├── .github/
+│   └── workflows/
+│       ├── backend-ci.yml                       # Spring Boot CI
+│       └── frontend-ci.yml                      # React CI
+├── backend/                                      # Spring Boot application
+│   ├── src/
+│   │   ├── main/
+│   │   │   ├── java/com/mangablade/backend/
+│   │   │   │   ├── client/                      # Third-party API clients
+│   │   │   │   ├── config/                      # Application configuration
+│   │   │   │   ├── controller/                  # REST API controllers
+│   │   │   │   ├── dto/                         # Request and response models
+│   │   │   │   ├── entity/                      # JPA entities
+│   │   │   │   ├── exception/                   # Exception handling
+│   │   │   │   ├── repository/                  # Data access repositories
+│   │   │   │   ├── security/                    # Authentication and authorization
+│   │   │   │   ├── service/                     # Business logic
+│   │   │   │   ├── utils/                       # Shared utility functions
+│   │   │   │   └── BackendApplication.java      # Application entry point
+│   │   │   └── resources/
+│   │   │       └── application.yaml              # Spring Boot configuration
+│   │   └── test/                                 # Backend tests
+│   ├── pom.xml                                   # Maven configuration
+│   └── mvnw                                      # Maven wrapper
+│
+├── frontend/                                     # React application
+│   ├── src/
+│   │   ├── api/                                  # Axios configuration and API functions
+│   │   ├── assets/                               # Images and fonts
+│   │   ├── components/                           # Reusable UI components
+│   │   ├── css/                                  # Global styles
+│   │   ├── hooks/                                # Custom React hooks
+│   │   ├── layouts/                              # Shared page layouts
+│   │   ├── pages/                                # Route-level page components
+│   │   ├── routes/                               # React Router configuration
+│   │   ├── types/                                # Shared TypeScript types
+│   │   ├── utils/                                # Utility functions
+│   │   ├── App.tsx                               # Root React component
+│   │   └── main.tsx                              # Frontend entry point
+│   ├── index.html                                # HTML entry point
+│   ├── package.json                              # npm scripts and dependencies
+│   └── vite.config.ts                            # Vite configuration
+│
+├── compose.yaml                                  # Local Docker services
+├── .env                                          # Local environment variables
+├── .env.example                                  # Environment variable template
+├── .gitignore                                    # Git ignore rules
+└── README.md                                      # Project documentation
+```
