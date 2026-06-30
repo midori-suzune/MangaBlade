@@ -1,5 +1,11 @@
 # MangaBlade
 
+[![CodeFactor](https://www.codefactor.io/repository/github/midori-suzune/mangablade/badge)](https://www.codefactor.io/repository/github/midori-suzune/mangablade)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.16-6DB33F?style=flat-square&logo=springboot&logoColor=white)
+![React](https://img.shields.io/badge/React-19.2.7-61DAFB?style=flat-square&logo=react&logoColor=black)
+![MySQL](https://img.shields.io/badge/MySQL-8.4-4479A1?style=flat-square&logo=mysql&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=flat-square&logo=docker&logoColor=white)
+
 ## Project Structure
 
 ```text
