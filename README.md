@@ -10,10 +10,6 @@
 
 ```text
 MangaBlade/
-├── .github/
-│   └── workflows/
-│       ├── backend-ci.yml                       # Spring Boot CI
-│       └── frontend-ci.yml                      # React CI
 ├── backend/                                      # Spring Boot application
 │   ├── src/
 │   │   ├── main/
