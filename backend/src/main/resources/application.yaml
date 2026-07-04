@@ -1,16 +1,24 @@
 spring:
+  config:
+    import:
+      - "optional:file:.env[.properties]"
+      - "optional:file:../.env[.properties]"
+
   application:
     name: mangablade-backend
 
   datasource:
-    url: ${DB_URL:jdbc:mysql://localhost:3306/mangablade?createDatabaseIfNotExist=true&serverTimezone=UTC}
+    url: ${DB_URL:jdbc:mysql://localhost:3306/MangaBlade?createDatabaseIfNotExist=true&serverTimezone=UTC}
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD}
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     properties:
       hibernate:
         jdbc:
           time_zone: UTC
+  app:
+    otruyen:
+      import-cron: "*/10 * * * * *"
