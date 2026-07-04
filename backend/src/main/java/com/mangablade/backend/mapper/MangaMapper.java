@@ -20,7 +20,7 @@ public class MangaMapper {
                 .title(response.getData().getItem().getName())
                 .description(response.getData().getItem().getDescription())
                 .status(response.getData().getItem().getStatus())
-                .thumbUrl(response.getData().getItem().getThumblUrl())
+                .thumbUrl(response.getData().getItem().getThumbUrl())
                 .createdAt(Instant.now())
                 .updatedAt(response.getData().getItem().getUpdatedAt())
                 .build();
