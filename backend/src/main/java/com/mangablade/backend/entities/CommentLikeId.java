@@ -1,4 +1,4 @@
-package com.mangablade.backend.entity;
+package com.mangablade.backend.entities;
 
 import java.io.Serializable;
 
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
-public class MangaLikeId implements Serializable {
+public class CommentLikeId implements Serializable {
     private Long userId;
-    private Long mangaId;
+    private Long commentId;
 }

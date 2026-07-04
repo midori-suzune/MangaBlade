@@ -1,6 +1,6 @@
-package com.mangablade.backend.entity;
+package com.mangablade.backend.entities;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import com.mangablade.backend.enums.UserRole;
 import jakarta.persistence.*;
@@ -52,17 +52,17 @@ public class User {
     private UserRole role = UserRole.USER;
 
     @Column(name = "email_verified_at", columnDefinition = "DATETIME(3)")
-    private LocalDateTime emailVerifiedAt;
+    private Instant emailVerifiedAt;
 
     @Column(name = "password_changed_at", columnDefinition = "DATETIME(3)")
-    private LocalDateTime passwordChangedAt;
+    private Instant passwordChangedAt;
 
     @NotNull
     @Column(name = "created_at", nullable = false, columnDefinition = "DATETIME(3)")
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @NotNull
     @Column(name = "updated_at", nullable = false, columnDefinition = "DATETIME(3)")
-    private LocalDateTime updatedAt;
+    private Instant updatedAt;
 
 }

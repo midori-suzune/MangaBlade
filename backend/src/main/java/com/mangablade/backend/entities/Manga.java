@@ -1,6 +1,6 @@
-package com.mangablade.backend.entity;
+package com.mangablade.backend.entities;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import com.mangablade.backend.enums.ApprovalStatus;
 import com.mangablade.backend.enums.MangaSourceType;
@@ -74,10 +74,10 @@ public class Manga {
     private ApprovalStatus approvalStatus = ApprovalStatus.DRAFT;
 
     @Column(name = "submitted_at", columnDefinition = "DATETIME(3)")
-    private LocalDateTime submittedAt;
+    private Instant submittedAt;
 
     @Column(name = "reviewed_at", columnDefinition = "DATETIME(3)")
-    private LocalDateTime reviewedAt;
+    private Instant reviewedAt;
 
     @Column(name = "reviewed_by")
     private Long reviewedBy;
@@ -88,17 +88,19 @@ public class Manga {
 
     @NotNull
     @Column(name = "created_at", nullable = false, columnDefinition = "DATETIME(3)")
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @NotNull
     @Column(name = "updated_at", nullable = false, columnDefinition = "DATETIME(3)")
-    private LocalDateTime updatedAt;
+    private Instant updatedAt;
 
     @Column(name = "deleted_at", columnDefinition = "DATETIME(3)")
-    private LocalDateTime deletedAt;
+    private Instant deletedAt;
 
     @Column(name = "deleted_by")
     private Long deletedBy;
+
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_user_id", insertable = false, updatable = false)

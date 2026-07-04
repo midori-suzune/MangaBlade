@@ -1,6 +1,6 @@
-package com.mangablade.backend.entity;
+package com.mangablade.backend.entities;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -32,14 +32,14 @@ public class EmailVerificationToken {
 
     @NotNull
     @Column(name = "expires_at", nullable = false, columnDefinition = "DATETIME(3)")
-    private LocalDateTime expiresAt;
+    private Instant expiresAt;
 
     @Column(name = "used_at", columnDefinition = "DATETIME(3)")
-    private LocalDateTime usedAt;
+    private Instant usedAt;
 
     @NotNull
     @Column(name = "created_at", nullable = false, columnDefinition = "DATETIME(3)")
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", insertable = false, updatable = false)

@@ -1,20 +1,21 @@
-package com.mangablade.backend.entity;
+package com.mangablade.backend.entities;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
+import com.mangablade.backend.enums.CommentStatus;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Entity
-@Table(name = "reading_history", uniqueConstraints =
-@UniqueConstraint(name = "uq_reading_history_user_chapter", columnNames = {"user_id", "chapter_id"}))
+@Table(name = "comment")
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ReadingHistory {
+public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -27,18 +28,32 @@ public class ReadingHistory {
     @Column(name = "manga_id", nullable = false)
     private Long mangaId;
 
-    @NotNull
-    @Column(name = "chapter_id", nullable = false)
+    @Column(name = "chapter_id")
     private Long chapterId;
 
-    @NotNull
-    @Column(name = "page_index", nullable = false)
-    @Builder.Default
-    private Integer pageIndex = 0;
+    @Column(name = "parent_id")
+    private Long parentId;
+
+    @NotBlank
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String content;
 
     @NotNull
-    @Column(name = "last_read_at", nullable = false, columnDefinition = "DATETIME(3)")
-    private LocalDateTime lastReadAt;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private CommentStatus status = CommentStatus.VISIBLE;
+
+    @NotNull
+    @Column(name = "created_at", nullable = false, columnDefinition = "DATETIME(3)")
+    private Instant createdAt;
+
+    @NotNull
+    @Column(name = "updated_at", nullable = false, columnDefinition = "DATETIME(3)")
+    private Instant updatedAt;
+
+    @Column(name = "deleted_at", columnDefinition = "DATETIME(3)")
+    private Instant deletedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", insertable = false, updatable = false)
@@ -54,4 +69,9 @@ public class ReadingHistory {
             @JoinColumn(name = "manga_id", referencedColumnName = "manga_id", insertable = false, updatable = false)
     })
     private Chapter chapter;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id", insertable = false, updatable = false)
+    private Comment parent;
+
 }

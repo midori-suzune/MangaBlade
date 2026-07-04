@@ -1,7 +1,7 @@
-package com.mangablade.backend.entity;
+package com.mangablade.backend.entities;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import com.mangablade.backend.enums.ApprovalStatus;
 import jakarta.persistence.*;
@@ -52,10 +52,10 @@ public class Chapter {
     private ApprovalStatus approvalStatus = ApprovalStatus.DRAFT;
 
     @Column(name = "submitted_at", columnDefinition = "DATETIME(3)")
-    private LocalDateTime submittedAt;
+    private Instant submittedAt;
 
     @Column(name = "reviewed_at", columnDefinition = "DATETIME(3)")
-    private LocalDateTime reviewedAt;
+    private Instant reviewedAt;
 
     @Column(name = "reviewed_by")
     private Long reviewedBy;
@@ -66,7 +66,7 @@ public class Chapter {
 
     @NotNull
     @Column(name = "created_at", nullable = false, columnDefinition = "DATETIME(3)")
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "manga_id", insertable = false, updatable = false)

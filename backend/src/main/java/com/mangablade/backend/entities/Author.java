@@ -1,4 +1,4 @@
-package com.mangablade.backend.entity;
+package com.mangablade.backend.entities;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;

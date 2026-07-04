@@ -1,4 +1,4 @@
-package com.mangablade.backend.entity;
+package com.mangablade.backend.entities;
 
 import java.io.Serializable;
 
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
-public class MangaCategoryId implements Serializable {
+public class MangaAuthorId implements Serializable {
     private Long mangaId;
-    private Long categoryId;
+    private Long authorId;
 }
