@@ -52,6 +52,11 @@ public class OTruyenMangaResponse {
 
         private Instant updatedAt;
 
+        private List<String> authors ;
+
+        @JsonProperty("chapters")
+        private List<OTruyenChapterResponse> chapters ;
+
     }
 
 

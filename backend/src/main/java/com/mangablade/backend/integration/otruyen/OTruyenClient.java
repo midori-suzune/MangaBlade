@@ -14,7 +14,7 @@ public class OTruyenClient {
 
     private final RestClient restClient;
 
-    public OTruyenMangaResponse getManga(String slug) {
+    public OTruyenMangaResponse fetchMangaBySlug(String slug) {
         return restClient
                 .get()
                 .uri("/truyen-tranh/{slug}", slug)
