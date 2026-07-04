@@ -10,7 +10,7 @@ public class OTruyenClientConfig {
         public RestClient getRestClient(RestClient.Builder builder) {
             return builder
                     .baseUrl("https://otruyenapi.com/v1/api")
-                    .defaultHeader("Content-Type", "application/json")
+                    .defaultHeader("Accept", "application/json")
                     .build();
         }
 }

@@ -2,7 +2,7 @@ spring:
   config:
     import:
       - "optional:file:.env[.properties]"
-      - "optional:file:../.env[.properties]"
+      - "optional:file:./backend/.env[.properties]"
 
   application:
     name: mangablade-backend
@@ -21,4 +21,5 @@ spring:
           time_zone: UTC
   app:
     otruyen:
-      import-cron: "*/10 * * * * *"
+      manga-import-cron: "0 */30 * * * *"
+      chapter-page-import-cron: "0 * * * * *"
