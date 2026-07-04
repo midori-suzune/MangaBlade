@@ -44,7 +44,7 @@ public class OTruyenMangaResponse {
         private String status ;
 
         @JsonProperty("thumb_url")
-        private String thumblUrl ;
+        private String thumbUrl;
 
         private Instant updatedAt;
 
