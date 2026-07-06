@@ -15,7 +15,7 @@ public class OTruyenClient {
 
     private final RestClient restClient;
 
-    public OTruyenMangaResponse fetchMangaBySlug(String slug) {
+    public OTruyenMangaResponse fetchApiMangaBySlug(String slug) {
         return restClient
                 .get()
                 .uri("/truyen-tranh/{slug}", slug)
@@ -23,7 +23,7 @@ public class OTruyenClient {
                 .body(OTruyenMangaResponse .class);         // convert JSON  to Object Class
     }
 
-    public OTruyenChapterDetailResponse fetchChapterByUrl(String chapterApiUrl) {
+    public OTruyenChapterDetailResponse fetchApiChapterByUrl(String chapterApiUrl) {
         return restClient
                 .get()
                 .uri(chapterApiUrl)
