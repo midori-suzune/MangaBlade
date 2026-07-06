@@ -14,7 +14,7 @@ public class MangaMapper {
     public Manga toEntity(OTruyenMangaResponse response){
         return Manga.
                 builder()
-                .otruyenMangaId(response.getData().getItem().getId())
+                .otruyenMangaId(response.getData().getItem().getOtruyenMangaId())
                 .sourceType(MangaSourceType.OTRUYEN)
                 .slug(response.getData().getItem().getSlug())
                 .title(response.getData().getItem().getName())

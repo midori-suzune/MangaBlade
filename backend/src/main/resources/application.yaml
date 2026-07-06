@@ -21,5 +21,5 @@ spring:
           time_zone: UTC
   app:
     otruyen:
-      manga-import-cron: "0 */30 * * * *"
-      chapter-page-import-cron: "0 * * * * *"
+      manga-import-cron: "0 */4 * * * *"
+      chapter-page-import-cron: "0 */8 * * * *"
