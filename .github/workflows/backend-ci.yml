@@ -45,6 +45,7 @@ jobs:
       DB_URL: jdbc:mysql://127.0.0.1:3306/mangablade?serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false
       DB_USERNAME: mangablade
       DB_PASSWORD: ci_password
+      JWT_SECRET_KEY: 01234567890123456789012345678901
       SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
 
     steps:
