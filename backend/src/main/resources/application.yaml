@@ -23,3 +23,8 @@ spring:
     otruyen:
       manga-import-cron: "0 */4 * * * *"
       chapter-page-import-cron: "0 */8 * * * *"
+
+
+jwt:
+  secret-key: ${JWT_SECRET_KEY}
+  expiration-ms: 3600000
