@@ -1,27 +1,8 @@
 import styles from "./Home.module.css";
-
-const comics = [
-    {title: "Bảng Trạng Thái Bí Mật...", chapter: "Chapter 32", time: "42 Phút Trước"},
-    {title: "Destiny Unchain Online", chapter: "Chapter 41", time: "1 Giờ Trước", hot: true},
-    {title: "Sự Thức Tỉnh Của Hắc M...", chapter: "Chapter 183", time: "1 Giờ Trước", hot: true},
-    {title: "Lúc Đó Tôi Không Biết...", chapter: "Chapter 80", time: "2 Giờ Trước"},
-    {title: "Shakkin 100 Oku No Ka...", chapter: "Chapter 6.5", time: "2 Giờ Trước"},
-    {title: "Cao Thủ Xuống Núi", chapter: "Chapter 120", time: "3 Giờ Trước"},
-    {title: "Bắt Đầu Đánh Dấu Thánh...", chapter: "Chapter 55", time: "3 Giờ Trước"},
-    {title: "Trọng Sinh Trở Lại", chapter: "Chapter 90", time: "4 Giờ Trước"},
-    {title: "Ma Tôn Trở Lại", chapter: "Chapter 220", time: "5 Giờ Trước", hot: true},
-    {title: "Học Viện Pháp Thuật", chapter: "Chapter 34", time: "6 Giờ Trước"},
-    {title: "Thiên Đạo Tu Thư Quán", chapter: "Chapter 112", time: "6 Giờ Trước"},
-    {title: "Toàn Trí Độc Giả", chapter: "Chapter 98", time: "7 Giờ Trước"},
-    {title: "Nguyên Tôn", chapter: "Chapter 500", time: "10 Giờ Trước"},
-    {title: "Võ Thần Chúa Tể", chapter: "Chapter 3102", time: "12 Giờ Trước", hot: true},
-    {title: "Thiên Kim Khảo Cổ", chapter: "Chapter 45", time: "1 Ngày Trước"},
-    {title: "Hồi Sinh Thập Niên 80", chapter: "Chapter 15", time: "1 Ngày Trước"},
-    {title: "Ta Bất Địch Thiên Hạ", chapter: "Chapter 19", time: "2 Ngày Trước"},
-    {title: "Nghịch Thiên Tà Thần", chapter: "Chapter 2005", time: "2 Ngày Trước"},
-    {title: "Yêu Thần Ký", chapter: "Chapter 310", time: "3 Ngày Trước"},
-    {title: "Luyện Khí Mười Vạn Năm", chapter: "Chapter 145", time: "4 Ngày Trước"},
-];
+import {useEffect, useState} from "react";
+import {getManga} from "../../api/mangaApi.ts";
+import type {MangaResponse} from "../../types/manga.ts";
+import {getTimeAgo} from "../../utils/time.ts";
 
 const ranking = [
     {title: "Võ Luyện Đỉnh Phong", views: "15,432,000"},
@@ -77,6 +58,28 @@ function EyeIcon() {
 }
 
 export function Home() {
+
+    const [manga, setManga] = useState<MangaResponse | undefined>(undefined);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        async function getData() {
+            try {
+                const data = await getManga();
+                setManga(data);
+            } catch {
+                setError("Không thể tải truyện");
+            }
+        }
+        void getData();
+    }, []);
+
+    const array: MangaResponse[] = [];
+
+    if (manga !== undefined) {
+        array.push(manga);
+    }
+
     return (
         <div className={styles.mainContainer}>
             <section className={styles.leftMain}>
@@ -85,17 +88,20 @@ export function Home() {
                 </div>
 
                 <h2 className={styles.sectionTitle}>Truyện Mới Cập Nhật</h2>
+                {error && <p className={styles.errorText}>{error}</p>}
                 <div className={styles.comicGrid}>
-                    {comics.map((comic) => (
-                        <article className={styles.comicCard} key={`${comic.title}-${comic.chapter}`}>
+                    {array.map((comic) => (
+                        <article className={styles.comicCard} key={`${comic.title}-${comic.latestChapter.chapterNumber}`}>
                             <a href="#" className={styles.comicCover} aria-label={comic.title}>
-                                <span className={styles.comicTag}>{comic.time}</span>
-                                {comic.hot && <span className={`${styles.comicTag} ${styles.hot}`}>Hot</span>}
+                                <span className={styles.comicTag}>{getTimeAgo(comic.updatedAt)}</span>
+                                {/*{comic.hot && <span className={`${styles.comicTag} ${styles.hot}`}>Hot</span>}*/}
+                                <img src={comic.thumbUrl}
+                                     alt={comic.title}  />
                                 <span className={styles.coverText}>Ảnh Bìa</span>
                             </a>
                             <div className={styles.comicInfo}>
                                 <a href="#" className={styles.comicTitle}>{comic.title}</a>
-                                <a href="#" className={styles.comicChapter}>{comic.chapter}</a>
+                                <a href="#" className={styles.comicChapter}>{`Chapter ${comic.latestChapter.chapterNumber}`}</a>
                             </div>
                         </article>
                     ))}
