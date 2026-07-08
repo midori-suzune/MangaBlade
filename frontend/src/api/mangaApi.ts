@@ -1,5 +1,4 @@
 import axios, { AxiosError } from 'axios';
-// Sử dụng import type riêng cho kiểu dữ liệu theo yêu cầu nghiêm ngặt của TypeScript
 import type { InternalAxiosRequestConfig } from 'axios';
 
 const axiosClient = axios.create({
@@ -20,4 +19,12 @@ axiosClient.interceptors.request.use(
   }
 );
 
+// === BỔ SUNG HÀM GETMANGA ĐỂ SỬA LỖI BUILD CỦA TRANG HOME ===
+export const getManga = async () => {
+  // Đường dẫn endpoint này tùy thuộc vào API lấy danh sách truyện hiện tại của Backend bạn thiết lập
+  const response = await axiosClient.get('/manga'); 
+  return response.data;
+};
+
+// Vẫn giữ lại export mặc định cho axiosClient để trang Login dùng chung
 export default axiosClient;
