@@ -1,4 +1,4 @@
-
+import { NavLink } from "react-router-dom";
 import styles from "./Menu.module.css";
 
 export function Menu() {
@@ -6,10 +6,10 @@ export function Menu() {
         <header className={styles.bottomHeaderWrapper}>
             <div className={styles.bottomHeader}>
             <nav className={styles.navLinks} aria-label="Main navigation">
-                <a href="#" className={styles.active}>Home</a>
-                <a href="#">Category</a>
-                <a href="#">New</a>
-                <a href="#">Update</a>
+                <NavLink to="/" className={({isActive}) => isActive ? styles.active : ""}>Trang chủ</NavLink>
+                <NavLink to="/category" className={({isActive}) => isActive ? styles.active : ""}>Thể loại</NavLink>
+                <NavLink to="/new" className={({isActive}) => isActive ? styles.active : ""}>Truyện mới</NavLink>
+                <NavLink to="/update" className={({isActive}) => isActive ? styles.active : ""}>Cập nhật</NavLink>
             </nav>
             <div className={styles.menuRightIcons}>
                 <button className={styles.themeToggleBtn} title="Chế độ Sáng/Tối" type="button">

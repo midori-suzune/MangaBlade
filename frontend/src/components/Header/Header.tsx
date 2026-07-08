@@ -15,8 +15,8 @@ export function Header() {
                     <input type="text" placeholder="Tìm kiếm truyện..."/>
                 </div>
                 <div className={styles.authButtons}>
-                    <button className={styles.btnSignup}>Sign Up</button>
-                    <button className={styles.btnLogin}>Login</button>
+                    <button className={styles.btnSignup}>Đăng ký</button>
+                    <button className={styles.btnLogin}>Đăng nhập</button>
                 </div>
             </div>
         </header>

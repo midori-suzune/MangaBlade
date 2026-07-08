@@ -1,27 +1,5 @@
 import styles from "./Home.module.css";
-
-const comics = [
-    {title: "Bảng Trạng Thái Bí Mật...", chapter: "Chapter 32", time: "42 Phút Trước"},
-    {title: "Destiny Unchain Online", chapter: "Chapter 41", time: "1 Giờ Trước", hot: true},
-    {title: "Sự Thức Tỉnh Của Hắc M...", chapter: "Chapter 183", time: "1 Giờ Trước", hot: true},
-    {title: "Lúc Đó Tôi Không Biết...", chapter: "Chapter 80", time: "2 Giờ Trước"},
-    {title: "Shakkin 100 Oku No Ka...", chapter: "Chapter 6.5", time: "2 Giờ Trước"},
-    {title: "Cao Thủ Xuống Núi", chapter: "Chapter 120", time: "3 Giờ Trước"},
-    {title: "Bắt Đầu Đánh Dấu Thánh...", chapter: "Chapter 55", time: "3 Giờ Trước"},
-    {title: "Trọng Sinh Trở Lại", chapter: "Chapter 90", time: "4 Giờ Trước"},
-    {title: "Ma Tôn Trở Lại", chapter: "Chapter 220", time: "5 Giờ Trước", hot: true},
-    {title: "Học Viện Pháp Thuật", chapter: "Chapter 34", time: "6 Giờ Trước"},
-    {title: "Thiên Đạo Tu Thư Quán", chapter: "Chapter 112", time: "6 Giờ Trước"},
-    {title: "Toàn Trí Độc Giả", chapter: "Chapter 98", time: "7 Giờ Trước"},
-    {title: "Nguyên Tôn", chapter: "Chapter 500", time: "10 Giờ Trước"},
-    {title: "Võ Thần Chúa Tể", chapter: "Chapter 3102", time: "12 Giờ Trước", hot: true},
-    {title: "Thiên Kim Khảo Cổ", chapter: "Chapter 45", time: "1 Ngày Trước"},
-    {title: "Hồi Sinh Thập Niên 80", chapter: "Chapter 15", time: "1 Ngày Trước"},
-    {title: "Ta Bất Địch Thiên Hạ", chapter: "Chapter 19", time: "2 Ngày Trước"},
-    {title: "Nghịch Thiên Tà Thần", chapter: "Chapter 2005", time: "2 Ngày Trước"},
-    {title: "Yêu Thần Ký", chapter: "Chapter 310", time: "3 Ngày Trước"},
-    {title: "Luyện Khí Mười Vạn Năm", chapter: "Chapter 145", time: "4 Ngày Trước"},
-];
+import { mockComics } from "../../mockData";
 
 const ranking = [
     {title: "Võ Luyện Đỉnh Phong", views: "15,432,000"},
@@ -30,40 +8,40 @@ const ranking = [
 ];
 
 const history = [
-    {title: "Ta Là Tà Đế", desc: "Đọc tiếp: Chap 150"},
-    {title: "Trọng Sinh Đô Thị Tu Tiên", desc: "Đọc tiếp: Chap 20"},
+    {title: "Ta Là Tà Đế", desc: "Đọc tiếp: Chương 150"},
+    {title: "Trọng Sinh Đô Thị Tu Tiên", desc: "Đọc tiếp: Chương 20"},
 ];
 
 const comments = [
     {
         author: "DarkKnight99",
         time: "5 phút trước",
-        text: "Trận này main đánh ảo quá, hóng chap sau xem ông trưởng lão xử lý sao.",
-        comic: "Võ Luyện Đỉnh Phong - Chap 3512",
+        text: "Trận này main đánh ảo quá, hóng chương sau xem ông trưởng lão xử lý sao.",
+        comic: "Võ Luyện Đỉnh Phong - Chương 3512",
     },
     {
         author: "HoaHongGai",
         time: "12 phút trước",
         text: "Nét vẽ bộ này ngày càng đẹp lên, nội dung cũng cuốn nữa. Cảm ơn nhóm dịch nhiều.",
-        comic: "Đại Quản Gia Là Ma Hoàng - Chap 450",
+        comic: "Đại Quản Gia Là Ma Hoàng - Chương 450",
     },
     {
         author: "WibuChua",
         time: "30 phút trước",
-        text: "Cho mình hỏi lịch ra chap mới của bộ này là thứ mấy hàng tuần vậy mọi người?",
-        comic: "Solo Leveling - Chap 179",
+        text: "Cho mình hỏi lịch ra chương mới của bộ này là thứ mấy hàng tuần vậy mọi người?",
+        comic: "Solo Leveling - Chương 179",
     },
     {
         author: "SherlockHomeless",
         time: "2 giờ trước",
         text: "Theo kinh nghiệm đọc truyện của tôi thì nhân vật này có thể là trùm cuối giả dạng.",
-        comic: "Toàn Trí Độc Giả - Chap 98",
+        comic: "Toàn Trí Độc Giả - Chương 98",
     },
     {
         author: "TrinhThamPho",
         time: "2 giờ trước",
         text: "Theo kinh nghiệm đọc truyện của tôi thì nhân vật này có thể là trùm cuối giả dạng.",
-        comic: "Toàn Trí Độc Giả - Chap 98",
+        comic: "Toàn Trí Độc Giả - Chương 98",
     },
 ];
 
@@ -86,8 +64,8 @@ export function Home() {
 
                 <h2 className={styles.sectionTitle}>Truyện Mới Cập Nhật</h2>
                 <div className={styles.comicGrid}>
-                    {comics.map((comic) => (
-                        <article className={styles.comicCard} key={`${comic.title}-${comic.chapter}`}>
+                    {mockComics.map((comic) => (
+                        <article className={styles.comicCard} key={comic.id}>
                             <a href="#" className={styles.comicCover} aria-label={comic.title}>
                                 <span className={styles.comicTag}>{comic.time}</span>
                                 {comic.hot && <span className={`${styles.comicTag} ${styles.hot}`}>Hot</span>}
