@@ -1,17 +1,16 @@
 package com.mangablade.backend.dtos.response;
 
-import com.mangablade.backend.enums.UserRole;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-public record AuthResponse(
-        String accessToken,
-        String tokenType,
-        UserInfo user
-) {
-    public record UserInfo(
-            Long id,
-            String username,
-            String email,
-            UserRole role
-    ) {
-    }
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class AuthResponse {
+    private String accessToken;
+    private String username;
+    private String role;
 }

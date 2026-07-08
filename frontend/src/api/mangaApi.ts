@@ -1,16 +1,23 @@
-import type {MangaResponse} from "../types/manga.ts";
+import axios, { AxiosError } from 'axios';
+// Sử dụng import type riêng cho kiểu dữ liệu theo yêu cầu nghiêm ngặt của TypeScript
+import type { InternalAxiosRequestConfig } from 'axios';
 
-export async function getManga(): Promise<MangaResponse> {
-    const response = await fetch(`http://localhost:8080/api/v1/manga`, {
-        method: "GET",
-        headers: {
-            "Accept": "application/json",
-        }
-    });
+const axiosClient = axios.create({
+  baseURL: 'http://localhost:8080/api',
+  headers: { 'Content-Type': 'application/json' },
+});
 
-    if (!response.ok) {
-        throw new Error(response.statusText);
+axiosClient.interceptors.request.use(
+  (config: InternalAxiosRequestConfig) => {
+    const token = localStorage.getItem('accessToken');
+    if (token && config.headers) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
+    return config;
+  },
+  (error: AxiosError) => {
+    return Promise.reject(error);
+  }
+);
 
-    return response.json();
-}
+export default axiosClient;
