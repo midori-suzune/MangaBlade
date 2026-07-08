@@ -43,8 +43,10 @@ const Login: React.FC = () => {
       } else {
         navigate('/');
       }
-    } catch (err: any) {
-      setError('Tài khoản hoặc mật khẩu không chính xác!');
+    } catch (err: unknown) {
+      // Sửa lỗi: Đổi sang kiểu 'unknown' và ép kiểu an toàn khi sử dụng biến err
+      const axiosError = err as { response?: { data?: { message?: string } } };
+      setError(axiosError.response?.data?.message || 'Tài khoản hoặc mật khẩu không chính xác!');
     } finally {
       setIsLoading(false);
     }
