@@ -93,7 +93,7 @@ public class OTruyenImportService {
         var manga = mangaRepository.findByOtruyenMangaId(response.getData().getItem().getOtruyenMangaId())
                 .orElseGet(() -> mangaRepository.save(newManga)
         );
-
+        manga.setUpdatedAt(response.getData().getSeoOnPage().getUpdatedAt());
         var categories = getOtruyenCategoryResponses(response, manga);
 
         var authors = response.getData().getItem().getAuthors();
