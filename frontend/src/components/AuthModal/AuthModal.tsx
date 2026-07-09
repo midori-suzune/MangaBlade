@@ -30,19 +30,23 @@ export function AuthModal() {
 
   // Clear fields and errors when modal tab switches or closes
   useEffect(() => {
-    setError('');
-    setSuccess('');
-    setFieldErrors({});
-    setShowPassword(false);
-    setShowConfirmPassword(false);
-    
-    // Keep credentials when switching tabs, but clear register-only fields when opening/closing
-    if (!isAuthModalOpen) {
-      setEmail('');
-      setPassword('');
-      setUsername('');
-      setConfirmPassword('');
-    }
+    const resetId = window.setTimeout(() => {
+      setError('');
+      setSuccess('');
+      setFieldErrors({});
+      setShowPassword(false);
+      setShowConfirmPassword(false);
+
+      // Keep credentials when switching tabs, but clear register-only fields when opening/closing
+      if (!isAuthModalOpen) {
+        setEmail('');
+        setPassword('');
+        setUsername('');
+        setConfirmPassword('');
+      }
+    }, 0);
+
+    return () => window.clearTimeout(resetId);
   }, [authModalTab, isAuthModalOpen]);
 
   // Handle ESC key to close modal
