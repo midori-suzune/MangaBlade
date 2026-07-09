@@ -21,7 +21,7 @@ export function Header() {
                 {isAuthenticated && user ? (
                     <div className={styles.userInfo}>
                         <span className={styles.username}>{user.username}</span>
-                        <button className={styles.btnLogout} onClick={logout}>Logout</button>
+                        <button className={styles.btnLogout} onClick={logout}>Đăng xuất</button>
                     </div>
                 ) : (
                     <div className={styles.authButtons}>

@@ -9,18 +9,15 @@ import axios from 'axios';
 export function AuthModal() {
   const { isAuthModalOpen, authModalTab, openAuthModal, closeAuthModal, login: authLogin } = useAuthStore();
 
-  // Common/Login states
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
-  // Register states
   const [username, setUsername] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Status states
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -28,7 +25,6 @@ export function AuthModal() {
 
   const modalRef = useRef<HTMLDivElement>(null);
 
-  // Clear fields and errors when modal tab switches or closes
   useEffect(() => {
     setError('');
     setSuccess('');
@@ -36,7 +32,6 @@ export function AuthModal() {
     setShowPassword(false);
     setShowConfirmPassword(false);
     
-    // Keep credentials when switching tabs, but clear register-only fields when opening/closing
     if (!isAuthModalOpen) {
       setEmail('');
       setPassword('');
@@ -45,7 +40,6 @@ export function AuthModal() {
     }
   }, [authModalTab, isAuthModalOpen]);
 
-  // Handle ESC key to close modal
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape' && isAuthModalOpen) {
@@ -150,9 +144,7 @@ export function AuthModal() {
       const result = await registerApi({ username, email, password });
       if (result.success) {
         setSuccess('Đăng ký tài khoản thành công! Vui lòng đăng nhập.');
-        // Switch to login tab
         openAuthModal('login');
-        // Pre-fill the login email
         setPassword('');
         setConfirmPassword('');
       } else {

@@ -70,7 +70,7 @@ export function Home() {
                     setManga(response.payload);
                 }
             } catch {
-                setError("can not load manage data");
+                setError("Không thể tải dữ liệu truyện");
             }
         }
         void getData();

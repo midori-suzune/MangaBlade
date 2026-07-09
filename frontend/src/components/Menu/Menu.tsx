@@ -1,5 +1,4 @@
-
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { useAuthStore } from "../../stores/authStore";
 import styles from "./Menu.module.css";
 
@@ -10,10 +9,10 @@ export function Menu() {
         <header className={styles.bottomHeaderWrapper}>
             <div className={styles.bottomHeader}>
             <nav className={styles.navLinks} aria-label="Main navigation">
-                <Link to="/" className={styles.active}>Home</Link>
-                <Link to="/">Category</Link>
-                <Link to="/">New</Link>
-                <Link to="/">Update</Link>
+                <NavLink to="/" className={({ isActive }) => isActive ? styles.active : ''} end>Trang chủ</NavLink>
+                <NavLink to="/category" className={({ isActive }) => isActive ? styles.active : ''}>Thể loại</NavLink>
+                <NavLink to="/new" className={({ isActive }) => isActive ? styles.active : ''}>Mới</NavLink>
+                <NavLink to="/update" className={({ isActive }) => isActive ? styles.active : ''}>Cập nhật</NavLink>
             </nav>
             <div className={styles.menuRightIcons}>
                 <button className={styles.themeToggleBtn} title="Chế độ Sáng/Tối" type="button">

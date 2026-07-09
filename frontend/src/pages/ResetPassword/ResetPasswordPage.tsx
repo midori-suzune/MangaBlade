@@ -22,12 +22,11 @@ export default function ResetPasswordPage() {
   const [success, setSuccess] = useState('');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  // Dynamic Validation Checklist Checks
   const isLengthValid = newPassword.length >= 8;
   const isCaseValid = /[a-z]/.test(newPassword) && /[A-Z]/.test(newPassword);
   const isCharValid = /[0-9]/.test(newPassword) || /[^A-Za-z0-9]/.test(newPassword);
   
-  const isRequirementsMet = isLengthValid; // Chỉ bắt buộc độ dài >= 8 ký tự
+  const isRequirementsMet = isLengthValid;
   const isConfirmValid = confirmPassword.length > 0 && newPassword === confirmPassword;
   const isFormValid = isRequirementsMet && isConfirmValid && token;
 
@@ -87,7 +86,6 @@ export default function ResetPasswordPage() {
 
   return (
     <div className={styles.container}>
-      {/* Top Left Navigation Button */}
       <button onClick={handleBackToLogin} className={styles.backButton} aria-label="Quay lại Đăng nhập">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '4px' }}>
           <polyline points="15 18 9 12 15 6"></polyline>
@@ -160,7 +158,6 @@ export default function ResetPasswordPage() {
               {fieldErrors.newPassword && <span className={styles.fieldError}>{fieldErrors.newPassword}</span>}
             </div>
 
-            {/* Password Requirements Checklist Box */}
             <div className={styles.checklist}>
               <p className={styles.checklistTitle}>Yêu cầu mật khẩu:</p>
               <ul className={styles.checklistList}>
