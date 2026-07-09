@@ -65,8 +65,10 @@ export function Home() {
     useEffect(() => {
         async function getData() {
             try {
-                const data = await getManga();
-                setManga(data);
+                const response = await getManga();
+                if (response.success) {
+                    setManga(response.payload);
+                }
             } catch {
                 setError("can not load manage data");
             }

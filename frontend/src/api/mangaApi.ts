@@ -1,16 +1,8 @@
-import type {MangaResponse} from "../types/manga.ts";
+import type { MangaResponse } from '../types/manga';
+import type { ApiResponse } from '../types/auth';
+import axiosInstance from './axiosInstance';
 
-export async function getManga(): Promise<MangaResponse[]> {
-    const response = await fetch(`http://localhost:8080/api/v1/manga`, {
-        method: "GET",
-        headers: {
-            "Accept": "application/json",
-        }
-    });
-
-    if (!response.ok) {
-        throw new Error(response.statusText);
-    }
-
-    return response.json();
+export async function getManga(): Promise<ApiResponse<MangaResponse[]>> {
+  const response = await axiosInstance.get<ApiResponse<MangaResponse[]>>('/api/v1/manga');
+  return response.data;
 }

@@ -1,10 +1,10 @@
 package com.mangablade.backend.controllers;
 
 
+import com.mangablade.backend.dtos.response.ApiResponse;
 import com.mangablade.backend.dtos.response.MangaResponse;
 import com.mangablade.backend.services.mangablade.MangaService;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,10 +22,14 @@ public class MangaController {
     private final MangaService mangaService;
 
     @GetMapping
-    public ResponseEntity<List<MangaResponse>> getManga() {
+    public ResponseEntity<ApiResponse<List<MangaResponse>>> getManga() {
         var manga = mangaService.fetchAllManga();
-        return ResponseEntity.status(HttpStatus.OK).body(
-                manga
+        return ResponseEntity.ok(
+                ApiResponse.<List<MangaResponse>>builder()
+                        .success(true)
+                        .message("success")
+                        .payload(manga)
+                        .build()
         );
     }
 }
