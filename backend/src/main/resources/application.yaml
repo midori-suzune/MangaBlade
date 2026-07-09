@@ -22,7 +22,9 @@ spring:
   app:
     otruyen:
       manga-import-cron: "0 */4 * * * *"
-      chapter-page-import-cron: "0 */8 * * * *"
+      chapter-page-import-cron: "0 */6 * * * *"
+      importer:
+        max-manga-per-run: 2
 
 
 jwt:
