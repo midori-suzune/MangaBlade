@@ -51,7 +51,11 @@ public class OTruyenImportService {
         log.info("Found {} chapters without pages", chapters.size());
 
         for (Chapter chapter : chapters) {
-            log.debug("Importing pages for chapterId={}", chapter.getId());
+            log.info(
+                    "Importing pages for chapterId={}, chapterApiUrl={}",
+                    chapter.getId(),
+                    chapter.getChapterApiUrl()
+            );
             var response = oTruyenClient.fetchApiChapterByUrl(chapter.getChapterApiUrl());
 
             String domain = response.getData().getDomainCdn();
@@ -59,19 +63,52 @@ public class OTruyenImportService {
             var images = response.getData().getItem().getChapterImages();
 
             if (images == null) {
-                log.warn("No images found for chapterId={}", chapter.getId());
+                log.warn(
+                        "No images found for chapterId={}, chapterApiUrl={}",
+                        chapter.getId(),
+                        chapter.getChapterApiUrl()
+                );
             }
 
             if (images != null) {
+                log.info(
+                        "Fetched {} images for chapterId={}, chapterApiUrl={}",
+                        images.size(),
+                        chapter.getId(),
+                        chapter.getChapterApiUrl()
+                );
+
                 List<ChapterPage> chapterPages = new ArrayList<>();
                 Instant createdAt = Instant.now();
+                boolean zeroBasedPageNumbers = images.stream()
+                        .anyMatch(image -> image.getPageNumber() != null && image.getPageNumber() == 0);
 
-                for (var image : images) {
+                if (zeroBasedPageNumbers) {
+                    log.warn(
+                            "Zero-based image_page detected; shifting pages to one-based numbering: chapterId={}, chapterApiUrl={}",
+                            chapter.getId(),
+                            chapter.getChapterApiUrl()
+                    );
+                }
+
+                for (int index = 0; index < images.size(); index++) {
+                    var image = images.get(index);
+                    if (image.getPageNumber() == null || image.getPageNumber() < 0) {
+                        log.error(
+                                "Invalid image_page: chapterId={}, chapterApiUrl={}, pageNumber={}, imageFile={}",
+                                chapter.getId(),
+                                chapter.getChapterApiUrl(),
+                                image.getPageNumber(),
+                                image.getImageFile()
+                        );
+                    }
+
                     String imageUrl = domain + "/" + chapterPath + "/" + image.getImageFile();
+                    int pageNumber = resolvePageNumber(image.getPageNumber(), index, zeroBasedPageNumbers);
 
                     chapterPages.add(ChapterPage.builder()
                             .chapterId(chapter.getId())
-                            .pageNumber(image.getPageNumber())
+                            .pageNumber(pageNumber)
                             .imageUrl(imageUrl)
                             .createdAt(createdAt)
                             .build());
@@ -82,6 +119,18 @@ public class OTruyenImportService {
             }
         }
         log.info("Finished chapter page import");
+    }
+
+    private int resolvePageNumber(Integer sourcePageNumber, int index, boolean zeroBasedPageNumbers) {
+        if (sourcePageNumber == null) {
+            return index + 1;
+        }
+
+        if (zeroBasedPageNumbers) {
+            return sourcePageNumber + 1;
+        }
+
+        return sourcePageNumber;
     }
 
     @Transactional
