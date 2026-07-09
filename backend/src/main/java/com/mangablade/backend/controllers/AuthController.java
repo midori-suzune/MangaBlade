@@ -53,7 +53,7 @@ public class AuthController {
         return ResponseEntity.ok(
                 ApiResponse.<Void>builder()
                         .success(true)
-                        .message("Link đặt lại mật khẩu đã được gửi qua email")
+                        .message("Password reset link has been sent to your email")
                         .build()
         );
     }
@@ -64,7 +64,7 @@ public class AuthController {
         return ResponseEntity.ok(
                 ApiResponse.<Void>builder()
                         .success(true)
-                        .message("Mật khẩu đã được cập nhật thành công")
+                        .message("Password has been updated successfully")
                         .build()
         );
     }

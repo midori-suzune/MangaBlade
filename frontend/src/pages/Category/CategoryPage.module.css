@@ -91,9 +91,9 @@
 }
 
 .activeTag {
-  border-color: #a855f7 !important;
-  color: #a855f7 !important;
-  background-color: #faf5ff !important;
+  border-color: #6366f1 !important;
+  color: #6366f1 !important;
+  background-color: #eef2ff !important;
 }
 
 .checkbox {
@@ -111,8 +111,8 @@
 }
 
 .checked {
-  background-color: #a855f7 !important;
-  border-color: #a855f7 !important;
+  background-color: #6366f1 !important;
+  border-color: #6366f1 !important;
   color: #ffffff !important;
 }
 
@@ -174,9 +174,9 @@
 }
 
 .activeStatus {
-  background-color: #38bdf8 !important;
-  color: #ffffff !important;
-  border-color: #38bdf8 !important;
+  background-color: #eef2ff !important;
+  color: #6366f1 !important;
+  border-color: #6366f1 !important;
 }
 
 .authorInput {
@@ -223,9 +223,9 @@
 }
 
 .activeSort {
-  background-color: #f97316 !important;
-  color: #ffffff !important;
-  border-color: #f97316 !important;
+  background-color: #eef2ff !important;
+  color: #6366f1 !important;
+  border-color: #6366f1 !important;
 }
 
 .actionButtons {
@@ -239,7 +239,7 @@
   padding: 10px 16px;
   border: none;
   border-radius: 6px;
-  background-color: #38bdf8;
+  background-color: #6366f1;
   color: #ffffff;
   font-size: 14px;
   font-weight: 700;
@@ -248,7 +248,7 @@
 }
 
 .applyBtn:hover {
-  background-color: #0ea5e9;
+  background-color: #4f46e5;
 }
 
 .applyBtn:active {

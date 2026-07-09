@@ -280,14 +280,14 @@ export function CategoryPage() {
               {[
                 { id: 'update', label: 'Ngày cập nhật' },
                 { id: 'new', label: 'Truyện mới' },
-                { id: 'topall', label: 'Top all' },
+                { id: 'topall', label: 'Top tất cả' },
                 { id: 'topmonth', label: 'Top tháng' },
                 { id: 'topweek', label: 'Top tuần' },
                 { id: 'topday', label: 'Top ngày' },
                 { id: 'follow', label: 'Theo dõi' },
                 { id: 'comment', label: 'Bình luận' },
                 { id: 'chapters', label: 'Số chapter' },
-                { id: 'topfollow', label: 'Top Follow' }
+                { id: 'topfollow', label: 'Top theo dõi' }
               ].map(sortOpt => (
                 <button
                   key={sortOpt.id}

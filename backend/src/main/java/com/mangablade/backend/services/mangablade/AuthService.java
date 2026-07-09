@@ -92,7 +92,7 @@ public class AuthService {
         PasswordResetToken resetToken = PasswordResetToken.builder()
                 .userId(user.getId())
                 .tokenHash(hashedToken)
-                .expiresAt(Instant.now().plusSeconds(300))
+                .expiresAt(Instant.now().plusSeconds(900))
                 .createdAt(Instant.now())
                 .build();
 
@@ -102,13 +102,13 @@ public class AuthService {
         try {
             emailService.sendResetPasswordMail(user.getEmail(), user.getUsername(), resetLink);
             System.out.println("\n=== [EMAIL SENT SUCCESS] ===");
-            System.out.println("Đã gửi email khôi phục thành công tới: " + user.getEmail());
+            System.out.println("Reset email sent successfully to: " + user.getEmail());
             System.out.println("============================\n");
         } catch (Exception e) {
-            System.err.println("\n[MAIL ERROR] Gửi email thất bại: " + e.getMessage());
-            System.out.println("=== [ĐƯỜNG DẪN THAY THẾ (FALLBACK) IN RA CONSOLE] ===");
-            System.out.println("Email nhận: " + user.getEmail());
-            System.out.println("Link đặt lại mật khẩu: " + resetLink);
+            System.err.println("\n[MAIL ERROR] Failed to send email: " + e.getMessage());
+            System.out.println("=== [FALLBACK LINK PRINTED TO CONSOLE] ===");
+            System.out.println("Recipient email: " + user.getEmail());
+            System.out.println("Password reset link: " + resetLink);
             System.out.println("====================================================\n");
         }
     }
@@ -116,13 +116,13 @@ public class AuthService {
     public void resetPassword(ResetPasswordRequest request) {
         String hashedToken = sha256(request.getToken());
         var resetToken = passwordResetTokenRepository.findByTokenHash(hashedToken)
-                .orElseThrow(() -> new AppException(ErrorCode.INVALID_PASSWORD));
+                .orElseThrow(() -> new AppException(ErrorCode.INVALID_TOKEN));
 
         if (resetToken.getUsedAt() != null) {
-            throw new AppException(ErrorCode.INVALID_PASSWORD);
+            throw new AppException(ErrorCode.INVALID_TOKEN);
         }
         if (resetToken.getExpiresAt().isBefore(Instant.now())) {
-            throw new AppException(ErrorCode.INVALID_PASSWORD);
+            throw new AppException(ErrorCode.EXPIRED_TOKEN);
         }
 
         var user = userRepository.findById(resetToken.getUserId())
