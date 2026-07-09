@@ -10,7 +10,8 @@ type FeaturedMangaSliderProps = {
 
 export function FeaturedMangaSlider({manga}: FeaturedMangaSliderProps) {
     const [activeSlide, setActiveSlide] = useState(0);
-    const activeManga = manga[activeSlide];
+    const activeIndex = manga.length === 0 ? 0 : activeSlide % manga.length;
+    const activeManga = manga[activeIndex];
 
     useEffect(() => {
         if (manga.length === 0) {
@@ -23,12 +24,6 @@ export function FeaturedMangaSlider({manga}: FeaturedMangaSliderProps) {
 
         return () => window.clearInterval(timer);
     }, [manga.length]);
-
-    useEffect(() => {
-        if (activeSlide >= manga.length) {
-            setActiveSlide(0);
-        }
-    }, [activeSlide, manga.length]);
 
     if (!activeManga) {
         return (
@@ -64,7 +59,7 @@ export function FeaturedMangaSlider({manga}: FeaturedMangaSliderProps) {
                     <div className={styles.heroDots} aria-label="Chọn truyện nổi bật">
                         {manga.map((item, index) => (
                             <button
-                                className={`${styles.heroDot} ${index === activeSlide ? styles.activeDot : ""}`}
+                                className={`${styles.heroDot} ${index === activeIndex ? styles.activeDot : ""}`}
                                 key={`${item.title}-${item.latestChapter.chapterNumber}`}
                                 type="button"
                                 onClick={() => setActiveSlide(index)}
