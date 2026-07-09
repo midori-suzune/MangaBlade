@@ -1,8 +1,11 @@
 import styles from "./Home.module.css";
 import {useEffect, useState} from "react";
+import {Link} from "react-router-dom";
 import {getManga} from "../../api/mangaApi.ts";
 import type {MangaResponse} from "../../types/manga.ts";
 import {getTimeAgo} from "../../utils/time.ts";
+import {FeaturedMangaSlider} from "../../components/FeaturedMangaSlider/FeaturedMangaSlider.tsx";
+import {toSlug} from "../../utils/slug.ts";
 
 const ranking = [
     {title: "Võ Luyện Đỉnh Phong", views: "15,432,000"},
@@ -61,6 +64,7 @@ export function Home() {
 
     const [manga, setManga] = useState<MangaResponse[]>([]);
     const [error, setError] = useState<string | null>(null);
+    const featuredManga = manga.slice(0, 5);
 
     useEffect(() => {
         async function getData() {
@@ -79,24 +83,33 @@ export function Home() {
     return (
         <div className={styles.mainContainer}>
             <section className={styles.leftMain}>
-                <div className={styles.sliderPlaceholder}>
-                    <span>Slide Động</span>
-                </div>
+                <FeaturedMangaSlider manga={featuredManga} />
 
                 <h2 className={styles.sectionTitle}>Truyện Mới Cập Nhật</h2>
                 {error && <p className={styles.errorText}>{error}</p>}
                 <div className={styles.comicGrid}>
                     {manga.map((comic) => (
                         <article className={styles.comicCard} key={`${comic.title}-${comic.latestChapter.chapterNumber}`}>
-                            <a href="#" className={styles.comicCover} aria-label={comic.title}>
+                            <Link
+                                to={`/manga/${toSlug(comic.title)}`}
+                                state={{manga: comic}}
+                                className={styles.comicCover}
+                                aria-label={comic.title}
+                            >
                                 <span className={styles.comicTag}>{getTimeAgo(comic.updatedAt)}</span>
                                 {/*{comic.hot && <span className={`${styles.comicTag} ${styles.hot}`}>Hot</span>}*/}
                                 <img src={comic.thumbUrl}
                                      alt={comic.title}  />
                                 <span className={styles.coverText}>Ảnh Bìa</span>
-                            </a>
+                            </Link>
                             <div className={styles.comicInfo}>
-                                <a href="#" className={styles.comicTitle}>{comic.title}</a>
+                                <Link
+                                    to={`/manga/${toSlug(comic.title)}`}
+                                    state={{manga: comic}}
+                                    className={styles.comicTitle}
+                                >
+                                    {comic.title}
+                                </Link>
                                 <a href="#" className={styles.comicChapter}>{`Chapter ${comic.latestChapter.chapterNumber}`}</a>
                             </div>
                         </article>

@@ -30,21 +30,6 @@
     padding: 20px;
 }
 
-.sliderPlaceholder {
-    width: 100%;
-    min-height: 350px;
-    margin-bottom: 25px;
-    border-radius: 12px;
-    background-color: #cbd5e1;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #64748b;
-    font-size: 24px;
-    font-weight: 800;
-}
-
 .sectionTitle {
     margin-bottom: 20px;
     padding-bottom: 8px;
@@ -430,11 +415,6 @@
     .leftMain,
     .rightMain {
         padding: 14px;
-    }
-
-    .sliderPlaceholder {
-        min-height: 220px;
-        font-size: 20px;
     }
 
     .comicGrid {
