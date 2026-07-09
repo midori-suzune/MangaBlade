@@ -1,6 +1,7 @@
 package com.mangablade.backend.controllers;
 
 
+import com.mangablade.backend.dtos.response.ApiResponse;
 import com.mangablade.backend.dtos.response.MangaResponse;
 import com.mangablade.backend.services.mangablade.MangaService;
 
@@ -20,10 +21,14 @@ public class MangaController {
     private final MangaService mangaService;
 
     @GetMapping
-    public ResponseEntity<MangaResponse> getManga() {
+    public ResponseEntity<ApiResponse<MangaResponse>> getManga() {
         var manga = mangaService.fetchAllManga();
-        return ResponseEntity.status(HttpStatus.OK).body(
-                manga
+        return ResponseEntity.ok(
+                ApiResponse.<MangaResponse>builder()
+                        .success(true)
+                        .message("success")
+                        .payload(manga)
+                        .build()
         );
     }
 }

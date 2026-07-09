@@ -19,11 +19,21 @@ spring:
       hibernate:
         jdbc:
           time_zone: UTC
+  mail:
+    host: ${SPRING_MAIL_HOST:smtp.gmail.com}
+    port: ${SPRING_MAIL_PORT:587}
+    username: ${SPRING_MAIL_USERNAME:}
+    password: ${SPRING_MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
   app:
     otruyen:
       manga-import-cron: "0 */4 * * * *"
       chapter-page-import-cron: "0 */8 * * * *"
-
 
 jwt:
   secret-key: ${JWT_SECRET_KEY}
