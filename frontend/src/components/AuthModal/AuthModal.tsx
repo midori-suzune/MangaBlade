@@ -26,18 +26,22 @@ export function AuthModal() {
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setError('');
-    setSuccess('');
-    setFieldErrors({});
-    setShowPassword(false);
-    setShowConfirmPassword(false);
-    
-    if (!isAuthModalOpen) {
-      setEmail('');
-      setPassword('');
-      setUsername('');
-      setConfirmPassword('');
-    }
+    const resetId = window.setTimeout(() => {
+      setError('');
+      setSuccess('');
+      setFieldErrors({});
+      setShowPassword(false);
+      setShowConfirmPassword(false);
+
+      if (!isAuthModalOpen) {
+        setEmail('');
+        setPassword('');
+        setUsername('');
+        setConfirmPassword('');
+      }
+    }, 0);
+
+    return () => window.clearTimeout(resetId);
   }, [authModalTab, isAuthModalOpen]);
 
   useEffect(() => {
