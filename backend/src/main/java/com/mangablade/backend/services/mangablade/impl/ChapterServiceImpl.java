@@ -14,7 +14,7 @@ public class ChapterServiceImpl implements ChapterService {
     private final ChapterRepository chapterRepository;
 
     @Override
-    public int getLastestChapter() {
-        return chapterRepository.getLatestChapterByMangaId(1L);
+    public String getLastestChapterByMangaId(Long mangaId) {
+        return chapterRepository.getLatestChapterByMangaId(mangaId);
     }
 }

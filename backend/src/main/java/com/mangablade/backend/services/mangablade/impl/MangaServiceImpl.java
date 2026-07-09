@@ -4,9 +4,12 @@ import com.mangablade.backend.dtos.response.MangaResponse;
 import com.mangablade.backend.mapper.MangaMapper;
 import com.mangablade.backend.repositories.ChapterRepository;
 import com.mangablade.backend.repositories.MangaRepository;
+import com.mangablade.backend.services.mangablade.ChapterService;
 import com.mangablade.backend.services.mangablade.MangaService;
 
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 import lombok.RequiredArgsConstructor;
 
@@ -15,19 +18,17 @@ import lombok.RequiredArgsConstructor;
 public class MangaServiceImpl implements MangaService {
 
     private final MangaRepository mangaRepository;
-    private final ChapterRepository chapterRepository;
+    private final ChapterService chapterService;
     private final MangaMapper mangaMapper;
 
     @Override
-    public MangaResponse fetchAllManga() {
-        var entity = mangaRepository.findById(1L).orElseThrow(
-                () -> new RuntimeException("Manga not found with id")
-        );
-
-        var latestChapter = chapterRepository.getLatestChapterByMangaId(entity.getId());
-
-        var response = mangaMapper.toResponse(entity);
-        response.getLatestChapter().setChapterNumber(latestChapter);
-        return response;
+    public List<MangaResponse> fetchAllManga() {
+        var entity = mangaRepository.findAll();
+        return entity.stream().map(e -> {
+            var latestChapter = chapterService.getLastestChapterByMangaId(e.getId());
+            var response = mangaMapper.toResponse(e);
+            response.getLatestChapter().setChapterNumber(latestChapter);
+            return response;
+        }).toList();
     }
 }

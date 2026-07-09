@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -20,7 +22,7 @@ public class MangaController {
     private final MangaService mangaService;
 
     @GetMapping
-    public ResponseEntity<MangaResponse> getManga() {
+    public ResponseEntity<List<MangaResponse>> getManga() {
         var manga = mangaService.fetchAllManga();
         return ResponseEntity.status(HttpStatus.OK).body(
                 manga

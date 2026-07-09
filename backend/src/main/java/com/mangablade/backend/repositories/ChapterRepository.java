@@ -37,5 +37,5 @@ public interface ChapterRepository extends JpaRepository<Chapter, Long> {
               """,
             nativeQuery = true
     )
-    int getLatestChapterByMangaId(@Param("mangaId") Long mangaId);
+    String getLatestChapterByMangaId(@Param("mangaId") Long mangaId);
 }

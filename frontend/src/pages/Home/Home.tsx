@@ -59,7 +59,7 @@ function EyeIcon() {
 
 export function Home() {
 
-    const [manga, setManga] = useState<MangaResponse | undefined>(undefined);
+    const [manga, setManga] = useState<MangaResponse[]>([]);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
@@ -68,17 +68,11 @@ export function Home() {
                 const data = await getManga();
                 setManga(data);
             } catch {
-                setError("Không thể tải truyện");
+                setError("can not load manage data");
             }
         }
         void getData();
     }, []);
-
-    const array: MangaResponse[] = [];
-
-    if (manga !== undefined) {
-        array.push(manga);
-    }
 
     return (
         <div className={styles.mainContainer}>
@@ -90,7 +84,7 @@ export function Home() {
                 <h2 className={styles.sectionTitle}>Truyện Mới Cập Nhật</h2>
                 {error && <p className={styles.errorText}>{error}</p>}
                 <div className={styles.comicGrid}>
-                    {array.map((comic) => (
+                    {manga.map((comic) => (
                         <article className={styles.comicCard} key={`${comic.title}-${comic.latestChapter.chapterNumber}`}>
                             <a href="#" className={styles.comicCover} aria-label={comic.title}>
                                 <span className={styles.comicTag}>{getTimeAgo(comic.updatedAt)}</span>

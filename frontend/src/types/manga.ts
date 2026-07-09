@@ -3,6 +3,6 @@ export type MangaResponse = {
     thumbUrl: string,
     updatedAt: string,
     latestChapter: {
-        chapterNumber: number
+        chapterNumber: string
     }
 }
