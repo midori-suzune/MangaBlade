@@ -1,17 +1,31 @@
 import type {RouteObject} from "react-router-dom";
 import {MainLayout} from "../layouts/MainLayout.tsx";
 import {Home} from "../pages/Home/Home.tsx";
-
+import {LoginPage} from "../pages/Login/LoginPage.tsx";
+import {RegisterPage} from "../pages/Register/RegisterPage.tsx";
+import ResetPasswordPage from "../pages/ResetPassword/ResetPasswordPage.tsx";
 
 export const appRoutes: RouteObject[] = [
     {
         path: "/",
-        element: <MainLayout></MainLayout>,
-        children : [
+        element: <MainLayout />,
+        children: [
             {
                 index: true,
-                element: <Home></Home>
+                element: <Home />
             }
         ]
+    },
+    {
+        path: "/login",
+        element: <LoginPage />
+    },
+    {
+        path: "/register",
+        element: <RegisterPage />
+    },
+    {
+        path: "/reset-password",
+        element: <ResetPasswordPage />
     }
 ]
