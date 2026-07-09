@@ -1,5 +1,9 @@
 import styles from "./Home.module.css";
 import { mockComics } from "../../mockData";
+import {useEffect, useState} from "react";
+import {getManga} from "../../api/mangaApi.ts";
+import type {MangaResponse} from "../../types/manga.ts";
+import {getTimeAgo} from "../../utils/time.ts";
 
 const ranking = [
     {title: "Võ Luyện Đỉnh Phong", views: "15,432,000"},
@@ -55,6 +59,28 @@ function EyeIcon() {
 }
 
 export function Home() {
+
+    const [manga, setManga] = useState<MangaResponse | undefined>(undefined);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        async function getData() {
+            try {
+                const data = await getManga();
+                setManga(data);
+            } catch {
+                setError("Không thể tải truyện");
+            }
+        }
+        void getData();
+    }, []);
+
+    const array: MangaResponse[] = [];
+
+    if (manga !== undefined) {
+        array.push(manga);
+    }
+
     return (
         <div className={styles.mainContainer}>
             <section className={styles.leftMain}>
@@ -63,17 +89,20 @@ export function Home() {
                 </div>
 
                 <h2 className={styles.sectionTitle}>Truyện Mới Cập Nhật</h2>
+                {error && <p className={styles.errorText}>{error}</p>}
                 <div className={styles.comicGrid}>
                     {mockComics.map((comic) => (
                         <article className={styles.comicCard} key={comic.id}>
                             <a href="#" className={styles.comicCover} aria-label={comic.title}>
-                                <span className={styles.comicTag}>{comic.time}</span>
-                                {comic.hot && <span className={`${styles.comicTag} ${styles.hot}`}>Hot</span>}
+                                <span className={styles.comicTag}>{getTimeAgo(comic.updatedAt)}</span>
+                                {/*{comic.hot && <span className={`${styles.comicTag} ${styles.hot}`}>Hot</span>}*/}
+                                <img src={comic.thumbUrl}
+                                     alt={comic.title}  />
                                 <span className={styles.coverText}>Ảnh Bìa</span>
                             </a>
                             <div className={styles.comicInfo}>
                                 <a href="#" className={styles.comicTitle}>{comic.title}</a>
-                                <a href="#" className={styles.comicChapter}>{comic.chapter}</a>
+                                <a href="#" className={styles.comicChapter}>{`Chapter ${comic.latestChapter.chapterNumber}`}</a>
                             </div>
                         </article>
                     ))}

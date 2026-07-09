@@ -29,6 +29,7 @@ public class OTruyenMangaResponse {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Data{
         private Item item ;
+        private OTruyenSeoOnPageResponse seoOnPage;
     }
 
     @Setter
@@ -50,11 +51,6 @@ public class OTruyenMangaResponse {
         private List<String> originName = new ArrayList<>();
 
         private String status ;
-
-        @JsonProperty("thumb_url")
-        private String thumbUrl;
-
-        private Instant updatedAt;
 
         @JsonProperty("author")
         @JsonSetter(nulls = Nulls.AS_EMPTY) // Convert null to an empty list.

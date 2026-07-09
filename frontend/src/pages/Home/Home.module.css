@@ -55,6 +55,13 @@
     text-transform: uppercase;
 }
 
+.errorText {
+    margin: -8px 0 16px;
+    color: #ef4444;
+    font-size: 13px;
+    font-weight: 700;
+}
+
 .comicGrid {
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
