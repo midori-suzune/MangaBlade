@@ -8,7 +8,6 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 20px;
     padding: 15px;
     border-bottom: 1px solid #f1f5f9;
 }
@@ -31,11 +30,12 @@
     align-items: center;
     flex: 1;
     max-width: 500px;
+    margin: 0 20px;
 }
 
 .searchBox input {
     width: 100%;
-    padding: 10px 15px 10px 38px;
+    padding: 10px 15px 10px 35px;
     border: 1px solid #e2e8f0;
     border-radius: 20px;
     background-color: #f8fafc;
@@ -53,9 +53,9 @@
 
 .searchIcon {
     position: absolute;
-    left: 13px;
-    width: 16px;
-    height: 16px;
+    left: 12px;
+    width: 14px;
+    height: 14px;
     color: #94a3b8;
     pointer-events: none;
 }
@@ -82,7 +82,7 @@
     border-radius: 8px;
     cursor: pointer;
     font-size: 14px;
-    font-weight: 700;
+    font-weight: 600;
     transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s;
     text-decoration: none;
     display: inline-block;
@@ -131,7 +131,7 @@
 .headerRightActions {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 10px;
 }
 
 .btnNotification {
