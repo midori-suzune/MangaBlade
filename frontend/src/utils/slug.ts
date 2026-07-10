@@ -1,3 +1,5 @@
+
+
 export function toSlug(value: string) {
     return value
         .normalize("NFD")
@@ -7,3 +9,4 @@ export function toSlug(value: string) {
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-+|-+$/g, "");
 }
+
