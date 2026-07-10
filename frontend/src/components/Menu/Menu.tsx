@@ -8,7 +8,7 @@ export function Menu() {
             <nav className={styles.navLinks} aria-label="Main navigation">
                 <NavLink to="/" className={({ isActive }) => isActive ? styles.active : ''} end>Trang chủ</NavLink>
                 <NavLink to="/category" className={({ isActive }) => isActive ? styles.active : ''}>Thể loại</NavLink>
-                <NavLink to="/new" className={({ isActive }) => isActive ? styles.active : ''}>Mới</NavLink>
+                <NavLink to="/manga/reading" className={({ isActive }) => isActive ? styles.active : ''}>Mới</NavLink>
                 <NavLink to="/update" className={({ isActive }) => isActive ? styles.active : ''}>Cập nhật</NavLink>
             </nav>
             <div className={styles.menuRightIcons}>
