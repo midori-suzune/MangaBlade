@@ -19,7 +19,8 @@ public class EmailService {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            helper.setFrom(fromEmail);
+            helper.setFrom(fromEmail, "MangaBlade");
+            helper.setReplyTo(fromEmail);
             helper.setTo(toEmail);
             helper.setSubject("Đặt lại mật khẩu tài khoản MangaBlade");
 
@@ -45,7 +46,7 @@ public class EmailService {
                                 ⚠️ Lưu ý bảo mật
                             </h4>
                             <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #664d03; line-height: 1.8;">
-                                <li>Liên kết này có hiệu lực trong <strong>5 phút</strong></li>
+                                <li>Liên kết này có hiệu lực trong <strong>15 phút</strong></li>
                                 <li>Chỉ có thể sử dụng <strong>một lần duy nhất</strong></li>
                                 <li>Không chia sẻ liên kết với bất kỳ ai</li>
                                 <li>Nếu không phải bạn yêu cầu, hãy bỏ qua email này</li>
@@ -58,7 +59,7 @@ public class EmailService {
             helper.setText(htmlContent, true);
             mailSender.send(message);
         } catch (Exception e) {
-            throw new RuntimeException("Gửi mail thất bại: " + e.getMessage(), e);
+            throw new RuntimeException("Failed to send email: " + e.getMessage(), e);
         }
     }
 }

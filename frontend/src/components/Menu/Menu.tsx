@@ -1,19 +1,15 @@
-
-import { Link } from "react-router-dom";
-import { useAuthStore } from "../../stores/authStore";
+import { NavLink } from "react-router-dom";
 import styles from "./Menu.module.css";
 
 export function Menu() {
-    const { isAuthenticated, user, openAuthModal } = useAuthStore();
-
     return (
         <header className={styles.bottomHeaderWrapper}>
             <div className={styles.bottomHeader}>
             <nav className={styles.navLinks} aria-label="Main navigation">
-                <Link to="/" className={styles.active}>Home</Link>
-                <Link to="/">Category</Link>
-                <Link to="/">New</Link>
-                <Link to="/">Update</Link>
+                <NavLink to="/" className={({ isActive }) => isActive ? styles.active : ''} end>Trang chủ</NavLink>
+                <NavLink to="/category" className={({ isActive }) => isActive ? styles.active : ''}>Thể loại</NavLink>
+                <NavLink to="/new" className={({ isActive }) => isActive ? styles.active : ''}>Mới</NavLink>
+                <NavLink to="/update" className={({ isActive }) => isActive ? styles.active : ''}>Cập nhật</NavLink>
             </nav>
             <div className={styles.menuRightIcons}>
                 <button className={styles.themeToggleBtn} title="Chế độ Sáng/Tối" type="button">
@@ -26,13 +22,8 @@ export function Menu() {
                         <path d="M10 22h4"></path>
                     </svg>
                 </button>
-                {isAuthenticated && user ? (
-                    <Link to="/" className={styles.userAvatarCircle} title={user.username} aria-label="Tài khoản"></Link>
-                ) : (
-                    <button type="button" onClick={() => openAuthModal('login')} className={styles.userAvatarCircle} title="Tài Khoản" aria-label="Tài khoản" style={{ border: '2px solid #e2e8f0', cursor: 'pointer' }}></button>
-                )}
             </div>
             </div>
         </header>
-    )
+    );
 }

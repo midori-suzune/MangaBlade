@@ -22,12 +22,11 @@ export default function ResetPasswordPage() {
   const [success, setSuccess] = useState('');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  // Dynamic Validation Checklist Checks
   const isLengthValid = newPassword.length >= 8;
   const isCaseValid = /[a-z]/.test(newPassword) && /[A-Z]/.test(newPassword);
   const isCharValid = /[0-9]/.test(newPassword) || /[^A-Za-z0-9]/.test(newPassword);
   
-  const isRequirementsMet = isLengthValid; // Chỉ bắt buộc độ dài >= 8 ký tự
+  const isRequirementsMet = isLengthValid && isCaseValid && isCharValid;
   const isConfirmValid = confirmPassword.length > 0 && newPassword === confirmPassword;
   const isFormValid = isRequirementsMet && isConfirmValid && token;
 
@@ -43,17 +42,17 @@ export default function ResetPasswordPage() {
     setFieldErrors({});
 
     if (!token) {
-      setError('Mã xác nhận mật khẩu không tồn tại hoặc không hợp lệ.');
+      setError('Password reset token is missing or invalid.');
       return;
     }
 
     if (!isRequirementsMet) {
-      setError('Mật khẩu chưa đáp ứng đầy đủ yêu cầu.');
+      setError('Password does not meet all requirements.');
       return;
     }
 
     if (!isConfirmValid) {
-      setFieldErrors({ confirmPassword: 'Mật khẩu xác nhận không trùng khớp' });
+      setFieldErrors({ confirmPassword: 'Passwords do not match' });
       return;
     }
 
@@ -61,14 +60,14 @@ export default function ResetPasswordPage() {
     try {
       const response = await resetPassword({ token, newPassword });
       if (response.success) {
-        setSuccess('Mật khẩu của bạn đã được đặt lại thành công!');
+        setSuccess('Your password has been reset successfully!');
         setNewPassword('');
         setConfirmPassword('');
       } else {
         if (response.fieldsErrors) {
           setFieldErrors(response.fieldsErrors);
         }
-        setError(response.message || 'Đặt lại mật khẩu thất bại.');
+        setError(response.message || 'Failed to reset password.');
       }
     } catch (err: unknown) {
       if (axios.isAxiosError(err) && err.response?.data) {
@@ -76,9 +75,9 @@ export default function ResetPasswordPage() {
         if (data.fieldsErrors) {
           setFieldErrors(data.fieldsErrors);
         }
-        setError(data.message || 'Đặt lại mật khẩu thất bại.');
+        setError(data.message || 'Failed to reset password.');
       } else {
-        setError('Đã có lỗi xảy ra. Vui lòng thử lại sau.');
+        setError('An error occurred. Please try again later.');
       }
     } finally {
       setLoading(false);
@@ -87,7 +86,6 @@ export default function ResetPasswordPage() {
 
   return (
     <div className={styles.container}>
-      {/* Top Left Navigation Button */}
       <button onClick={handleBackToLogin} className={styles.backButton} aria-label="Quay lại Đăng nhập">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '4px' }}>
           <polyline points="15 18 9 12 15 6"></polyline>
@@ -97,7 +95,7 @@ export default function ResetPasswordPage() {
 
       <div className={styles.card}>
         <div className={styles.iconCircle}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1F6C9F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
             <path d="M7 11V7a5 5 0 0 1 10 0v4" />
           </svg>
@@ -160,21 +158,20 @@ export default function ResetPasswordPage() {
               {fieldErrors.newPassword && <span className={styles.fieldError}>{fieldErrors.newPassword}</span>}
             </div>
 
-            {/* Password Requirements Checklist Box */}
             <div className={styles.checklist}>
               <p className={styles.checklistTitle}>Yêu cầu mật khẩu:</p>
               <ul className={styles.checklistList}>
                 <li className={styles.checklistItem}>
                   <span className={`${styles.dot} ${isLengthValid ? styles.dotValid : styles.dotInvalid}`} />
-                  <span className={isLengthValid ? styles.textValid : styles.textInvalid}>Ít nhất 8 ký tự (bắt buộc)</span>
+                  <span className={isLengthValid ? styles.textValid : styles.textInvalid}>Ít nhất 8 ký tự</span>
                 </li>
                 <li className={styles.checklistItem}>
                   <span className={`${styles.dot} ${isCaseValid ? styles.dotValid : styles.dotInvalid}`} />
-                  <span className={isCaseValid ? styles.textValid : styles.textInvalid}>Nên bao gồm chữ hoa và chữ thường</span>
+                  <span className={isCaseValid ? styles.textValid : styles.textInvalid}>Bao gồm chữ hoa và chữ thường</span>
                 </li>
                 <li className={styles.checklistItem}>
                   <span className={`${styles.dot} ${isCharValid ? styles.dotValid : styles.dotInvalid}`} />
-                  <span className={isCharValid ? styles.textValid : styles.textInvalid}>Nên bao gồm số hoặc ký tự đặc biệt</span>
+                  <span className={isCharValid ? styles.textValid : styles.textInvalid}>Bao gồm số hoặc ký tự đặc biệt</span>
                 </li>
               </ul>
             </div>
