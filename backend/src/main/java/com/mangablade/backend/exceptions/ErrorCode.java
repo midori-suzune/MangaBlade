@@ -11,6 +11,8 @@ public enum ErrorCode {
     USER_NOT_FOUND(404, "User not found", HttpStatus.NOT_FOUND),
     USER_EXISTED(400, "User already existed", HttpStatus.BAD_REQUEST),
     INVALID_PASSWORD(400, "Invalid password", HttpStatus.BAD_REQUEST),
+    INVALID_TOKEN(400, "Invalid or already used password reset link", HttpStatus.BAD_REQUEST),
+    EXPIRED_TOKEN(400, "Password reset link has expired", HttpStatus.BAD_REQUEST),
     UNAUTHORIZED(401, "Unauthorized", HttpStatus.UNAUTHORIZED),
     FORBIDDEN(403, "Forbidden", HttpStatus.FORBIDDEN),
     INTERNAL_ERROR(500, "Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
