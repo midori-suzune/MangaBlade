@@ -1,0 +1,389 @@
+.readerPageBg {
+    width: 100%;
+    min-height: calc(100vh - 130px);
+    padding: 20px 0;
+    background-color: #333333;
+}
+
+.mainContainer {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+.cardBox {
+    margin-bottom: 20px;
+    padding: 20px;
+    border-radius: 6px;
+    background-color: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.chapterControl {
+    text-align: center;
+}
+
+.breadcrumbTop {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.breadcrumbTop a,
+.breadcrumbBottom a {
+    color: #1e293b;
+    transition: color 0.2s;
+}
+
+.breadcrumbTop a:hover,
+.breadcrumbBottom a:hover {
+    color: #5bc0de;
+}
+
+.breadcrumbTop span {
+    margin: 0 8px;
+    color: #cbd5e1;
+    font-size: 12px;
+}
+
+.breadcrumbTop strong {
+    color: #5bc0de;
+    font-weight: 700;
+}
+
+.detailTitle {
+    margin-bottom: 5px;
+    color: #1e293b;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.detailTitle a {
+    color: #5bc0de;
+}
+
+.detailTitle a:hover {
+    text-decoration: underline;
+}
+
+.chapterTime {
+    display: block;
+    margin-bottom: 15px;
+    color: #94a3b8;
+    font-size: 13px;
+    font-style: italic;
+}
+
+.topNavBtns,
+.navBtns {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.topNavBtns {
+    margin-top: 15px;
+}
+
+.btnNav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    background-color: #5bc0de;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background-color 0.2s, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btnNav:hover {
+    background-color: #31b0d5;
+}
+
+.btnNav:active {
+    transform: scale(0.96);
+}
+
+.btnNav svg,
+.sectionTitleSmall svg,
+.commentFooterActions svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2;
+}
+
+.disabled {
+    background-color: #d1d5db;
+    color: #ffffff;
+    cursor: not-allowed;
+}
+
+.disabled:hover {
+    background-color: #d1d5db;
+}
+
+.chapterContent {
+    margin-bottom: 20px;
+    padding: 0;
+    background-color: #333333;
+    text-align: center;
+}
+
+.pageChapter {
+    margin: 0;
+    padding: 0;
+    font-size: 0;
+}
+
+.pageChapter img {
+    display: block;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.bottomNav {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 25px 20px 20px;
+}
+
+.breadcrumbBottom {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-top: 10px;
+    padding-top: 15px;
+    border-top: 1px solid #f1f5f9;
+    color: #475569;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.breadcrumbBottom span {
+    margin: 0 10px;
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+.breadcrumbBottom strong {
+    color: #475569;
+    font-weight: 500;
+}
+
+.commentSection {
+    padding: 20px;
+}
+
+.sectionTitleSmall {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #f97316;
+    font-size: 20px;
+    font-weight: 500;
+}
+
+.commentInputBox {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.commentAvatar {
+    display: flex;
+    width: 45px;
+    height: 45px;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #e2e8f0;
+    border-radius: 50%;
+    background-color: #f1f5f9;
+    color: #94a3b8;
+    font-size: 22px;
+    font-weight: 800;
+}
+
+.sampleAvatar {
+    background-color: #bbf7d0;
+    color: #166534;
+    font-size: 16px;
+}
+
+.commentInputWrapper {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.commentInputWrapper textarea {
+    width: 100%;
+    padding: 15px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background-color: #f8fafc;
+    color: #1e293b;
+    outline: none;
+    resize: vertical;
+    font-family: inherit;
+    font-size: 14px;
+    transition: border-color 0.2s, background-color 0.2s;
+}
+
+.commentInputWrapper textarea:focus {
+    border-color: #5bc0de;
+    background-color: #ffffff;
+}
+
+.commentActions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btnSubmitComment {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 6px;
+    background-color: #5bc0de;
+    color: #ffffff;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.2s;
+}
+
+.btnSubmitComment:hover {
+    background-color: #31b0d5;
+}
+
+.detailComments {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.commentItem {
+    display: flex;
+    gap: 12px;
+}
+
+.commentBody {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.commentBubble {
+    display: inline-flex;
+    max-width: fit-content;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 16px;
+    border: 1px solid #f1f5f9;
+    border-radius: 12px;
+    border-top-left-radius: 4px;
+    background-color: #f8fafc;
+}
+
+.commentAuthorRow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.commentAuthor {
+    color: #1e293b;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.commentBadge {
+    padding: 3px 8px;
+    border-radius: 12px;
+    background-color: #e2e8f0;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.commentText {
+    margin: 0;
+    color: #334155;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.commentFooterActions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-left: 5px;
+    color: #94a3b8;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.commentFooterActions span,
+.commentFooterActions button {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
+    transition: color 0.2s;
+}
+
+.commentFooterActions span:hover,
+.commentFooterActions button:hover {
+    color: #5bc0de;
+}
+
+@media (max-width: 680px) {
+    .readerPageBg {
+        padding: 14px 0;
+    }
+
+    .cardBox {
+        padding: 16px;
+    }
+
+    .detailTitle {
+        font-size: 21px;
+    }
+
+    .commentInputBox,
+    .commentItem {
+        gap: 10px;
+    }
+
+    .commentAvatar {
+        width: 38px;
+        height: 38px;
+        font-size: 18px;
+    }
+}

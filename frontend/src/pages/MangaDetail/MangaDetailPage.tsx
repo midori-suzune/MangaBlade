@@ -12,12 +12,10 @@ export function MangaDetailPage() {
     const [manga, setManga] = useState<MangaDetailResponse>();
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-
+    const url = window.location.href
+    const slug = url.substring(url.lastIndexOf("/") + 1)
     useEffect(() => {
 
-        const url = window.location.href
-        const slug = url.substring(url.lastIndexOf("/") + 1)
-        console.log(slug)
         async function loadMangaDetail() {
             try {
                 setIsLoading(true);
@@ -48,8 +46,7 @@ export function MangaDetailPage() {
     const status = manga?.status
     const sourceType = manga?.sourceType
     const authors = manga?.authors ?? []
-    const firstChapter = chapters[0]
-
+    const firstChapter = chapters[chapters.length - 1]
     return (
         <div className={styles.mainContainer}>
             <section className={styles.detailContainer}>
@@ -96,15 +93,17 @@ export function MangaDetailPage() {
                         </ul>
 
                         <div className={styles.mangaActions}>
-                            <a
+                            <Link
                                 className={`${styles.actionButton} ${styles.readButton}`}
-                                href={firstChapter?.chapterUrl ?? "#"}
+                                to={`/manga/${slug}/c/${firstChapter?.chapterNumber}`}
                                 aria-disabled={!firstChapter}
                             >
                                 Đọc từ đầu
-                            </a>
+                            </Link>
                             <button className={`${styles.actionButton} ${styles.followButton}`} type="button">Theo dõi</button>
-                            <button className={`${styles.actionButton} ${styles.likeButton}`} type="button">Thích</button>
+                            <button className={`${styles.actionButton} ${styles.likeButton}`} type="button">
+                                <Link to={""}>Thich</Link>
+                            </button>
                         </div>
                     </div>
                 </section>
@@ -120,8 +119,9 @@ export function MangaDetailPage() {
                         {chapters.length > 0 ? (
                             <ul className={styles.chapterList}>
                                 {chapters.map((chapter) => (
+
                                     <li key={`${chapter.chapterNumber}-${chapter.chapterUrl}`}>
-                                        <a href={chapter.chapterUrl} className={styles.chapterName}>Chương {chapter.chapterNumber}</a>
+                                        <Link  to={`/manga/${slug}/c/${chapter.chapterNumber}`} className={styles.chapterName}>Chương {chapter.chapterNumber}</Link>
                                         <span className={styles.chapterDate}>{updatedAt ? getTimeAgo(updatedAt) : "Đang cập nhật"}</span>
                                     </li>
                                 ))}

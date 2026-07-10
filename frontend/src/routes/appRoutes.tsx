@@ -6,11 +6,14 @@ import {RegisterPage} from "../pages/Register/RegisterPage.tsx";
 import ResetPasswordPage from "../pages/ResetPassword/ResetPasswordPage.tsx";
 import {CategoryPage} from "../pages/Category/CategoryPage.tsx";
 import {MangaDetailPage} from "../pages/MangaDetail/MangaDetailPage.tsx";
+import {ReadingMangaPage} from "../pages/ReadingManga/ReadingMangaPage.tsx";
+import {RouteError} from "./RouteError.tsx";
 
 export const appRoutes: RouteObject[] = [
     {
         path: "/",
         element: <MainLayout />,
+        errorElement: <RouteError />,
         children: [
             {
                 index: true,
@@ -23,19 +26,26 @@ export const appRoutes: RouteObject[] = [
             {
                 path: "manga/:slug",
                 element: <MangaDetailPage />
+            },
+            {
+                path: "manga/:slug/c/:chapterNumber",
+                element: <ReadingMangaPage />
             }
         ]
     },
     {
         path: "/login",
-        element: <LoginPage />
+        element: <LoginPage />,
+        errorElement: <RouteError />
     },
     {
         path: "/register",
-        element: <RegisterPage />
+        element: <RegisterPage />,
+        errorElement: <RouteError />
     },
     {
         path: "/reset-password",
-        element: <ResetPasswordPage />
+        element: <ResetPasswordPage />,
+        errorElement: <RouteError />
     }
 ]
