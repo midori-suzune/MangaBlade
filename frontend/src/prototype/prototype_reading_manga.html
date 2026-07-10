@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đọc Truyện - MangaBlade</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* === RESET & CƠ BẢN === */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Outfit', sans-serif; background-color: #f4f6f8; color: #333; line-height: 1.5; }
+        a { text-decoration: none; color: inherit; }
+        ul { list-style: none; }
+
+        /* TACTILE FEEDBACK */
+        button, a, .btn-action, .theme-toggle-btn { transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s, background-color 0.2s, color 0.2s; }
+        button:active, .btn-action:active, .theme-toggle-btn:active, .nav-links a:active { transform: scale(0.96); }
+
+        /* =========================================
+           HEADER & NAVIGATION (Light Mode)
+           ========================================= */
+        .top-header-wrapper { background-color: #ffffff; }
+        .bottom-header-wrapper { background-color: #ffffff; box-shadow: 0 2px 10px rgba(0,0,0,0.05); z-index: 100; position: relative; }
+
+        .top-header { max-width: 1300px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 15px; border-bottom: 1px solid #f1f5f9; }
+        .logo { font-size: 24px; font-weight: 900; color: #1e293b; letter-spacing: -0.5px; }
+        .logo span { color: #6366f1; }
+
+        .search-box { position: relative; display: flex; align-items: center; flex: 1; max-width: 500px; margin: 0 20px; }
+        .search-box input { width: 100%; padding: 10px 15px 10px 35px; border: 1px solid #e2e8f0; border-radius: 20px; background-color: #f8fafc; outline: none; font-size: 14px; transition: all 0.3s ease; }
+        .search-box input:focus { border-color: #6366f1; background-color: #fff; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); }
+        .search-icon { position: absolute; left: 12px; color: #94a3b8; font-size: 14px; pointer-events: none; }
+
+        .auth-buttons { display: flex; gap: 10px; }
+        .auth-buttons button { padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 14px; border: none; cursor: pointer; transition: background 0.2s; }
+        .btn-login { background-color: #f1f5f9; color: #1e293b; }
+        .btn-login:hover { background-color: #e2e8f0; }
+        .btn-signup { background-color: #1e293b; color: white; }
+        .btn-signup:hover { background-color: #0f172a; }
+
+        .bottom-header { max-width: 1300px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 10px 15px; }
+        .nav-links { display: flex; gap: 24px; }
+        .nav-links a { color: #475569; font-weight: 600; font-size: 15px; transition: color 0.2s, background-color 0.2s; padding: 8px 12px; border-radius: 6px; }
+        .nav-links a:hover { color: #6366f1; background-color: #f1f5f9; }
+
+        .menu-right-icons { display: flex; align-items: center; gap: 15px; cursor: pointer; }
+        .theme-toggle-btn { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid #94a3b8; color: #64748b; transition: all 0.2s; background: transparent; }
+        .theme-toggle-btn:hover { color: #6366f1; border-color: #6366f1; background-color: #f8fafc; }
+        .user-avatar-circle { width: 36px; height: 36px; background-color: #cbd5e1; border-radius: 50%; display: inline-block; border: 2px solid #e2e8f0; }
+
+        /* =========================================
+           TRUYENQQ STYLE READER AREA
+           ========================================= */
+        .reader-page-bg { background-color: #333333; width: 100%; min-height: calc(100vh - 130px); padding: 20px 0; }
+
+        .main-container { max-width: 1000px; margin: 0 auto; padding: 0 15px; }
+
+        .card-box { background-color: #ffffff; border-radius: 6px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+        /* Top Control Card */
+        .chapter-control { text-align: center; }
+
+        .breadcrumb-top { font-size: 14px; color: #64748b; font-weight: 500; text-align: center; margin-bottom: 15px; display: flex; justify-content: center; align-items: center; flex-wrap: wrap; }
+        .breadcrumb-top a { color: #1e293b; text-decoration: none; transition: color 0.2s; }
+        .breadcrumb-top a:hover { color: #5bc0de; }
+        .breadcrumb-top span { margin: 0 8px; color: #cbd5e1; font-size: 12px; }
+        .breadcrumb-top .current { color: #5bc0de; font-weight: 700; }
+
+        .detail-title { font-size: 24px; font-weight: 700; color: #1e293b; margin-bottom: 5px; }
+        .detail-title a { color: #5bc0de; }
+        .detail-title a:hover { text-decoration: underline; }
+        .chapter-time { font-size: 13px; color: #94a3b8; font-style: italic; display: block; margin-bottom: 15px; }
+
+        /* Server buttons */
+        .server-options { margin-bottom: 15px; font-size: 14px; }
+        .note-server { color: #d9534f; font-size: 13px; display: block; margin-bottom: 10px; font-style: italic; }
+        .server-btns { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 15px; }
+        .btn-server { padding: 8px 16px; border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid #e2e8f0; color: #475569; background-color: #f8fafc; transition: all 0.2s; }
+        .btn-server.active { background-color: #5cb85c; color: white; border-color: #4cae4c; }
+        .btn-server:hover:not(.active) { background-color: #e2e8f0; }
+
+        /* Action buttons */
+        .action-btns { margin-bottom: 15px; }
+        .btn-report { background-color: #f0ad4e; color: white; border: none; padding: 8px 16px; border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-report:hover { background-color: #ec971f; }
+
+        .info-box { background-color: #d9edf7; color: #31708f; padding: 10px 15px; border-radius: 4px; font-size: 14px; margin: 15px auto; max-width: 600px; display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid #bce8f1; }
+
+        /* Top Nav */
+        .top-nav-btns { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
+        .chapter-select { padding: 9px 15px; border: 1px solid #cbd5e1; border-radius: 4px; font-family: inherit; font-size: 14px; color: #1e293b; background-color: #fff; font-weight: 500; outline: none; cursor: pointer; min-width: 150px; }
+
+        /* Manga Images */
+        .chapter_content { background-color: #333333; padding: 0; text-align: center; margin-bottom: 20px; }
+        .page-chapter { margin: 0; padding: 0; font-size: 0; }
+        .page-chapter img { max-width: 100%; display: block; margin: 0 auto; }
+        .ad-text { text-align: center; color: #999; font-size: 13px; margin: 10px 0; display: block; }
+
+        /* Bottom Control Card */
+        .bottom-nav { padding: 25px 20px 20px; display: flex; flex-direction: column; gap: 20px; }
+        .nav-btns { display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .btn-nav { padding: 10px 20px; border-radius: 4px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: background 0.2s; color: white; background-color: #5bc0de; display: flex; align-items: center; gap: 8px; }
+        .btn-nav:hover { background-color: #31b0d5; }
+        .btn-nav.disabled { background-color: #d1d5db; cursor: not-allowed; color: #fff; }
+
+        .breadcrumb-bottom { font-size: 14px; color: #475569; font-weight: 400; display: flex; align-items: center; flex-wrap: wrap; margin-top: 10px; border-top: 1px solid #f1f5f9; padding-top: 15px; }
+        .breadcrumb-bottom a { color: #1e293b; text-decoration: none; transition: color 0.2s; }
+        .breadcrumb-bottom a:hover { color: #5bc0de; }
+        .breadcrumb-bottom span { margin: 0 10px; color: #94a3b8; font-size: 12px; }
+
+        /* Comments Card */
+        .comment-section { padding: 20px; }
+        .section-title-small { font-size: 20px; font-weight: 500; color: #f97316; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #f1f5f9; padding-bottom: 15px; margin-bottom: 20px; }
+
+        .comment-input-box { display: flex; gap: 15px; margin-bottom: 20px; }
+        .comment-avatar { width: 45px; height: 45px; background-color: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; border: 1px solid #e2e8f0; color: #94a3b8; }
+        .comment-input-wrapper { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+        .comment-input-wrapper textarea { width: 100%; padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px; background-color: #f8fafc; color: #1e293b; font-family: inherit; font-size: 14px; outline: none; resize: vertical; transition: border-color 0.2s; }
+        .comment-input-wrapper textarea:focus { border-color: #5bc0de; background-color: #fff; }
+        .comment-actions { display: flex; justify-content: flex-end; }
+        .btn-submit-comment { background-color: #5bc0de; color: white; border: none; padding: 8px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        .btn-submit-comment:hover { background-color: #31b0d5; }
+
+        .detail-comments { display: flex; flex-direction: column; gap: 20px; }
+        .comment-item { display: flex; gap: 12px; }
+        .comment-body { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+        .comment-bubble { background-color: #f8fafc; padding: 12px 16px; border-radius: 12px; display: inline-flex; flex-direction: column; gap: 4px; border-top-left-radius: 4px; max-width: fit-content; border: 1px solid #f1f5f9; }
+        .comment-author-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .comment-author { font-weight: 700; color: #1e293b; font-size: 14px; }
+        .comment-badge { background-color: #e2e8f0; color: #64748b; font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: 600; }
+        .comment-text { font-size: 14px; color: #334155; line-height: 1.5; }
+        .comment-footer-actions { display: flex; align-items: center; gap: 15px; font-size: 12px; color: #94a3b8; font-weight: 600; margin-left: 5px; }
+        .comment-footer-actions span, .comment-footer-actions button { cursor: pointer; background: none; border: none; color: inherit; font-size: inherit; font-weight: inherit; font-family: inherit; transition: color 0.2s; padding: 0; }
+        .comment-footer-actions span:hover, .comment-footer-actions button:hover { color: #5bc0de; }
+
+        /* =========================================
+           FOOTER
+           ========================================= */
+        .site-footer { background-color: #ffffff; color: #475569; padding: 50px 15px 30px; border-top: 1px solid #e2e8f0; }
+        .footer-container { max-width: 1300px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 40px; }
+        .footer-col-main { flex: 2; min-width: 300px; }
+        .footer-col-links { flex: 1; min-width: 200px; }
+        .footer-col-stats { flex: 1; min-width: 200px; }
+        .footer-desc { font-size: 14px; line-height: 1.6; color: #64748b; margin-top: 15px; margin-bottom: 25px; max-width: 350px; }
+        .footer-copyright { font-size: 13px; color: #94a3b8; }
+        .footer-title { color: #1e293b; font-size: 16px; font-weight: 800; margin-bottom: 20px; text-transform: uppercase; position: relative; padding-bottom: 8px; }
+        .footer-title::after { content: ''; position: absolute; left: 0; bottom: 0; width: 40px; height: 3px; background-color: #5bc0de; border-radius: 2px; }
+        .footer-links { display: flex; flex-direction: column; gap: 12px; font-size: 14px; }
+        .footer-links a { transition: color 0.2s, padding-left 0.2s; }
+        .footer-links a:hover { color: #5bc0de; padding-left: 5px; }
+        .footer-stats { display: flex; flex-direction: column; gap: 15px; }
+        .stat-item { display: flex; align-items: center; gap: 10px; font-size: 14px; background-color: #f8fafc; padding: 12px 15px; border-radius: 8px; border: 1px solid #e2e8f0; transition: border-color 0.2s, background-color 0.2s; }
+        .stat-item:hover { background-color: #fff; border-color: #5bc0de; }
+        .stat-value { color: #5bc0de; font-weight: 700; margin-left: auto; }
+    </style>
+</head>
+<body>
+
+<!-- Header Section -->
+<div class="top-header-wrapper">
+    <div class="top-header">
+        <a href="prototype_home_page.html" class="logo">Manga<span>Blade</span></a>
+        <div class="search-box">
+            <span class="search-icon"><i class="fa fa-search"></i></span>
+            <input type="text" placeholder="Tìm kiếm truyện...">
+        </div>
+        <div class="auth-buttons">
+            <button class="btn-signup">Đăng ký</button>
+            <button class="btn-login">Đăng nhập</button>
+        </div>
+    </div>
+</div>
+
+<header class="bottom-header-wrapper">
+    <div class="bottom-header">
+        <div class="nav-links">
+            <a href="prototype_home_page.html">Trang Chủ</a>
+            <a href="#">Thể Loại</a>
+            <a href="#">Xếp Hạng</a>
+            <a href="#">Tìm Truyện</a>
+            <a href="#">Lịch Sử</a>
+        </div>
+        <div class="menu-right-icons">
+            <div class="theme-toggle-btn" title="Chế độ Sáng/Tối">
+                <i class="fa fa-lightbulb"></i>
+            </div>
+            <div class="user-avatar-circle" title="Tài Khoản"></div>
+        </div>
+    </div>
+</header>
+
+<!-- Main Reader Wrapper with #333 Background -->
+<div class="reader-page-bg">
+    <div class="main-container">
+
+        <!-- Top Chapter Control Card -->
+        <div class="card-box chapter-control">
+            <div class="breadcrumb-top">
+                <a href="prototype_home_page.html">Trang Chủ</a> <span>/</span>
+                <a href="prototype_detail_manga.html">Nhiệm Vụ Đời Thật</a> <span>/</span>
+                <span class="current">Chương 1</span>
+            </div>
+
+            <h1 class="detail-title"><a href="prototype_detail_manga.html">Nhiệm Vụ Đời Thật</a> - Chương 1</h1>
+            <time class="chapter-time">(Cập nhật lúc: 21:41 03/11/2021)</time>
+
+            <div class="top-nav-btns">
+                <button class="btn-nav disabled"><i class="fa fa-arrow-left"></i> Chap trước</button>
+                <button class="btn-nav">Chap sau <i class="fa fa-arrow-right"></i></button>
+            </div>
+        </div>
+
+
+        <div class="chapter_content">
+            <div id="page_0" class="page-chapter">
+                <img src="https://placehold.co/800x1200/fff/666?text=Page+1" alt="Page 1">
+            </div>
+            <div id="page_1" class="page-chapter">
+                <img src="https://placehold.co/800x1200/fff/666?text=Page+2" alt="Page 2">
+            </div>
+            <div id="page_2" class="page-chapter">
+                <img src="https://placehold.co/800x1200/fff/666?text=Page+3" alt="Page 3">
+            </div>
+        </div>
+
+        <!-- Bottom Control Card (Matches the screenshot) -->
+        <div class="card-box bottom-nav">
+            <div class="nav-btns">
+                <button class="btn-nav disabled"><i class="fa fa-arrow-left"></i> Chap trước</button>
+                <button class="btn-nav">Chap sau <i class="fa fa-arrow-right"></i></button>
+            </div>
+
+            <div class="breadcrumb-bottom">
+                <a href="prototype_home_page.html">Trang Chủ</a> <span>/</span>
+                <a href="prototype_detail_manga.html">Nhiệm Vụ Đời Thật</a> <span>/</span>
+                <span class="current">Chương 1</span>
+            </div>
+        </div>
+
+        <!-- Comments Card (Matches the screenshot) -->
+        <div class="card-box comment-section">
+            <h2 class="section-title-small"><i class="fa fa-comments"></i> Bình Luận (184)</h2>
+
+            <div class="comment-input-box">
+                <div class="comment-avatar"><i class="fa fa-user"></i></div>
+                <div class="comment-input-wrapper">
+                    <textarea placeholder="Nhập bình luận của bạn..." rows="3"></textarea>
+                    <div class="comment-actions">
+                        <button class="btn-submit-comment">Gửi bình luận</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-comments">
+                <div class="comment-item">
+                    <div class="comment-avatar" style="background:#bbf7d0; color:#166534; font-size:16px;">Đ</div>
+                    <div class="comment-body">
+                        <div class="comment-bubble">
+                            <div class="comment-author-row">
+                                <span class="comment-author">Zhane</span>
+                                <span class="comment-badge">Chương 4</span>
+                            </div>
+                            <div class="comment-text">Bộ này hay quá, hóng chap mới admin ơi!</div>
+                        </div>
+                        <div class="comment-footer-actions">
+                            <span><i class="fa fa-clock"></i> 4 ngày trước</span>
+                            <button><i class="fa fa-thumbs-up"></i> Thích 5</button>
+                            <button><i class="fa fa-flag"></i> Báo cáo</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Footer Section -->
+<footer class="site-footer">
+    <div class="footer-container">
+        <div class="footer-col-main">
+            <a href="prototype_home_page.html" class="logo">Manga<span>Blade</span></a>
+            <p class="footer-desc">Nền tảng đọc truyện tranh trực tuyến miễn phí, cập nhật nhanh nhất. Đầy đủ các thể loại truyện tranh mới nhất.</p>
+            <p class="footer-copyright">© 2024 MangaBlade - Truyện Hay Online</p>
+        </div>
+
+        <div class="footer-col-links">
+            <h3 class="footer-title">Liên Kết</h3>
+            <div class="footer-links">
+                <a href="#">Về Chúng Tôi</a>
+                <a href="#">Chính Sách Bảo Mật</a>
+                <a href="#">Liên Hệ</a>
+            </div>
+        </div>
+
+        <div class="footer-col-stats">
+            <h3 class="footer-title">Thông Tin</h3>
+            <div class="footer-stats">
+                <div class="stat-item">
+                    <span class="stat-icon"><i class="fa fa-eye"></i></span>
+                    <span class="stat-label">Lượt truy cập:</span>
+                    <span class="stat-value">36,637</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-icon"><i class="fa fa-users"></i></span>
+                    <span class="stat-label">Đang truy cập:</span>
+                    <span class="stat-value">17</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

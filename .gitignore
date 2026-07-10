@@ -35,7 +35,6 @@ frontend/dist/
 frontend/dist-ssr/
 frontend/coverage/
 frontend/.vite/
-frontend/src/prototype/
 logs/
 *.log
 npm-debug.log*
