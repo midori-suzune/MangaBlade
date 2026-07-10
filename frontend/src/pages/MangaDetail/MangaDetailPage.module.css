@@ -64,6 +64,30 @@
     object-fit: cover;
 }
 
+.coverPlaceholder {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    background-color: #f1f5f9;
+    color: #94a3b8;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.errorText {
+    margin: 0;
+    padding: 12px 14px;
+    border: 1px solid #fecdd3;
+    border-radius: 6px;
+    background-color: #fff1f2;
+    color: #be123c;
+    font-size: 14px;
+    font-weight: 700;
+}
+
 .mangaDetails {
     display: flex;
     min-width: 0;
@@ -234,6 +258,14 @@
     flex-shrink: 0;
     color: #94a3b8;
     font-size: 14px;
+}
+
+.emptyText {
+    margin: 0;
+    padding: 18px 20px;
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 600;
 }
 
 .commentInputBox {

@@ -1,9 +1,10 @@
 package com.mangablade.backend.services.mangablade.impl;
 
+import com.mangablade.backend.dtos.response.MangaDetailResponse;
 import com.mangablade.backend.dtos.response.MangaResponse;
 import com.mangablade.backend.mapper.MangaMapper;
-import com.mangablade.backend.repositories.ChapterRepository;
 import com.mangablade.backend.repositories.MangaRepository;
+import com.mangablade.backend.services.mangablade.AuthorService;
 import com.mangablade.backend.services.mangablade.ChapterService;
 import com.mangablade.backend.services.mangablade.MangaService;
 
@@ -20,6 +21,7 @@ public class MangaServiceImpl implements MangaService {
     private final MangaRepository mangaRepository;
     private final ChapterService chapterService;
     private final MangaMapper mangaMapper;
+    private final AuthorService authorService;
 
     @Override
     public List<MangaResponse> fetchAllManga() {
@@ -30,5 +32,29 @@ public class MangaServiceImpl implements MangaService {
             response.getLatestChapter().setChapterNumber(latestChapter);
             return response;
         }).toList();
+    }
+
+    @Override
+    public MangaDetailResponse fetchMangaDetailBySlug(String slug) {
+        var manga = mangaRepository.findBySlug(slug);
+        var chapterList = chapterService.getChapterByMangaId(manga.getId());
+        var list = chapterList.stream().map(chapter -> MangaDetailResponse.Chapter.builder()
+                .chapterNumber(chapter.getChapterNumber())
+                .chapterUrl(chapter.getChapterUrl())
+                .build()).toList();
+        var authors = authorService.findByMangaId(manga.getId()).stream()
+                .map(author -> new MangaDetailResponse.Author(author.getAuthorId(), author.getAuthorName()))
+                .toList();
+
+        return MangaDetailResponse.builder()
+                .title(manga.getTitle())
+                .status(manga.getStatus())
+                .thumbUrl(manga.getThumbUrl())
+                .description(manga.getDescription())
+                .sourceType(manga.getSourceType())
+                .updatedAt(manga.getUpdatedAt())
+                .authors(authors)
+                .chapters(list)
+                .build();
     }
 }

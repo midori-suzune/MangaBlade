@@ -1,49 +1,54 @@
-import {Link, useLocation, useParams} from "react-router-dom";
+import {Link} from "react-router-dom";
 
-import type {MangaResponse} from "../../types/manga.ts";
+import type {MangaDetailResponse} from "../../types/manga.ts";
 import {getTimeAgo} from "../../utils/time.ts";
 import styles from "./MangaDetailPage.module.css";
+import {useEffect, useState} from "react";
+import {getMangaBySlug} from "../../api/mangaApi.ts";
 
-type MangaDetailLocationState = {
-    manga?: MangaResponse;
-};
-
-const fallbackCover = "https://placehold.co/300x400/e2e8f0/64748b?text=MangaBlade";
-
-function titleFromSlug(slug?: string) {
-    if (!slug) {
-        return "Đang cập nhật";
-    }
-
-    return slug
-        .split("-")
-        .filter(Boolean)
-        .map((word) => word.slice(0, 1).toUpperCase() + word.slice(1))
-        .join(" ");
-}
-
-function buildChapterList(latestChapter?: string) {
-    const latest = Number.parseFloat(latestChapter ?? "1");
-    const safeLatest = Number.isFinite(latest) ? latest : 1;
-
-    return Array.from({length: 8}, (_, index) => {
-        const number = Math.max(safeLatest - index, 1);
-        return {
-            chapterNumber: Number.isInteger(number) ? String(number) : number.toFixed(1),
-            updatedAt: index === 0 ? "Mới cập nhật" : `${index + 1} ngày trước`,
-        };
-    });
-}
 
 export function MangaDetailPage() {
-    const {slug} = useParams();
-    const location = useLocation();
-    const state = location.state as MangaDetailLocationState | null;
-    const manga = state?.manga;
-    const title = manga?.title ?? titleFromSlug(slug);
-    const coverUrl = manga?.thumbUrl ?? fallbackCover;
-    const latestChapter = manga?.latestChapter.chapterNumber ?? "1";
-    const chapters = buildChapterList(latestChapter);
+    // const {slug} = useParams<{slug: string}>();
+    const [manga, setManga] = useState<MangaDetailResponse>();
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+
+        const url = window.location.href
+        const slug = url.substring(url.lastIndexOf("/") + 1)
+        console.log(slug)
+        async function loadMangaDetail() {
+            try {
+                setIsLoading(true);
+                setError(null);
+
+                const response = await getMangaBySlug(slug);
+                if (response.success) {
+                    setManga(response.payload);
+                    return;
+                }
+
+                setError("Không thể tải thông tin truyện");
+            } catch {
+                setError("Không thể tải thông tin truyện");
+            } finally {
+                setIsLoading(false);
+            }
+        }
+
+        void loadMangaDetail();
+    }, []);
+
+    const title = manga?.title
+    const thumbUrl = manga?.thumbUrl
+    const updatedAt = manga?.updatedAt
+    const chapters = manga?.chapters ?? []
+    const description = manga?.description
+    const status = manga?.status
+    const sourceType = manga?.sourceType
+    const authors = manga?.authors ?? []
+    const firstChapter = chapters[0]
 
     return (
         <div className={styles.mainContainer}>
@@ -54,9 +59,11 @@ export function MangaDetailPage() {
                     <span className={styles.current}>{title}</span>
                 </nav>
 
+                {error && <p className={styles.errorText}>{error}</p>}
+
                 <section className={styles.mangaInfoBox}>
                     <div className={styles.coverFrame}>
-                        <img src={coverUrl} alt={title} />
+                        {thumbUrl ? <img src={thumbUrl} alt={title} /> : <span className={styles.coverPlaceholder}>Ảnh Bìa</span>}
                     </div>
 
                     <div className={styles.mangaDetails}>
@@ -69,28 +76,33 @@ export function MangaDetailPage() {
                             </li>
                             <li>
                                 <span className={styles.metaLabel}>Tác giả</span>
-                                <span className={styles.metaValue}>Đang cập nhật</span>
+                                <span className={styles.metaValue}>
+                                    {authors.length > 0 ? authors.map((author) => author.name).join(", ") : "Đang cập nhật"}
+                                </span>
                             </li>
                             <li>
                                 <span className={styles.metaLabel}>Cập nhật</span>
-                                <span className={styles.metaValue}>{manga ? getTimeAgo(manga.updatedAt) : "Đang cập nhật"}</span>
+                                <span className={styles.metaValue}>{updatedAt ? updatedAt.split("T")[0] : "Đang cập nhật"}</span>
                             </li>
-                            <li>
-                                <span className={styles.metaLabel}>Chapter mới</span>
-                                <span className={styles.metaValue}>Chapter {latestChapter}</span>
-                            </li>
+
                             <li>
                                 <span className={styles.metaLabel}>Tình trạng</span>
-                                <span className={styles.metaValue}>Đang cập nhật</span>
+                                <span className={styles.metaValue}>{status}</span>
                             </li>
                             <li>
                                 <span className={styles.metaLabel}>Nguồn</span>
-                                <span className={styles.metaValue}>OTruyen</span>
+                                <span className={styles.metaValue}>{sourceType}</span>
                             </li>
                         </ul>
 
                         <div className={styles.mangaActions}>
-                            <button className={`${styles.actionButton} ${styles.readButton}`} type="button">Đọc từ đầu</button>
+                            <a
+                                className={`${styles.actionButton} ${styles.readButton}`}
+                                href={firstChapter?.chapterUrl ?? "#"}
+                                aria-disabled={!firstChapter}
+                            >
+                                Đọc từ đầu
+                            </a>
                             <button className={`${styles.actionButton} ${styles.followButton}`} type="button">Theo dõi</button>
                             <button className={`${styles.actionButton} ${styles.likeButton}`} type="button">Thích</button>
                         </div>
@@ -99,23 +111,24 @@ export function MangaDetailPage() {
 
                 <section className={styles.mangaSection}>
                     <h2 className={styles.sectionTitle}>Giới Thiệu</h2>
-                    <p className={styles.description}>
-                        <strong>{title}</strong> đang được cập nhật trên MangaBlade. Trang chi tiết hiện dùng dữ liệu từ danh sách truyện,
-                        phần mô tả, tác giả, thể loại và danh sách chương đầy đủ sẽ được đồng bộ khi API detail sẵn sàng.
-                    </p>
+                    <p className={styles.description}>{description}</p>
                 </section>
 
                 <section className={styles.mangaSection}>
                     <h2 className={styles.sectionTitle}>Danh Sách Chương</h2>
                     <div className={styles.chapterListContainer}>
-                        <ul className={styles.chapterList}>
-                            {chapters.map((chapter) => (
-                                <li key={chapter.chapterNumber}>
-                                    <a href="#" className={styles.chapterName}>Chương {chapter.chapterNumber}</a>
-                                    <span className={styles.chapterDate}>{chapter.updatedAt}</span>
-                                </li>
-                            ))}
-                        </ul>
+                        {chapters.length > 0 ? (
+                            <ul className={styles.chapterList}>
+                                {chapters.map((chapter) => (
+                                    <li key={`${chapter.chapterNumber}-${chapter.chapterUrl}`}>
+                                        <a href={chapter.chapterUrl} className={styles.chapterName}>Chương {chapter.chapterNumber}</a>
+                                        <span className={styles.chapterDate}>{updatedAt ? getTimeAgo(updatedAt) : "Đang cập nhật"}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className={styles.emptyText}>{isLoading ? "Đang tải danh sách chương..." : "Chưa có chương nào."}</p>
+                        )}
                     </div>
                 </section>
 
@@ -138,7 +151,7 @@ export function MangaDetailPage() {
                                 <div className={styles.commentBubble}>
                                     <div className={styles.commentAuthorRow}>
                                         <span className={styles.commentAuthor}>MangaBlade</span>
-                                        <span className={styles.commentBadge}>Chapter {latestChapter}</span>
+                                        {/*{latestChapter && <span className={styles.commentBadge}>Chapter {latestChapter}</span>}*/}
                                     </div>
                                     <p className={styles.commentText}>Khu vực bình luận mẫu cho trang chi tiết truyện.</p>
                                 </div>

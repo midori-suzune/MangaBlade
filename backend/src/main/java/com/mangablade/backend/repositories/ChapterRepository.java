@@ -1,5 +1,6 @@
 package com.mangablade.backend.repositories;
 
+import com.mangablade.backend.dtos.response.ChapterProjection;
 import com.mangablade.backend.entities.Chapter;
 
 import org.springframework.data.domain.Pageable;
@@ -38,4 +39,14 @@ public interface ChapterRepository extends JpaRepository<Chapter, Long> {
             nativeQuery = true
     )
     String getLatestChapterByMangaId(@Param("mangaId") Long mangaId);
+
+
+    @Query(value = """
+      select c.chapter_number as chapterNumber,
+             c.chapter_api_url as chapterUrl
+      from chapter c
+      where c.manga_id = :id
+      order by cast(c.chapter_number as decimal(10,2)) desc
+      """, nativeQuery = true)
+    List<ChapterProjection> getChaptersByMangaId(@Param("id") Long id);
 }

@@ -10,4 +10,6 @@ import java.util.Optional;
 @Repository
 public interface MangaRepository extends JpaRepository<Manga, Long> {
     Optional<Manga> findByOtruyenMangaId(String id);
+
+    Manga findBySlug(String slug);
 }

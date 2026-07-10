@@ -6,3 +6,24 @@ export type MangaResponse = {
         chapterNumber: string
     }
 }
+
+export interface ChapterResponse {
+    chapterNumber: string,
+    chapterUrl: string,
+}
+
+interface AuthorResponse {
+    id: number,
+    name: string,
+}
+
+export type MangaDetailResponse = {
+    title: string,
+    description: string,
+    sourceType : string ,
+    status : string,
+    thumbUrl: string,
+    updatedAt: string,
+    authors: AuthorResponse[],
+    chapters : ChapterResponse[]
+}
