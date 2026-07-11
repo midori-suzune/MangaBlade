@@ -1,21 +1,17 @@
 import styles from "./Home.module.css";
 import {useEffect, useState} from "react";
 import {Link} from "react-router-dom";
+import {Eye, Heart} from "lucide-react";
 import {getManga} from "../../api/mangaApi.ts";
 import type {MangaResponse} from "../../types/manga.ts";
 import {getTimeAgo} from "../../utils/time.ts";
-import {FeaturedMangaSlider} from "../../components/FeaturedMangaSlider/FeaturedMangaSlider.tsx";
+import {MangaSlider} from "../../components/MangaSlider/MangaSlider.tsx";
 import {toSlug} from "../../utils/slug.ts";
 
 const ranking = [
     {title: "Võ Luyện Đỉnh Phong", views: "15,432,000"},
     {title: "Đại Quản Gia Là Ma Hoàng", views: "9,120,500"},
     {title: "Solo Leveling", views: "8,050,100"},
-];
-
-const history = [
-    {title: "Ta Là Tà Đế", desc: "Đọc tiếp: Chap 150"},
-    {title: "Trọng Sinh Đô Thị Tu Tiên", desc: "Đọc tiếp: Chap 20"},
 ];
 
 const comments = [
@@ -51,15 +47,6 @@ const comments = [
     },
 ];
 
-function EyeIcon() {
-    return (
-        <svg className={styles.inlineIcon} viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z"></path>
-            <circle cx="12" cy="12" r="3"></circle>
-        </svg>
-    )
-}
-
 export function Home() {
 
     const [manga, setManga] = useState<MangaResponse[]>([]);
@@ -83,7 +70,7 @@ export function Home() {
     return (
         <div className={styles.mainContainer}>
             <section className={styles.leftMain}>
-                <FeaturedMangaSlider manga={featuredManga} />
+                <MangaSlider manga={featuredManga} />
 
                 <h2 className={styles.sectionTitle}>Truyện Mới Cập Nhật</h2>
                 {error && <p className={styles.errorText}>{error}</p>}
@@ -110,7 +97,12 @@ export function Home() {
                                 >
                                     {comic.title}
                                 </Link>
-                                <a href="#" className={styles.comicChapter}>{`Chapter ${comic.latestChapter.chapterNumber}`}</a>
+                                <Link
+                                    to={`/manga/${toSlug(comic.title)}/c/${comic.latestChapter.chapterNumber}`}
+                                    className={styles.comicChapter}
+                                >
+                                    {`Chapter ${comic.latestChapter.chapterNumber}`}
+                                </Link>
                             </div>
                         </article>
                     ))}
@@ -130,9 +122,12 @@ export function Home() {
                     <div className={styles.rankingHeader}>
                         <h2 className={styles.sectionTitle}>Bảng Xếp Hạng</h2>
                         <div className={styles.rankingFilters}>
-                            <button className={styles.activeFilter} type="button">Ngày</button>
-                            <button type="button">Tuần</button>
-                            <button type="button">Tháng</button>
+                            <button className={styles.activeFilter} type="button" aria-label="Xếp hạng theo lượt thích" title="Lượt thích">
+                                <Heart className={styles.inlineIcon} aria-hidden="true" />
+                            </button>
+                            <button type="button" aria-label="Xếp hạng theo lượt xem" title="Lượt xem">
+                                <Eye className={styles.inlineIcon} aria-hidden="true" />
+                            </button>
                         </div>
                     </div>
                     <div className={styles.sidebarList}>
@@ -142,7 +137,7 @@ export function Home() {
                                 <span className={styles.sidebarThumb}></span>
                                 <span className={styles.sidebarInfo}>
                                     <span className={styles.sidebarTitle}>{item.title}</span>
-                                    <span className={styles.sidebarDesc}><EyeIcon /> {item.views}</span>
+                                    <span className={styles.sidebarDesc}><Eye className={styles.inlineIcon} aria-hidden="true" /> {item.views}</span>
                                 </span>
                             </a>
                         ))}
@@ -151,17 +146,7 @@ export function Home() {
 
                 <section>
                     <h2 className={styles.sectionTitle}>Lịch Sử Đọc</h2>
-                    <div className={styles.sidebarList}>
-                        {history.map((item) => (
-                            <a href="#" className={styles.sidebarItem} key={item.title}>
-                                <span className={styles.sidebarThumb}></span>
-                                <span className={styles.sidebarInfo}>
-                                    <span className={styles.sidebarTitle}>{item.title}</span>
-                                    <span className={styles.sidebarDesc}>{item.desc}</span>
-                                </span>
-                            </a>
-                        ))}
-                    </div>
+                    <p className={styles.loginRequiredText}>Vui lòng đăng nhập</p>
                 </section>
 
                 <section>

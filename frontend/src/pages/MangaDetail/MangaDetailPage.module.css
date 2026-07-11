@@ -142,14 +142,14 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 140px;
-    padding: 10px 20px;
+    min-width: 120px;
+    padding: 8px 16px;
     border: none;
-    border-radius: 6px;
+    border-radius: 4px;
     color: #ffffff;
     cursor: pointer;
     font-size: 14px;
-    font-weight: 700;
+    font-weight: 500;
     transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s;
 }
 

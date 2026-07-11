@@ -1,14 +1,16 @@
 import {useEffect, useState} from "react";
+import {Link} from "react-router-dom";
 
 import type {MangaResponse} from "../../types/manga.ts";
 import {getTimeAgo} from "../../utils/time.ts";
-import styles from "./FeaturedMangaSlider.module.css";
+import {toSlug} from "../../utils/slug.ts";
+import styles from "./MangaSlider.module.css";
 
-type FeaturedMangaSliderProps = {
+type MangaSliderProps = {
     manga: MangaResponse[];
 };
 
-export function FeaturedMangaSlider({manga}: FeaturedMangaSliderProps) {
+export function MangaSlider({manga}: MangaSliderProps) {
     const [activeSlide, setActiveSlide] = useState(0);
     const activeIndex = manga.length === 0 ? 0 : activeSlide % manga.length;
     const activeManga = manga[activeIndex];
@@ -46,7 +48,13 @@ export function FeaturedMangaSlider({manga}: FeaturedMangaSliderProps) {
                     <p className={styles.heroChapter}>
                         Chapter {activeManga.latestChapter.chapterNumber}
                     </p>
-                    <a href="#" className={styles.heroButton}>Đọc Ngay</a>
+                    <Link
+                        to={`/manga/${toSlug(activeManga.title)}`}
+                        state={{manga: activeManga}}
+                        className={styles.heroButton}
+                    >
+                        Đọc Ngay
+                    </Link>
                 </div>
 
                 <img
