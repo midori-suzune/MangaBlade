@@ -10,4 +10,5 @@ public interface ChapterPageResponse {
      String getMangaTitle() ;
      String getChapterNumber() ;
      String getImageUrl();
+     String getLatestChapterNumber() ;
 }

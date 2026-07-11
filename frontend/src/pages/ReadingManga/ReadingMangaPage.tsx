@@ -89,16 +89,33 @@ export function ReadingMangaPage() {
     const title = chapterPage?.[0]?.mangaTitle ?? "";
     const chapterLabel = `Chương ${chapterPage?.[0]?.chapterNumber ?? chapterNumber ?? ""}`;
     const currentChapter = Number(chapterNumber);
+    const latestChapter = Number(chapterPage?.[0]?.latestChapterNumber);
     let hasPrevChapter = false;
+    let hasNextChapter = false;
 
     if (Number.isFinite(currentChapter)) {
         if (currentChapter > 1) {
             hasPrevChapter = true;
+        } else {
+            hasPrevChapter = false;
         }
+
+        if (Number.isFinite(latestChapter)) {
+            if (currentChapter < latestChapter) {
+                hasNextChapter = true;
+            } else {
+                hasNextChapter = false;
+            }
+        } else {
+            hasNextChapter = false;
+        }
+    } else {
+        hasPrevChapter = false;
+        hasNextChapter = false;
     }
 
     function nextChapterPage(){
-         if (!Number.isFinite(currentChapter)) return;
+         if (!hasNextChapter) return;
          navigate(`/manga/${slug}/c/${currentChapter + 1}`);
     }
 
@@ -133,7 +150,12 @@ export function ReadingMangaPage() {
                             <ArrowLeftIcon />
                             Chap trước
                         </button>
-                        <button className={styles.btnNav} type="button" onClick={nextChapterPage}>
+                        <button
+                            className={`${styles.btnNav} ${!hasNextChapter ? styles.disabled : ""}`}
+                            type="button"
+                            onClick={nextChapterPage}
+                            disabled={!hasNextChapter}
+                        >
                             Chap sau
                             <ArrowRightIcon />
                         </button>
@@ -160,7 +182,12 @@ export function ReadingMangaPage() {
                             <ArrowLeftIcon />
                             Chap trước
                         </button>
-                        <button className={styles.btnNav} type="button" onClick={nextChapterPage}>
+                        <button
+                            className={`${styles.btnNav} ${!hasNextChapter ? styles.disabled : ""}`}
+                            type="button"
+                            onClick={nextChapterPage}
+                            disabled={!hasNextChapter}
+                        >
                             Chap sau
                             <ArrowRightIcon />
                         </button>

@@ -36,8 +36,8 @@ export type ChapterPageResponse = {
     chapterNumber: string,
     imageUrl: string,
     mangaTitle: string,
+    latestChapterNumber: string,
 }
-
 
 
 

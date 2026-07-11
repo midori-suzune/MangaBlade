@@ -13,17 +13,24 @@ import java.util.List;
 @Repository
 public interface ChapterPageRepository extends JpaRepository<ChapterPage, Long> {
 
-    @Query("""
+    @Query(value = """
       select m.title as mangaTitle,
-             c.chapterNumber as chapterNumber,
-             cp.imageUrl as imageUrl
-      from ChapterPage as cp
-      join cp.chapter c
-      join c.manga m
+             c.chapter_number as chapterNumber,
+             cp.image_url as imageUrl,
+             (
+                 select c2.chapter_number
+                 from chapter c2
+                 where c2.manga_id = m.id
+                 order by c2.chapter_sort desc
+                 limit 1
+             ) as latestChapterNumber
+      from chapter_page cp
+      join chapter c on cp.chapter_id = c.id
+      join manga m on c.manga_id = m.id
       where m.slug = :slug
-        and c.chapterNumber = :chapterNumber
-      order by cp.pageNumber asc
-  """)
+        and c.chapter_number = :chapterNumber
+      order by cp.page_number asc
+  """, nativeQuery = true)
     List<ChapterPageResponse> findPagesBySlugAndChapterNumber(
             @Param("slug") String slug,
             @Param("chapterNumber") String chapterNumber
