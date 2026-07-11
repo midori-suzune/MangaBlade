@@ -250,6 +250,11 @@
     transition: color 0.2s;
 }
 
+.visitedChapterName {
+    color: #4f46e5;
+    font-weight: 800;
+}
+
 .chapterName:hover {
     color: #6366f1;
 }
