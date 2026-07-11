@@ -17,6 +17,12 @@ interface AuthorResponse {
     name: string,
 }
 
+interface CategoryResponse {
+    id: number,
+    name: string,
+    slug: string,
+}
+
 export type MangaDetailResponse = {
     title: string,
     description: string,
@@ -25,6 +31,7 @@ export type MangaDetailResponse = {
     thumbUrl: string,
     updatedAt: string,
     authors: AuthorResponse[],
+    categories: CategoryResponse[],
     chapters : ChapterResponse[]
 }
 
@@ -38,7 +45,6 @@ export type ChapterPageResponse = {
     mangaTitle: string,
     latestChapterNumber: string,
 }
-
 
 
 

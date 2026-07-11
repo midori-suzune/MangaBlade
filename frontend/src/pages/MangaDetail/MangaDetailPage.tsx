@@ -31,6 +31,7 @@ function getChapterNumbersFromStorage(key: string) {
 
 const EMPTY_CHAPTERS: MangaDetailResponse["chapters"] = [];
 const EMPTY_AUTHORS: MangaDetailResponse["authors"] = [];
+const EMPTY_CATEGORIES: MangaDetailResponse["categories"] = [];
 
 export function MangaDetailPage() {
     // const {slug} = useParams<{slug: string}>();
@@ -83,6 +84,7 @@ export function MangaDetailPage() {
     const status = manga?.status
     const sourceType = manga?.sourceType
     const authors = manga?.authors ?? EMPTY_AUTHORS
+    const categories = manga?.categories ?? EMPTY_CATEGORIES
     const firstChapter = chapters[chapters.length - 1]
     const descriptionText = useMemo(() => getPlainTextFromHtml(description), [description]);
 
@@ -149,6 +151,12 @@ export function MangaDetailPage() {
                                 <span className={styles.metaLabel}>Tác giả</span>
                                 <span className={styles.metaValue}>
                                     {authors.length > 0 ? authors.map((author) => author.name).join(", ") : "Đang cập nhật"}
+                                </span>
+                            </li>
+                            <li>
+                                <span className={styles.metaLabel}>Thể loại</span>
+                                <span className={styles.metaValue}>
+                                    {categories.length > 0 ? categories.map((category) => category.name).join(", ") : "Đang cập nhật"}
                                 </span>
                             </li>
                             <li>

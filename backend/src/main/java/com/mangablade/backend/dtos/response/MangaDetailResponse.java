@@ -24,6 +24,9 @@ public class MangaDetailResponse {
     private List<Chapter> chapters = new ArrayList<>();
     @Builder.Default
     private List<Author> authors = new ArrayList<>();
+    @Builder.Default
+    private List<Category> categories = new ArrayList<>();
+
     @Getter
     @Setter
     @NoArgsConstructor
@@ -32,6 +35,16 @@ public class MangaDetailResponse {
     public static class Chapter {
         private String chapterNumber;
         private String chapterUrl;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Category {
+        private Long id;
+        private String name;
+        private String slug;
     }
 
     @Getter
