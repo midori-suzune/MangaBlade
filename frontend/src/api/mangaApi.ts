@@ -5,13 +5,27 @@ import type {
   MangaCommentResponse,
   MangaDetailResponse,
   MangaInteractionResponse,
-  MangaResponse
+  MangaRankingResponse,
+  MangaResponse,
+  ReadingHistoryResponse
 } from '../types/manga';
 import type {ApiResponse} from '../types/auth';
 import axiosInstance from './axiosInstance';
 
 export async function getManga(): Promise<ApiResponse<MangaResponse[]>> {
   const response = await axiosInstance.get<ApiResponse<MangaResponse[]>>('/api/v1/manga');
+  return response.data;
+}
+
+export async function getMangaRanking(sort: 'likes' | 'follows'): Promise<ApiResponse<MangaRankingResponse[]>> {
+  const response = await axiosInstance.get<ApiResponse<MangaRankingResponse[]>>('/api/v1/manga/ranking', {
+    params: { sort },
+  });
+  return response.data;
+}
+
+export async function getReadingHistory(): Promise<ApiResponse<ReadingHistoryResponse[]>> {
+  const response = await axiosInstance.get<ApiResponse<ReadingHistoryResponse[]>>('/api/v1/reading-history');
   return response.data;
 }
 

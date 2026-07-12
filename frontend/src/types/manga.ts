@@ -7,6 +7,22 @@ export type MangaResponse = {
     }
 }
 
+export type MangaRankingResponse = {
+    slug: string,
+    title: string,
+    thumbUrl: string,
+    likeCount: number,
+    followCount: number,
+}
+
+export type ReadingHistoryResponse = {
+    mangaSlug: string,
+    mangaTitle: string,
+    thumbUrl: string,
+    chapterNumber: string,
+    lastReadAt: string,
+}
+
 export interface ChapterResponse {
     chapterNumber: string,
     chapterUrl: string,
@@ -70,8 +86,6 @@ export type ChapterPageResponse = {
     previousChapterNumber?: string,
     nextChapterNumber?: string,
 }
-
-
 
 
 

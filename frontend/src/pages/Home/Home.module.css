@@ -240,7 +240,8 @@
 }
 
 .sidebarItem {
-    display: flex;
+    display: grid;
+    grid-template-columns: 25px 88px minmax(0, 1fr);
     align-items: center;
     gap: 12px;
     padding-bottom: 12px;
@@ -274,11 +275,19 @@
 }
 
 .sidebarThumb {
-    width: 55px;
-    height: 55px;
+    width: 88px;
+    height: 118px;
+    overflow: hidden;
     border-radius: 8px;
     background-color: #cbd5e1;
     flex-shrink: 0;
+}
+
+.sidebarThumb img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .sidebarInfo {
@@ -291,12 +300,14 @@
 .sidebarTitle {
     display: -webkit-box;
     overflow: hidden;
+    max-height: 36px;
     color: #1e293b;
     font-size: 14px;
     font-weight: 800;
-    line-height: 1.3;
+    line-height: 18px;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
+    text-overflow: ellipsis;
     transition: color 0.2s;
 }
 
@@ -315,6 +326,69 @@
     font-weight: 600;
     line-height: 1.5;
     text-align: center;
+}
+
+.historyList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.historyItem {
+    display: grid;
+    grid-template-columns: 54px minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.historyItem:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.historyThumb {
+    width: 54px;
+    height: 72px;
+    overflow: hidden;
+    border-radius: 6px;
+    background-color: #cbd5e1;
+}
+
+.historyThumb img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.historyInfo {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.historyTitle {
+    display: -webkit-box;
+    overflow: hidden;
+    color: #1e293b;
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 18px;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.historyMeta {
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.historyItem:hover .historyTitle {
+    color: #6366f1;
 }
 
 .inlineIcon {

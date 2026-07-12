@@ -2,6 +2,7 @@ package com.mangablade.backend.services.mangablade.impl;
 
 import com.mangablade.backend.dtos.response.MangaDetailResponse;
 import com.mangablade.backend.dtos.response.MangaInteractionResponse;
+import com.mangablade.backend.dtos.response.MangaRankingResponse;
 import com.mangablade.backend.dtos.response.MangaResponse;
 import com.mangablade.backend.entities.Favorite;
 import com.mangablade.backend.entities.Manga;
@@ -48,6 +49,15 @@ public class MangaServiceImpl implements MangaService {
             response.getLatestChapter().setChapterNumber(latestChapter);
             return response;
         }).toList();
+    }
+
+    @Override
+    public List<MangaRankingResponse> fetchRanking(String sort) {
+        if ("follows".equalsIgnoreCase(sort)) {
+            return mangaRepository.findTopRankedByFollows();
+        }
+
+        return mangaRepository.findTopRankedByLikes();
     }
 
     @Override

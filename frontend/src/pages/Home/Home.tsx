@@ -2,17 +2,12 @@ import styles from "./Home.module.css";
 import {useEffect, useState} from "react";
 import {Link} from "react-router-dom";
 import {Eye, Heart} from "lucide-react";
-import {getManga} from "../../api/mangaApi.ts";
-import type {MangaResponse} from "../../types/manga.ts";
+import {getManga, getMangaRanking, getReadingHistory} from "../../api/mangaApi.ts";
+import type {MangaRankingResponse, MangaResponse, ReadingHistoryResponse} from "../../types/manga.ts";
 import {getTimeAgo} from "../../utils/time.ts";
 import {MangaSlider} from "../../components/MangaSlider/MangaSlider.tsx";
 import {toSlug} from "../../utils/slug.ts";
-
-const ranking = [
-    {title: "Võ Luyện Đỉnh Phong", views: "15,432,000"},
-    {title: "Đại Quản Gia Là Ma Hoàng", views: "9,120,500"},
-    {title: "Solo Leveling", views: "8,050,100"},
-];
+import {useAuthStore} from "../../stores/authStore.ts";
 
 const comments = [
     {
@@ -50,7 +45,11 @@ const comments = [
 export function Home() {
 
     const [manga, setManga] = useState<MangaResponse[]>([]);
+    const [ranking, setRanking] = useState<MangaRankingResponse[]>([]);
+    const [rankingMode, setRankingMode] = useState<'likes' | 'follows'>('likes');
+    const [readingHistory, setReadingHistory] = useState<ReadingHistoryResponse[]>([]);
     const [error, setError] = useState<string | null>(null);
+    const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
     const featuredManga = manga.slice(0, 5);
 
     useEffect(() => {
@@ -66,6 +65,45 @@ export function Home() {
         }
         void getData();
     }, []);
+
+    useEffect(() => {
+        async function getRanking() {
+            try {
+                const response = await getMangaRanking(rankingMode);
+                if (response.success) {
+                    setRanking(response.payload);
+                }
+            } catch {
+                setRanking([]);
+            }
+        }
+
+        void getRanking();
+    }, [rankingMode]);
+
+    useEffect(() => {
+        async function loadReadingHistory() {
+            if (!isAuthenticated) {
+                setReadingHistory([]);
+                return;
+            }
+
+            try {
+                const response = await getReadingHistory();
+                if (response.success) {
+                    setReadingHistory(response.payload);
+                }
+            } catch {
+                setReadingHistory([]);
+            }
+        }
+
+        void loadReadingHistory();
+    }, [isAuthenticated]);
+
+    function formatRankingCount(value: number) {
+        return new Intl.NumberFormat("en-US").format(value);
+    }
 
     return (
         <div className={styles.mainContainer}>
@@ -122,31 +160,76 @@ export function Home() {
                     <div className={styles.rankingHeader}>
                         <h2 className={styles.sectionTitle}>Bảng Xếp Hạng</h2>
                         <div className={styles.rankingFilters}>
-                            <button className={styles.activeFilter} type="button" aria-label="Xếp hạng theo lượt thích" title="Lượt thích">
+                            <button
+                                className={rankingMode === "likes" ? styles.activeFilter : ""}
+                                type="button"
+                                aria-label="Xếp hạng theo lượt thích"
+                                title="Lượt thích"
+                                onClick={() => setRankingMode("likes")}
+                            >
                                 <Heart className={styles.inlineIcon} aria-hidden="true" />
                             </button>
-                            <button type="button" aria-label="Xếp hạng theo lượt xem" title="Lượt xem">
+                            <button
+                                className={rankingMode === "follows" ? styles.activeFilter : ""}
+                                type="button"
+                                aria-label="Xếp hạng theo lượt theo dõi"
+                                title="Lượt theo dõi"
+                                onClick={() => setRankingMode("follows")}
+                            >
                                 <Eye className={styles.inlineIcon} aria-hidden="true" />
                             </button>
                         </div>
                     </div>
                     <div className={styles.sidebarList}>
                         {ranking.map((item, index) => (
-                            <a href="#" className={styles.sidebarItem} key={item.title}>
+                            <Link to={`/manga/${item.slug}`} className={styles.sidebarItem} key={item.slug}>
                                 <span className={styles.sidebarNumber}>{index + 1}</span>
-                                <span className={styles.sidebarThumb}></span>
+                                <span className={styles.sidebarThumb}>
+                                    {item.thumbUrl && <img src={item.thumbUrl} alt={item.title} />}
+                                </span>
                                 <span className={styles.sidebarInfo}>
                                     <span className={styles.sidebarTitle}>{item.title}</span>
-                                    <span className={styles.sidebarDesc}><Eye className={styles.inlineIcon} aria-hidden="true" /> {item.views}</span>
+                                    <span className={styles.sidebarDesc}>
+                                        {rankingMode === "likes" ? (
+                                            <Heart className={styles.inlineIcon} aria-hidden="true" />
+                                        ) : (
+                                            <Eye className={styles.inlineIcon} aria-hidden="true" />
+                                        )}
+                                        {formatRankingCount(rankingMode === "likes" ? item.likeCount : item.followCount)}
+                                    </span>
                                 </span>
-                            </a>
+                            </Link>
                         ))}
                     </div>
                 </section>
 
                 <section>
                     <h2 className={styles.sectionTitle}>Lịch Sử Đọc</h2>
-                    <p className={styles.loginRequiredText}>Vui lòng đăng nhập</p>
+                    {!isAuthenticated ? (
+                        <p className={styles.loginRequiredText}>Vui lòng đăng nhập</p>
+                    ) : readingHistory.length > 0 ? (
+                        <div className={styles.historyList}>
+                            {readingHistory.map((item) => (
+                                <Link
+                                    className={styles.historyItem}
+                                    to={`/manga/${item.mangaSlug}/c/${item.chapterNumber}`}
+                                    key={`${item.mangaSlug}-${item.chapterNumber}`}
+                                >
+                                    <span className={styles.historyThumb}>
+                                        {item.thumbUrl && <img src={item.thumbUrl} alt={item.mangaTitle} />}
+                                    </span>
+                                    <span className={styles.historyInfo}>
+                                        <span className={styles.historyTitle}>{item.mangaTitle}</span>
+                                        <span className={styles.historyMeta}>
+                                            Chương {item.chapterNumber}
+                                        </span>
+                                    </span>
+                                </Link>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className={styles.loginRequiredText}>Chưa có lịch sử đọc</p>
+                    )}
                 </section>
 
                 <section>

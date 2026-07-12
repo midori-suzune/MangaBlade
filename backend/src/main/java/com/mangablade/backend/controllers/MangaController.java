@@ -6,6 +6,7 @@ import com.mangablade.backend.dtos.response.ApiResponse;
 import com.mangablade.backend.dtos.response.MangaCommentResponse;
 import com.mangablade.backend.dtos.response.MangaDetailResponse;
 import com.mangablade.backend.dtos.response.MangaInteractionResponse;
+import com.mangablade.backend.dtos.response.MangaRankingResponse;
 import com.mangablade.backend.dtos.response.MangaResponse;
 import com.mangablade.backend.entities.User;
 import com.mangablade.backend.services.mangablade.CommentService;
@@ -37,6 +38,20 @@ public class MangaController {
                         .success(true)
                         .message("success")
                         .payload(manga)
+                        .build()
+        );
+    }
+
+    @GetMapping("/ranking")
+    public ResponseEntity<ApiResponse<List<MangaRankingResponse>>> getRanking(
+            @RequestParam(defaultValue = "likes") String sort
+    ) {
+        var ranking = mangaService.fetchRanking(sort);
+        return ResponseEntity.ok(
+                ApiResponse.<List<MangaRankingResponse>>builder()
+                        .success(true)
+                        .message("success")
+                        .payload(ranking)
                         .build()
         );
     }

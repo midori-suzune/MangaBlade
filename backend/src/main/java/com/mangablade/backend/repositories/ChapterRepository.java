@@ -10,10 +10,23 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ChapterRepository extends JpaRepository<Chapter, Long> {
     List<Chapter> findAllByMangaId(Long mangaId);
+
+    @Query("""
+            select c
+            from Chapter c
+            join c.manga m
+            where m.slug = :slug
+              and c.chapterNumber = :chapterNumber
+            """)
+    Optional<Chapter> findByMangaSlugAndChapterNumber(
+            @Param("slug") String slug,
+            @Param("chapterNumber") String chapterNumber
+    );
 
     @Query("""
             SELECT c
