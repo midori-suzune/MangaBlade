@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
 
@@ -67,5 +68,10 @@ public class ChapterServiceImpl implements ChapterService {
     @Override
     public List<ReadingHistoryResponse> fetchReadingHistory(Long userId) {
         return readingHistoryRepository.findRecentByUserId(userId, PageRequest.of(0, 5));
+    }
+
+    @Override
+    public Optional<ReadingHistoryResponse> fetchLatestReadingHistory(Long userId, String slug) {
+        return readingHistoryRepository.findLatestByUserIdAndMangaSlug(userId, slug);
     }
 }

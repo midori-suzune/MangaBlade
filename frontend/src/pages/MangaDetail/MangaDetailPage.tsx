@@ -1,11 +1,12 @@
 import {Link, useParams} from "react-router-dom";
 
-import type {MangaCommentResponse, MangaDetailResponse} from "../../types/manga.ts";
+import type {MangaCommentResponse, MangaDetailResponse, ReadingHistoryResponse} from "../../types/manga.ts";
 import {getTimeAgo} from "../../utils/time.ts";
 import styles from "./MangaDetailPage.module.css";
 import {useEffect, useLayoutEffect, useMemo, useRef, useState} from "react";
 import {
     createMangaComment,
+    getLatestReadingHistory,
     getMangaBySlug,
     getMangaComments,
     toggleMangaFollow,
@@ -57,6 +58,7 @@ export function MangaDetailPage() {
     const [error, setError] = useState<string | null>(null);
     const [actionError, setActionError] = useState<string | null>(null);
     const [comments, setComments] = useState<MangaCommentResponse[]>([]);
+    const [continueHistory, setContinueHistory] = useState<ReadingHistoryResponse | null>(null);
     const [commentContent, setCommentContent] = useState("");
     const [commentError, setCommentError] = useState<string | null>(null);
     const [replyParentId, setReplyParentId] = useState<number | null>(null);
@@ -122,6 +124,24 @@ export function MangaDetailPage() {
 
         void loadComments();
     }, [slug]);
+
+    useEffect(() => {
+        async function loadContinueHistory() {
+            if (!isAuthenticated) {
+                setContinueHistory(null);
+                return;
+            }
+
+            try {
+                const response = await getLatestReadingHistory(slug);
+                setContinueHistory(response.success ? response.payload : null);
+            } catch {
+                setContinueHistory(null);
+            }
+        }
+
+        void loadContinueHistory();
+    }, [isAuthenticated, slug]);
 
     const title = manga?.title
     const thumbUrl = manga?.thumbUrl
@@ -353,6 +373,14 @@ export function MangaDetailPage() {
                             >
                                 Đọc từ đầu
                             </Link>
+                            {continueHistory && (
+                                <Link
+                                    className={`${styles.actionButton} ${styles.continueButton}`}
+                                    to={`/manga/${slug}/c/${continueHistory.chapterNumber}`}
+                                >
+                                    Đọc tiếp
+                                </Link>
+                            )}
                             <button
                                 className={`${styles.actionButton} ${styles.followButton} ${manga?.followed ? styles.activeActionButton : ""}`}
                                 type="button"

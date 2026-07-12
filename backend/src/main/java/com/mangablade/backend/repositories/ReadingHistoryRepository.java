@@ -38,4 +38,25 @@ public interface ReadingHistoryRepository extends JpaRepository<ReadingHistory, 
             order by rh.lastReadAt desc
             """)
     List<ReadingHistoryResponse> findRecentByUserId(@Param("userId") Long userId, Pageable pageable);
+
+    @Query("""
+            select new com.mangablade.backend.dtos.response.ReadingHistoryResponse(
+                m.slug,
+                m.title,
+                m.thumbUrl,
+                c.chapterNumber,
+                rh.lastReadAt
+            )
+            from ReadingHistory rh
+            join rh.manga m
+            join rh.chapter c
+            where rh.userId = :userId
+              and m.slug = :slug
+            order by rh.lastReadAt desc
+            limit 1
+            """)
+    Optional<ReadingHistoryResponse> findLatestByUserIdAndMangaSlug(
+            @Param("userId") Long userId,
+            @Param("slug") String slug
+    );
 }

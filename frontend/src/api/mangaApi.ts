@@ -29,6 +29,11 @@ export async function getReadingHistory(): Promise<ApiResponse<ReadingHistoryRes
   return response.data;
 }
 
+export async function getLatestReadingHistory(slug: string): Promise<ApiResponse<ReadingHistoryResponse | null>> {
+  const response = await axiosInstance.get<ApiResponse<ReadingHistoryResponse | null>>(`/api/v1/reading-history/${slug}`);
+  return response.data;
+}
+
 export async function getMangaBySlug(slug: string): Promise<ApiResponse<MangaDetailResponse>> {
   const response = await axiosInstance.post<ApiResponse<MangaDetailResponse>>(`/api/v1/manga/${slug}`);
   return response.data;

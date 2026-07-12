@@ -8,6 +8,7 @@ import com.mangablade.backend.services.mangablade.ChapterService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,6 +30,21 @@ public class ReadingHistoryController {
         var history = chapterService.fetchReadingHistory(user.getId());
         return ResponseEntity.ok(
                 ApiResponse.<List<ReadingHistoryResponse>>builder()
+                        .success(true)
+                        .message("success")
+                        .payload(history)
+                        .build()
+        );
+    }
+
+    @GetMapping("/{slug}")
+    public ResponseEntity<ApiResponse<ReadingHistoryResponse>> getLatestReadingHistory(
+            @PathVariable String slug,
+            @AuthenticationPrincipal User user
+    ) {
+        var history = chapterService.fetchLatestReadingHistory(user.getId(), slug).orElse(null);
+        return ResponseEntity.ok(
+                ApiResponse.<ReadingHistoryResponse>builder()
                         .success(true)
                         .message("success")
                         .payload(history)
