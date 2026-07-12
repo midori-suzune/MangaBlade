@@ -23,6 +23,17 @@ export type ReadingHistoryResponse = {
     lastReadAt: string,
 }
 
+export type RecentCommentResponse = {
+    id: number,
+    content: string,
+    createdAt: string,
+    userId: number,
+    username: string,
+    mangaSlug: string,
+    mangaTitle: string,
+    chapterNumber?: string | null,
+}
+
 export interface ChapterResponse {
     chapterNumber: string,
     chapterUrl: string,
@@ -86,7 +97,6 @@ export type ChapterPageResponse = {
     previousChapterNumber?: string,
     nextChapterNumber?: string,
 }
-
 
 
 

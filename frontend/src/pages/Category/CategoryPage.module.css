@@ -1,29 +1,15 @@
 .mainContainer {
   max-width: 1300px;
   margin: 30px auto;
-  display: flex;
-  align-items: flex-start;
-  gap: 24px;
   padding: 0 15px;
 }
 
 .leftMain {
-  flex: 7.5;
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.05);
-  padding: 24px;
   min-width: 0;
-}
-
-.rightMain {
-  flex: 2.5;
+  padding: 20px;
   background: #ffffff;
   border-radius: 12px;
   box-shadow: 0 2px 10px rgba(99, 102, 241, 0.05);
-  padding: 20px;
-  height: fit-content;
-  min-width: 280px;
 }
 
 .pageTitle {
@@ -46,37 +32,50 @@
   line-height: 1.6;
 }
 
-.categoriesSelector {
-  padding: 18px;
+.filterPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px;
   border: 1px solid #eaeaea;
   border-radius: 8px;
   margin-bottom: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
   background-color: #ffffff;
 }
 
-.selectorLabel {
-  font-weight: 700;
-  color: #1e293b;
-  font-size: 15px;
+.filterRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
 }
 
-.categoriesList {
+.filterGroupLabel {
+  width: 100px;
+  flex-shrink: 0;
+  padding-top: 8px;
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.categoriesList,
+.statusFilters,
+.sortFilters {
   display: flex;
+  flex: 1;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 8px 10px;
 }
 
 .categoryTag {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 14px;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
-  background-color: #f8fafc;
+  background-color: #ffffff;
   color: #475569;
   font-size: 13px;
   font-weight: 600;
@@ -90,80 +89,35 @@
   border-color: #cbd5e1;
 }
 
+.categoryTag:focus {
+  outline: none;
+  border-color: #e2e8f0;
+}
+
+.categoryTag:active {
+  border-color: #e2e8f0;
+}
+
 .activeTag {
-  border-color: #6366f1 !important;
-  color: #6366f1 !important;
-  background-color: #eef2ff !important;
-}
-
-.checkbox {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 14px;
-  height: 14px;
-  border: 1.5px solid #94a3b8;
-  border-radius: 3px;
-  background-color: #ffffff;
-  color: transparent;
-  transition: all 0.2s;
-  flex-shrink: 0;
-}
-
-.checked {
-  background-color: #6366f1 !important;
-  border-color: #6366f1 !important;
-  color: #ffffff !important;
-}
-
-.filterPanel {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.filterTitle {
-  font-size: 15px;
-  font-weight: 800;
-  color: #1e293b;
-  text-transform: uppercase;
-  border-bottom: 2px solid #6366f1;
-  padding-bottom: 8px;
-  margin-bottom: 4px;
-}
-
-.filterGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.filterGroupLabel {
-  font-weight: 700;
-  font-size: 13px;
-  color: #475569;
-}
-
-.statusFilters {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-  align-items: stretch;
+  border-color: #e2e8f0 !important;
+  background-color: #ffffff !important;
+  color: #475569 !important;
 }
 
 .filterBtn {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 8px 4px;
+  min-height: 36px;
+  padding: 0 14px;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
-  background-color: transparent;
+  background-color: #ffffff;
   color: #475569;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 600;
   text-align: center;
   line-height: 1.2;
 }
@@ -173,14 +127,23 @@
   color: #1e293b;
 }
 
+.filterBtn:focus {
+  outline: none;
+  border-color: #e2e8f0;
+}
+
+.filterBtn:active {
+  border-color: #e2e8f0;
+}
+
 .activeStatus {
-  background-color: #eef2ff !important;
-  color: #6366f1 !important;
-  border-color: #6366f1 !important;
+  background-color: #f97316 !important;
+  color: #ffffff !important;
+  border-color: #f97316 !important;
 }
 
 .authorInput {
-  width: 100%;
+  width: min(220px, 100%);
   border: 1px solid #e2e8f0;
   border-radius: 6px;
   padding: 8px 12px;
@@ -195,21 +158,37 @@
   border-color: #6366f1;
 }
 
-.sortFilters {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 6px;
+.filterSelect {
+  width: auto;
+  min-width: 150px;
+  max-width: 220px;
+  min-height: 36px;
+  padding: 0 38px 0 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background-color: #ffffff;
+  color: #334155;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  outline: none;
+}
+
+.filterSelect:focus {
+  border-color: #e2e8f0;
 }
 
 .sortBtn {
-  padding: 6px 8px;
+  min-height: 36px;
+  padding: 0 14px;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
-  background-color: #f8fafc;
+  background-color: #ffffff;
   color: #64748b;
   cursor: pointer;
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 600;
   text-align: center;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
@@ -222,17 +201,26 @@
   color: #1e293b;
 }
 
-.activeSort {
-  background-color: #eef2ff !important;
-  color: #6366f1 !important;
-  border-color: #6366f1 !important;
+.sortBtn:focus {
+  outline: none;
+  border-color: #e2e8f0;
 }
 
-.actionButtons {
+.sortBtn:active {
+  border-color: #e2e8f0;
+}
+
+.activeSort {
+  background-color: #ffffff !important;
+  color: #64748b !important;
+  border-color: #e2e8f0 !important;
+}
+
+.filterActions {
   display: flex;
-  flex-direction: column;
+  justify-content: flex-end;
   gap: 8px;
-  margin-top: 10px;
+  margin-top: 4px;
 }
 
 .applyBtn {
@@ -379,35 +367,27 @@
 
 @media (max-width: 860px) {
   .mainContainer {
-    flex-direction: column;
     margin-top: 15px;
   }
 
-  .leftMain,
-  .rightMain {
-    width: 100%;
+  .filterRow {
+    flex-direction: column;
+    gap: 8px;
   }
 
-  .rightMain {
-    min-width: 0;
+  .filterGroupLabel {
+    width: auto;
+    padding-top: 0;
   }
 
-  .sortFilters {
-    grid-template-columns: repeat(5, 1fr);
-  }
-  
-  .statusFilters {
-    flex-direction: row;
-  }
-  
-  .filterBtn {
-    flex: 1;
+  .filterActions {
+    justify-content: flex-start;
   }
 }
 
 @media (max-width: 600px) {
-  .sortFilters {
-    grid-template-columns: repeat(3, 1fr);
+  .filterPanel {
+    padding: 14px;
   }
 }
 
@@ -416,12 +396,12 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   
-  .sortFilters {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .statusFilters {
-    flex-direction: column;
+  .categoryTag,
+  .filterBtn,
+  .sortBtn {
+    min-height: 34px;
+    padding: 0 10px;
+    font-size: 12px;
   }
 }
 

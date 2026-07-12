@@ -2,55 +2,40 @@ import styles from "./Home.module.css";
 import {useEffect, useState} from "react";
 import {Link} from "react-router-dom";
 import {Eye, Heart} from "lucide-react";
-import {getManga, getMangaRanking, getReadingHistory} from "../../api/mangaApi.ts";
-import type {MangaRankingResponse, MangaResponse, ReadingHistoryResponse} from "../../types/manga.ts";
+import {getManga, getMangaRanking, getReadingHistory, getRecentUserComments} from "../../api/mangaApi.ts";
+import type {
+    MangaRankingResponse,
+    MangaResponse,
+    ReadingHistoryResponse,
+    RecentCommentResponse
+} from "../../types/manga.ts";
 import {getTimeAgo} from "../../utils/time.ts";
 import {MangaSlider} from "../../components/MangaSlider/MangaSlider.tsx";
 import {toSlug} from "../../utils/slug.ts";
 import {useAuthStore} from "../../stores/authStore.ts";
 
-const comments = [
-    {
-        author: "DarkKnight99",
-        time: "5 phút trước",
-        text: "Trận này main đánh ảo quá, hóng chap sau xem ông trưởng lão xử lý sao.",
-        comic: "Võ Luyện Đỉnh Phong - Chap 3512",
-    },
-    {
-        author: "HoaHongGai",
-        time: "12 phút trước",
-        text: "Nét vẽ bộ này ngày càng đẹp lên, nội dung cũng cuốn nữa. Cảm ơn nhóm dịch nhiều.",
-        comic: "Đại Quản Gia Là Ma Hoàng - Chap 450",
-    },
-    {
-        author: "WibuChua",
-        time: "30 phút trước",
-        text: "Cho mình hỏi lịch ra chap mới của bộ này là thứ mấy hàng tuần vậy mọi người?",
-        comic: "Solo Leveling - Chap 179",
-    },
-    {
-        author: "SherlockHomeless",
-        time: "2 giờ trước",
-        text: "Theo kinh nghiệm đọc truyện của tôi thì nhân vật này có thể là trùm cuối giả dạng.",
-        comic: "Toàn Trí Độc Giả - Chap 98",
-    },
-    {
-        author: "TrinhThamPho",
-        time: "2 giờ trước",
-        text: "Theo kinh nghiệm đọc truyện của tôi thì nhân vật này có thể là trùm cuối giả dạng.",
-        comic: "Toàn Trí Độc Giả - Chap 98",
-    },
-];
+function getRandomManga(items: MangaResponse[], limit: number) {
+    const shuffledItems = [...items];
+
+    for (let index = shuffledItems.length - 1; index > 0; index--) {
+        const randomIndex = Math.floor(Math.random() * (index + 1));
+        [shuffledItems[index], shuffledItems[randomIndex]] = [shuffledItems[randomIndex], shuffledItems[index]];
+    }
+
+    return shuffledItems.slice(0, limit);
+}
 
 export function Home() {
 
     const [manga, setManga] = useState<MangaResponse[]>([]);
     const [ranking, setRanking] = useState<MangaRankingResponse[]>([]);
+    const [likedRanking, setLikedRanking] = useState<MangaRankingResponse[]>([]);
+    const [featuredManga, setFeaturedManga] = useState<MangaResponse[]>([]);
     const [rankingMode, setRankingMode] = useState<'likes' | 'follows'>('likes');
     const [readingHistory, setReadingHistory] = useState<ReadingHistoryResponse[]>([]);
+    const [recentComments, setRecentComments] = useState<RecentCommentResponse[]>([]);
     const [error, setError] = useState<string | null>(null);
     const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-    const featuredManga = manga.slice(0, 5);
 
     useEffect(() => {
         async function getData() {
@@ -82,6 +67,41 @@ export function Home() {
     }, [rankingMode]);
 
     useEffect(() => {
+        async function getLikedRanking() {
+            try {
+                const response = await getMangaRanking("likes");
+                if (response.success) {
+                    setLikedRanking(response.payload);
+                }
+            } catch {
+                setLikedRanking([]);
+            }
+        }
+
+        void getLikedRanking();
+    }, []);
+
+    useEffect(() => {
+        if (manga.length === 0) {
+            setFeaturedManga([]);
+            return;
+        }
+
+        const rankedManga = likedRanking
+            .map((rankedItem) => manga.find((comic) => (
+                toSlug(comic.title) === rankedItem.slug || comic.title === rankedItem.title
+            )))
+            .filter((comic): comic is MangaResponse => Boolean(comic));
+
+        if (rankedManga.length > 0) {
+            setFeaturedManga(getRandomManga(rankedManga, 5));
+            return;
+        }
+
+        setFeaturedManga(getRandomManga(manga, 5));
+    }, [likedRanking, manga]);
+
+    useEffect(() => {
         async function loadReadingHistory() {
             if (!isAuthenticated) {
                 setReadingHistory([]);
@@ -100,6 +120,21 @@ export function Home() {
 
         void loadReadingHistory();
     }, [isAuthenticated]);
+
+    useEffect(() => {
+        async function loadRecentComments() {
+            try {
+                const response = await getRecentUserComments();
+                if (response.success) {
+                    setRecentComments(response.payload);
+                }
+            } catch {
+                setRecentComments([]);
+            }
+        }
+
+        void loadRecentComments();
+    }, []);
 
     function formatRankingCount(value: number) {
         return new Intl.NumberFormat("en-US").format(value);
@@ -235,19 +270,31 @@ export function Home() {
                 <section>
                     <h2 className={styles.sectionTitle}>Bình Luận Mới</h2>
                     <div className={styles.commentList}>
-                        {comments.map((comment) => (
-                            <article className={styles.commentItem} key={`${comment.author}-${comment.comic}`}>
-                                <div className={styles.commentAvatar}>{comment.author.slice(0, 1)}</div>
+                        {recentComments.map((comment) => {
+                            const commentTarget = comment.chapterNumber
+                                ? `/manga/${comment.mangaSlug}/c/${comment.chapterNumber}`
+                                : `/manga/${comment.mangaSlug}`;
+                            const comicLabel = comment.chapterNumber
+                                ? `${comment.mangaTitle} - Chương ${comment.chapterNumber}`
+                                : comment.mangaTitle;
+
+                            return (
+                            <article className={styles.commentItem} key={comment.id}>
+                                <div className={styles.commentAvatar}>{comment.username.slice(0, 1).toUpperCase()}</div>
                                 <div className={styles.commentContent}>
                                     <div className={styles.commentHeader}>
-                                        <span className={styles.commentAuthor}>{comment.author}</span>
-                                        <span className={styles.commentTime}>{comment.time}</span>
+                                        <span className={styles.commentAuthor}>{comment.username}</span>
+                                        <span className={styles.commentTime}>{getTimeAgo(comment.createdAt)}</span>
                                     </div>
-                                    <p className={styles.commentText}>{comment.text}</p>
-                                    <a href="#" className={styles.commentComicTitle}>{comment.comic}</a>
+                                    <p className={styles.commentText}>{comment.content}</p>
+                                    <Link to={commentTarget} className={styles.commentComicTitle}>{comicLabel}</Link>
                                 </div>
                             </article>
-                        ))}
+                            );
+                        })}
+                        {recentComments.length === 0 && (
+                            <p className={styles.loginRequiredText}>Chưa có bình luận mới</p>
+                        )}
                     </div>
                 </section>
             </aside>

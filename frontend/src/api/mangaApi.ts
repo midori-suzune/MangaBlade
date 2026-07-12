@@ -7,6 +7,7 @@ import type {
   MangaInteractionResponse,
   MangaRankingResponse,
   MangaResponse,
+  RecentCommentResponse,
   ReadingHistoryResponse
 } from '../types/manga';
 import type {ApiResponse} from '../types/auth';
@@ -21,6 +22,11 @@ export async function getMangaRanking(sort: 'likes' | 'follows'): Promise<ApiRes
   const response = await axiosInstance.get<ApiResponse<MangaRankingResponse[]>>('/api/v1/manga/ranking', {
     params: { sort },
   });
+  return response.data;
+}
+
+export async function getRecentUserComments(): Promise<ApiResponse<RecentCommentResponse[]>> {
+  const response = await axiosInstance.get<ApiResponse<RecentCommentResponse[]>>('/api/v1/manga/comments/recent-users');
   return response.data;
 }
 

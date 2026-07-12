@@ -2,6 +2,7 @@ package com.mangablade.backend.services.mangablade;
 
 import com.mangablade.backend.dtos.request.CreateCommentRequest;
 import com.mangablade.backend.dtos.response.MangaCommentResponse;
+import com.mangablade.backend.dtos.response.RecentCommentResponse;
 import com.mangablade.backend.entities.Comment;
 import com.mangablade.backend.entities.Manga;
 import com.mangablade.backend.entities.User;
@@ -28,6 +29,10 @@ public class CommentService {
 
     private final CommentRepository commentRepository;
     private final MangaRepository mangaRepository;
+
+    public List<RecentCommentResponse> findRecentDistinctUserComments() {
+        return commentRepository.findRecentDistinctUserComments(CommentStatus.VISIBLE);
+    }
 
     public List<MangaCommentResponse> findByMangaSlug(String slug) {
         var manga = findMangaBySlugOrThrow(slug);

@@ -8,6 +8,7 @@ import com.mangablade.backend.dtos.response.MangaDetailResponse;
 import com.mangablade.backend.dtos.response.MangaInteractionResponse;
 import com.mangablade.backend.dtos.response.MangaRankingResponse;
 import com.mangablade.backend.dtos.response.MangaResponse;
+import com.mangablade.backend.dtos.response.RecentCommentResponse;
 import com.mangablade.backend.entities.User;
 import com.mangablade.backend.services.mangablade.CommentService;
 import com.mangablade.backend.services.mangablade.MangaService;
@@ -52,6 +53,18 @@ public class MangaController {
                         .success(true)
                         .message("success")
                         .payload(ranking)
+                        .build()
+        );
+    }
+
+    @GetMapping("/comments/recent-users")
+    public ResponseEntity<ApiResponse<List<RecentCommentResponse>>> getRecentUserComments() {
+        var comments = commentService.findRecentDistinctUserComments();
+        return ResponseEntity.ok(
+                ApiResponse.<List<RecentCommentResponse>>builder()
+                        .success(true)
+                        .message("success")
+                        .payload(comments)
                         .build()
         );
     }

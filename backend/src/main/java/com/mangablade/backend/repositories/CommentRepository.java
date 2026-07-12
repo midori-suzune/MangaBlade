@@ -1,5 +1,6 @@
 package com.mangablade.backend.repositories;
 
+import com.mangablade.backend.dtos.response.RecentCommentResponse;
 import com.mangablade.backend.entities.Comment;
 import com.mangablade.backend.enums.CommentStatus;
 
@@ -39,4 +40,31 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             @Param("parentIds") List<Long> parentIds,
             @Param("status") CommentStatus status
     );
+
+    @Query("""
+            select new com.mangablade.backend.dtos.response.RecentCommentResponse(
+                c.id,
+                c.content,
+                c.createdAt,
+                u.id,
+                u.username,
+                m.slug,
+                m.title,
+                ch.chapterNumber
+            )
+            from Comment c
+            join c.user u
+            join c.manga m
+            left join c.chapter ch
+            where c.status = :status
+              and c.createdAt = (
+                  select max(c2.createdAt)
+                  from Comment c2
+                  where c2.userId = c.userId
+                    and c2.status = :status
+              )
+            order by c.createdAt desc
+            limit 5
+            """)
+    List<RecentCommentResponse> findRecentDistinctUserComments(@Param("status") CommentStatus status);
 }
