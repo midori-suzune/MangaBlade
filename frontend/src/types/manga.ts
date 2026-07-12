@@ -30,9 +30,32 @@ export type MangaDetailResponse = {
     status : string,
     thumbUrl: string,
     updatedAt: string,
+    followed: boolean,
+    liked: boolean,
     authors: AuthorResponse[],
     categories: CategoryResponse[],
     chapters : ChapterResponse[]
+}
+
+export type MangaInteractionResponse = {
+    followed: boolean,
+    liked: boolean,
+}
+
+export type MangaCommentResponse = {
+    id: number,
+    content: string,
+    createdAt: string,
+    user: {
+        id: number,
+        username: string,
+    },
+    replies: MangaCommentResponse[],
+}
+
+export type CreateCommentRequest = {
+    content: string,
+    parentId?: number,
 }
 
 export type ChapterPageRequest = {
@@ -44,12 +67,9 @@ export type ChapterPageResponse = {
     imageUrl: string,
     mangaTitle: string,
     latestChapterNumber: string,
+    previousChapterNumber?: string,
+    nextChapterNumber?: string,
 }
-
-
-
-
-
 
 
 

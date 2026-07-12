@@ -11,5 +11,5 @@ import java.util.Optional;
 public interface MangaRepository extends JpaRepository<Manga, Long> {
     Optional<Manga> findByOtruyenMangaId(String id);
 
-    Manga findBySlug(String slug);
+    Optional<Manga> findBySlug(String slug);
 }
