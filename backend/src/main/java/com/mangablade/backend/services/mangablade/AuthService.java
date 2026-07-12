@@ -1,15 +1,19 @@
 package com.mangablade.backend.services.mangablade;
 
 import com.mangablade.backend.configurations.JwtService;
+import com.mangablade.backend.dtos.request.GoogleLoginRequest;
 import com.mangablade.backend.dtos.request.LoginRequest;
 import com.mangablade.backend.dtos.request.RegisterRequest;
 import com.mangablade.backend.dtos.request.ForgotPasswordRequest;
+import com.mangablade.backend.dtos.request.ResetPasswordRequest;
 import com.mangablade.backend.dtos.request.ResetPasswordRequest;
 import com.mangablade.backend.dtos.response.AuthResponse;
 import com.mangablade.backend.entities.User;
 import com.mangablade.backend.entities.PasswordResetToken;
 import com.mangablade.backend.exceptions.AppException;
 import com.mangablade.backend.exceptions.ErrorCode;
+import com.mangablade.backend.enums.AuthProvider;
+import com.mangablade.backend.enums.UserRole;
 import com.mangablade.backend.mapper.UserMapper;
 import com.mangablade.backend.repositories.UserRepository;
 import com.mangablade.backend.repositories.PasswordResetTokenRepository;
@@ -18,6 +22,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -35,6 +40,9 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
+
+    @Value("${google.client-id}")
+    private String googleClientId;
 
     public AuthResponse login(LoginRequest loginRequest) {
         authenticationManager.authenticate(
@@ -63,7 +71,80 @@ public class AuthService {
 
         var user = userMapper.toEntity(registerRequest);
         user.setPasswordHash(passwordEncoder.encode(registerRequest.getPassword()));
+        user.setAuthProvider(AuthProvider.LOCAL);
         userRepository.save(user);
+    }
+
+    public AuthResponse googleLogin(GoogleLoginRequest request) {
+        try {
+            // Call Google userinfo API with the access token
+            org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+            org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+            headers.setBearerAuth(request.getCredential());
+            org.springframework.http.HttpEntity<String> entity = new org.springframework.http.HttpEntity<>(headers);
+
+            org.springframework.http.ResponseEntity<java.util.Map> response = restTemplate.exchange(
+                    "https://www.googleapis.com/oauth2/v3/userinfo",
+                    org.springframework.http.HttpMethod.GET,
+                    entity,
+                    java.util.Map.class
+            );
+
+            java.util.Map<String, Object> userInfo = response.getBody();
+            if (userInfo == null || !userInfo.containsKey("email")) {
+                throw new AppException(ErrorCode.INVALID_TOKEN);
+            }
+
+            String email = (String) userInfo.get("email");
+            String name = (String) userInfo.get("name");
+            String pictureUrl = (String) userInfo.get("picture");
+            String googleId = (String) userInfo.get("sub");
+
+            User user;
+            if (userRepository.existsByEmail(email)) {
+                user = (User) userService.loadUserByUsername(email);
+                if (user.getAuthProvider() == AuthProvider.LOCAL) {
+                    user.setProviderId(googleId);
+                    if (pictureUrl != null && user.getAvatarUrl() == null) {
+                        user.setAvatarUrl(pictureUrl);
+                    }
+                    userRepository.save(user);
+                }
+            } else {
+                String username = email.substring(0, email.indexOf('@'));
+                if (userRepository.existsByUsername(username)) {
+                    username = username + java.util.UUID.randomUUID().toString().substring(0, 4);
+                }
+
+                user = User.builder()
+                        .email(email)
+                        .username(username)
+                        .authProvider(AuthProvider.GOOGLE)
+                        .providerId(googleId)
+                        .avatarUrl(pictureUrl)
+                        .role(UserRole.USER)
+                        .createdAt(java.time.Instant.now())
+                        .updatedAt(java.time.Instant.now())
+                        .build();
+                userRepository.save(user);
+            }
+
+            String token = jwtService.generateToken(user);
+            return new AuthResponse(
+                    token,
+                    "Bearer",
+                    new AuthResponse.UserInfo(
+                            user.getId(),
+                            user.getUsername(),
+                            user.getEmail(),
+                            user.getRole()
+                    )
+            );
+        } catch (AppException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new AppException(ErrorCode.INTERNAL_ERROR);
+        }
     }
 
     private String sha256(String plainText) {

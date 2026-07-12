@@ -35,6 +35,7 @@ public class SecurityConfig {
             "/api/v1/auth/register",
             "/api/v1/auth/forgot-password",
             "/api/v1/auth/reset-password",
+            "/api/v1/auth/google",
             "/api/v1/manga",
             "/api/v1/manga/{slug}",
             "/api/v1/chapter"

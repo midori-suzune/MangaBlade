@@ -1,10 +1,15 @@
+CREATE DATABASE IF NOT EXISTS MangaBlade;
+USE MangaBlade;
+
 CREATE TABLE users (
     id BIGINT NOT NULL AUTO_INCREMENT,
     email VARCHAR(255) NOT NULL,
     username VARCHAR(50) NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
+    password_hash VARCHAR(255),
     avatar_url VARCHAR(1000),
     role VARCHAR(20) NOT NULL DEFAULT 'USER',
+    auth_provider VARCHAR(10) NOT NULL DEFAULT 'LOCAL',
+    provider_id VARCHAR(255),
     email_verified_at DATETIME(3),
     password_changed_at DATETIME(3),
     created_at DATETIME(3) NOT NULL,
@@ -12,7 +17,8 @@ CREATE TABLE users (
     PRIMARY KEY (id),
     UNIQUE KEY uq_users_email (email),
     UNIQUE KEY uq_users_username (username),
-    CONSTRAINT chk_users_role CHECK (role IN ('USER', 'AUTHOR', 'ADMIN'))
+    CONSTRAINT chk_users_role CHECK (role IN ('USER', 'AUTHOR', 'ADMIN')),
+    CONSTRAINT chk_users_auth_provider CHECK (auth_provider IN ('LOCAL', 'GOOGLE'))
 );
 
 CREATE TABLE email_verification_token (
@@ -74,6 +80,52 @@ CREATE TABLE manga (
     CONSTRAINT chk_manga_approval_status
         CHECK (approval_status IN ('DRAFT', 'PENDING', 'APPROVED', 'REJECTED'))
 );
+
+CREATE TABLE otruyen_import_target (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    slug VARCHAR(550) NOT NULL,
+    enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    priority INT NOT NULL DEFAULT 0,
+    last_imported_at DATETIME(3),
+    last_success_at DATETIME(3),
+    last_failed_at DATETIME(3),
+    fail_count INT NOT NULL DEFAULT 0,
+    created_at DATETIME(3) NOT NULL,
+    updated_at DATETIME(3) NOT NULL,
+
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_otruyen_import_target_slug (slug),
+    CONSTRAINT chk_otruyen_import_target_fail_count CHECK (fail_count >= 0)
+);
+
+INSERT INTO otruyen_import_target (
+    slug,
+    enabled,
+    priority,
+    created_at,
+    updated_at
+)
+VALUES
+('wind-breaker', TRUE, 100, NOW(3), NOW(3)),
+('blue-box', TRUE, 95, NOW(3), NOW(3)),
+('boku-no-kokoro-yabai-yatsu', TRUE, 90, NOW(3), NOW(3)),
+('arya-ban-ben-thinh-thoang-lai-treu-gheo-toi-bang-tieng-nga', TRUE, 85, NOW(3), NOW(3)),
+('the-fragrant-flower-blooms-with-dignity-kaoru-hana-wa-rin-to-saku', TRUE, 80, NOW(3), NOW(3)),
+('dao-hai-tac', TRUE, 75, NOW(3), NOW(3)),
+('toi-thang-cap-mot-minh', TRUE, 70, NOW(3), NOW(3)),
+('bach-luyen-thanh-than', TRUE, 65, NOW(3), NOW(3)),
+('ta-la-ta-de', TRUE, 60, NOW(3), NOW(3)),
+('than-dong-dat-viet', TRUE, 55, NOW(3), NOW(3)),
+('doraemon', TRUE, 50, NOW(3), NOW(3)),
+('thanh-guom-diet-quy', TRUE, 45, NOW(3), NOW(3)),
+('tham-tu-lung-danh-conan', TRUE, 40, NOW(3), NOW(3)),
+('one-punch-man-webcomic', TRUE, 35, NOW(3), NOW(3)),
+('bi-mat-tham-kin-cua-cong-chua-kaguya', TRUE, 30, NOW(3), NOW(3)),
+('clover-kuroobaa', TRUE, 25, NOW(3), NOW(3))
+ON DUPLICATE KEY UPDATE
+    enabled = VALUES(enabled),
+    priority = VALUES(priority),
+    updated_at = NOW(3);
 
 CREATE TABLE chapter (
     id BIGINT NOT NULL AUTO_INCREMENT,
