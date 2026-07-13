@@ -16,6 +16,8 @@ public enum ErrorCode {
     MANGA_NOT_FOUND(404, "Manga not found", HttpStatus.NOT_FOUND),
     UNAUTHORIZED(401, "Unauthorized", HttpStatus.UNAUTHORIZED),
     FORBIDDEN(403, "Forbidden", HttpStatus.FORBIDDEN),
+    WRONG_PASSWORD(400, "Incorrect current password", HttpStatus.BAD_REQUEST),
+    SOCIAL_USER_CANT_CHANGE_PASSWORD(400, "Google accounts do not support local password changes", HttpStatus.BAD_REQUEST),
     INTERNAL_ERROR(500, "Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final int code;

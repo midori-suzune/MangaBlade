@@ -19,6 +19,7 @@ export type MangaRankingResponse = {
     thumbUrl: string,
     likeCount: number,
     followCount: number,
+    viewCount: number,
 }
 
 export type MangaSearchResponse = {

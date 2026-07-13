@@ -216,4 +216,21 @@ public class AuthService {
         resetToken.setUsedAt(Instant.now());
         passwordResetTokenRepository.save(resetToken);
     }
+
+    public void changePassword(User user, String currentPassword, String newPassword) {
+        if (user.getAuthProvider() == AuthProvider.GOOGLE && user.getPasswordHash() == null) {
+            throw new AppException(ErrorCode.SOCIAL_USER_CANT_CHANGE_PASSWORD);
+        }
+
+        if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
+            throw new AppException(ErrorCode.WRONG_PASSWORD);
+        }
+
+        User dbUser = userRepository.findById(user.getId())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        dbUser.setPasswordHash(passwordEncoder.encode(newPassword));
+        dbUser.setPasswordChangedAt(Instant.now());
+        userRepository.save(dbUser);
+    }
 }

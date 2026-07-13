@@ -15,9 +15,11 @@ import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class MangaSearchIndexInitializer implements ApplicationRunner {
 
     private final ElasticsearchOperations elasticsearchOperations;
@@ -25,13 +27,17 @@ public class MangaSearchIndexInitializer implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        var indexOps = elasticsearchOperations.indexOps(MangaSearchDocument.class);
+        try {
+            var indexOps = elasticsearchOperations.indexOps(MangaSearchDocument.class);
 
-        if (indexOps.exists()) {
-            putMangaMapping();
-            return;
+            if (indexOps.exists()) {
+                putMangaMapping();
+                return;
+            }
+            createMangaIndex();
+        } catch (Exception exception) {
+            log.warn("[Elasticsearch] Connection refused or failed: {}. Search index initialization skipped.", exception.getMessage());
         }
-        createMangaIndex();
     }
 
     private void createMangaIndex() {

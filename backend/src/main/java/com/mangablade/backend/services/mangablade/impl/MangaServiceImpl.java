@@ -56,6 +56,9 @@ public class MangaServiceImpl implements MangaService {
         if ("follows".equalsIgnoreCase(sort)) {
             return mangaRepository.findTopRankedByFollows();
         }
+        if ("views".equalsIgnoreCase(sort)) {
+            return mangaRepository.findTopRankedByViews();
+        }
 
         return mangaRepository.findTopRankedByLikes();
     }
@@ -155,5 +158,16 @@ public class MangaServiceImpl implements MangaService {
                     log.warn("Manga not found: slug={}", slug);
                     return new AppException(ErrorCode.MANGA_NOT_FOUND);
                 });
+    }
+
+    @Override
+    public List<MangaResponse> fetchFollowedManga(Long userId) {
+        var entity = mangaRepository.findFollowedMangaByUserId(userId);
+        return entity.stream().map(e -> {
+            var latestChapter = chapterService.getLastestChapterByMangaId(e.getId());
+            var response = mangaMapper.toResponse(e);
+            response.getLatestChapter().setChapterNumber(latestChapter);
+            return response;
+        }).toList();
     }
 }

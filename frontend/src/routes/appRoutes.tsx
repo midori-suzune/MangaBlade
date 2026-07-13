@@ -7,6 +7,7 @@ import ResetPasswordPage from "../pages/ResetPassword/ResetPasswordPage.tsx";
 import {CategoryPage} from "../pages/Category/CategoryPage.tsx";
 import {MangaDetailPage} from "../pages/MangaDetail/MangaDetailPage.tsx";
 import {ReadingMangaPage} from "../pages/ReadingManga/ReadingMangaPage.tsx";
+import {UserProfile} from "../pages/UserProfile/UserProfile.tsx";
 import {RouteError} from "./RouteError.tsx";
 
 export const appRoutes: RouteObject[] = [
@@ -30,6 +31,14 @@ export const appRoutes: RouteObject[] = [
             {
                 path: "manga/:slug/c/:chapterNumber",
                 element: <ReadingMangaPage />
+            },
+            {
+                path: "profile",
+                element: <UserProfile />
+            },
+            {
+                path: "profile/:tab",
+                element: <UserProfile />
             }
         ]
     },

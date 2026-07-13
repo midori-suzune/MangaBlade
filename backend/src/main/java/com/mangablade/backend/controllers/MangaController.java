@@ -39,6 +39,20 @@ public class MangaController {
         );
     }
 
+    @GetMapping("/followed")
+    public ResponseEntity<ApiResponse<List<MangaResponse>>> getFollowedManga(
+            @AuthenticationPrincipal User user
+    ) {
+        var manga = mangaService.fetchFollowedManga(user.getId());
+        return ResponseEntity.ok(
+                ApiResponse.<List<MangaResponse>>builder()
+                        .success(true)
+                        .message("success")
+                        .payload(manga)
+                        .build()
+        );
+    }
+
     @GetMapping("/ranking")
     public ResponseEntity<ApiResponse<List<MangaRankingResponse>>> getRanking(
             @RequestParam(defaultValue = "likes") String sort
