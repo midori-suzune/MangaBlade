@@ -1,35 +1,141 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { searchManga } from "../../api/mangaApi";
 import { useAuthStore } from "../../stores/authStore";
+import type { MangaSearchResponse } from "../../types/manga";
 import styles from "./Header.module.css";
 
 export function Header() {
     const { isAuthenticated, user, logout, openAuthModal, avatarUrl } = useAuthStore();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [searchResults, setSearchResults] = useState<MangaSearchResponse[]>([]);
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [isSearchLoading, setIsSearchLoading] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const searchRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
                 setIsDropdownOpen(false);
             }
+
+            if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+                setIsSearchOpen(false);
+            }
         }
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
+    useEffect(() => {
+        const keyword = searchQuery.trim();
+
+        if (keyword.length < 2) {
+            return;
+        }
+
+        let cancelled = false;
+        const timer = window.setTimeout(() => {
+            async function loadSearchResults() {
+                try {
+                    const response = await searchManga(keyword, 10);
+                    if (!cancelled) {
+                        setSearchResults(response.success ? response.payload : []);
+                    }
+                } catch {
+                    if (!cancelled) {
+                        setSearchResults([]);
+                    }
+                } finally {
+                    if (!cancelled) {
+                        setIsSearchLoading(false);
+                    }
+                }
+            }
+
+            void loadSearchResults();
+        }, 300);
+
+        return () => {
+            cancelled = true;
+            window.clearTimeout(timer); 
+        };
+    }, [searchQuery]);
+
+    const trimmedSearchQuery = searchQuery.trim();
+    const shouldShowSearchDropdown = isSearchOpen && trimmedSearchQuery.length >= 2;
+
+    function closeSearch() {
+        setIsSearchOpen(false);
+    }
+
     return (
         <header className={styles.topHeaderWrapper}>
             <div className={styles.topHeader}>
                 <Link to="/" className={styles.logo}>Manga<span>Blade</span></Link>
-                <div className={styles.searchBox}>
+                <div className={styles.searchBox} ref={searchRef}>
                     <span className={styles.searchIcon} aria-hidden="true">
                         <svg viewBox="0 0 24 24" role="img">
                             <circle cx="11" cy="11" r="7"></circle>
                             <path d="m16.5 16.5 4 4"></path>
                         </svg>
                     </span>
-                    <input type="text" placeholder="Tìm kiếm truyện..."/>
+                    <input
+                        type="text"
+                        placeholder="Tìm kiếm truyện..."
+                        value={searchQuery}
+                        onChange={(event) => {
+                            const nextQuery = event.target.value;
+                            setSearchQuery(nextQuery);
+                            setIsSearchOpen(true);
+                            if (nextQuery.trim().length < 2) {
+                                setSearchResults([]);
+                                setIsSearchLoading(false);
+                            } else {
+                                setIsSearchLoading(true);
+                            }
+                        }}
+                        onFocus={() => setIsSearchOpen(true)}
+                        onKeyDown={(event) => {
+                            if (event.key === "Escape") {
+                                closeSearch();
+                            }
+                        }}
+                    />
+
+                    {shouldShowSearchDropdown && (
+                        <div className={styles.searchDropdown}>
+                            {isSearchLoading ? (
+                                <div className={styles.searchState}>Đang tìm...</div>
+                            ) : searchResults.length > 0 ? (
+                                searchResults.map((item) => (
+                                    <Link
+                                        to={`/manga/${item.slug}`}
+                                        className={styles.searchItem}
+                                        key={item.slug}
+                                        onClick={closeSearch}
+                                    >
+                                        <span className={styles.searchThumb}>
+                                            {item.thumbUrl && <img src={item.thumbUrl} alt={item.title} />}
+                                        </span>
+                                        <span className={styles.searchInfo}>
+                                            <span className={styles.searchTitle}>{item.title}</span>
+                                            <span className={styles.searchMeta}>
+                                                {item.latestChapterNumber ? `Chương ${item.latestChapterNumber}` : "Chưa có chương"}
+                                            </span>
+                                            {item.authors.length > 0 && (
+                                                <span className={styles.searchAuthors}>{item.authors.join(", ")}</span>
+                                            )}
+                                        </span>
+                                    </Link>
+                                ))
+                            ) : (
+                                <div className={styles.searchState}>Không tìm thấy truyện</div>
+                            )}
+                        </div>
+                    )}
                 </div>
                 {isAuthenticated && user ? (
                     <div className={styles.headerRightActions}>

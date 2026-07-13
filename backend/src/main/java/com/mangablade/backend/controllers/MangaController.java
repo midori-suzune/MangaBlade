@@ -2,15 +2,10 @@ package com.mangablade.backend.controllers;
 
 
 import com.mangablade.backend.dtos.request.CreateCommentRequest;
-import com.mangablade.backend.dtos.response.ApiResponse;
-import com.mangablade.backend.dtos.response.MangaCommentResponse;
-import com.mangablade.backend.dtos.response.MangaDetailResponse;
-import com.mangablade.backend.dtos.response.MangaInteractionResponse;
-import com.mangablade.backend.dtos.response.MangaRankingResponse;
-import com.mangablade.backend.dtos.response.MangaResponse;
-import com.mangablade.backend.dtos.response.RecentCommentResponse;
+import com.mangablade.backend.dtos.response.*;
 import com.mangablade.backend.entities.User;
 import com.mangablade.backend.services.mangablade.CommentService;
+import com.mangablade.backend.services.mangablade.MangaSearchService;
 import com.mangablade.backend.services.mangablade.MangaService;
 
 import org.springframework.http.HttpStatus;
@@ -30,6 +25,7 @@ public class MangaController {
 
     private final MangaService mangaService;
     private final CommentService commentService;
+    private final MangaSearchService mangaSearchService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<MangaResponse>>> getManga() {
@@ -67,6 +63,39 @@ public class MangaController {
                         .success(true)
                         .message("success")
                         .payload(ranking)
+                        .build()
+        );
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<List<MangaSearchResponse>>> search(
+            @RequestParam("query") String query,
+            @RequestParam(defaultValue = "10") int limit
+    ) {
+        var results = mangaSearchService.search(query, limit);
+        return ResponseEntity.ok(
+                ApiResponse.<List<MangaSearchResponse>>builder()
+                        .success(true)
+                        .message("success")
+                        .payload(results)
+                        .build()
+        );
+    }
+
+    @GetMapping("/filter")
+    public ResponseEntity<ApiResponse<List<MangaSearchResponse>>> filter(
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String author,
+            @RequestParam(defaultValue = "update") String sort,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        var results = mangaSearchService.filter(category, author, sort, page, size);
+        return ResponseEntity.ok(
+                ApiResponse.<List<MangaSearchResponse>>builder()
+                        .success(true)
+                        .message("success")
+                        .payload(results)
                         .build()
         );
     }

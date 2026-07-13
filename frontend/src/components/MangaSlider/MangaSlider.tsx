@@ -1,13 +1,13 @@
 import {useEffect, useState} from "react";
 import {Link} from "react-router-dom";
 
-import type {MangaResponse} from "../../types/manga.ts";
+import type {MangaWithLatestChapter} from "../../types/manga.ts";
 import {getTimeAgo} from "../../utils/time.ts";
 import {toSlug} from "../../utils/slug.ts";
 import styles from "./MangaSlider.module.css";
 
 type MangaSliderProps = {
-    manga: MangaResponse[];
+    manga: MangaWithLatestChapter[];
 };
 
 export function MangaSlider({manga}: MangaSliderProps) {

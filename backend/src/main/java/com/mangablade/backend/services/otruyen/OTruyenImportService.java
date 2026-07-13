@@ -11,6 +11,7 @@ import com.mangablade.backend.mapper.CategoryMapper;
 import com.mangablade.backend.mapper.ChapterMapper;
 import com.mangablade.backend.mapper.MangaMapper;
 import com.mangablade.backend.repositories.*;
+import com.mangablade.backend.services.mangablade.MangaSearchService;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.lang.NonNull;
@@ -42,6 +43,7 @@ public class OTruyenImportService {
     private final MangaCategoryRepository mangaCategoryRepository;
     private final CategoryMapper categoryMapper;
     private final CategoryRepository categoryRepository;
+    private final MangaSearchService mangaSearchService;
 
 
     @Scheduled(cron = "${spring.app.otruyen.chapter-page-import-cron}", zone = "Asia/Ho_Chi_Minh")
@@ -234,6 +236,7 @@ public class OTruyenImportService {
         }
 
         chapterRepository.saveAll(chaptersToSave);
+        mangaSearchService.indexManga(manga);
         log.info("Finished chapter import: mangaId={}, chapters={}",
                 manga.getId(), chaptersToSave.size());
     }

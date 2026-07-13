@@ -36,6 +36,8 @@ spring:
       chapter-page-import-cron: "0 */6 * * * *"
       importer:
         max-manga-per-run: 2
+  elasticsearch:
+    uris: ${ELASTICSEARCH_URL:http://localhost:9200}
 
 jwt:
   secret-key: ${JWT_SECRET_KEY}
