@@ -24,7 +24,8 @@ public interface MangaRepository extends JpaRepository<Manga, Long> {
                 m.title,
                 m.thumbUrl,
                 (select count(ml) from MangaLike ml where ml.mangaId = m.id),
-                (select count(f) from Favorite f where f.mangaId = m.id)
+                (select count(f) from Favorite f where f.mangaId = m.id),
+                (select count(rh) from ReadingHistory rh where rh.mangaId = m.id)
             )
             from Manga m
             where (select count(ml) from MangaLike ml where ml.mangaId = m.id) > 0
@@ -40,7 +41,8 @@ public interface MangaRepository extends JpaRepository<Manga, Long> {
                 m.title,
                 m.thumbUrl,
                 (select count(ml) from MangaLike ml where ml.mangaId = m.id),
-                (select count(f) from Favorite f where f.mangaId = m.id)
+                (select count(f) from Favorite f where f.mangaId = m.id),
+                (select count(rh) from ReadingHistory rh where rh.mangaId = m.id)
             )
             from Manga m
             where (select count(f) from Favorite f where f.mangaId = m.id) > 0
@@ -49,6 +51,23 @@ public interface MangaRepository extends JpaRepository<Manga, Long> {
             limit 5
             """)
     List<MangaRankingResponse> findTopRankedByFollows();
+
+    @Query("""
+            select new com.mangablade.backend.dtos.response.MangaRankingResponse(
+                m.slug,
+                m.title,
+                m.thumbUrl,
+                (select count(ml) from MangaLike ml where ml.mangaId = m.id),
+                (select count(f) from Favorite f where f.mangaId = m.id),
+                (select count(rh) from ReadingHistory rh where rh.mangaId = m.id)
+            )
+            from Manga m
+            where (select count(rh) from ReadingHistory rh where rh.mangaId = m.id) > 0
+            order by (select count(rh) from ReadingHistory rh where rh.mangaId = m.id) desc,
+                     m.updatedAt desc
+            limit 5
+            """)
+    List<MangaRankingResponse> findTopRankedByViews();
 
     @Query("""
             select m from Manga m

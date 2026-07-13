@@ -56,6 +56,9 @@ public class MangaServiceImpl implements MangaService {
         if ("follows".equalsIgnoreCase(sort)) {
             return mangaRepository.findTopRankedByFollows();
         }
+        if ("views".equalsIgnoreCase(sort)) {
+            return mangaRepository.findTopRankedByViews();
+        }
 
         return mangaRepository.findTopRankedByLikes();
     }

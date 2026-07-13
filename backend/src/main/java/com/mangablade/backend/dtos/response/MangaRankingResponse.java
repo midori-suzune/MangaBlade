@@ -15,4 +15,5 @@ public class MangaRankingResponse {
     private String thumbUrl;
     private Long likeCount;
     private Long followCount;
+    private Long viewCount;
 }

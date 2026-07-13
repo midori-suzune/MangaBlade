@@ -1,7 +1,7 @@
 import styles from "./Home.module.css";
 import {useEffect, useMemo, useState} from "react";
 import {Link} from "react-router-dom";
-import {Bookmark, Heart} from "lucide-react";
+import {Eye, Heart} from "lucide-react";
 import {getManga, getMangaRanking, getReadingHistory, getRecentUserComments} from "../../api/mangaApi.ts";
 import type {
     MangaRankingResponse,
@@ -30,7 +30,7 @@ export function Home() {
     const [manga, setManga] = useState<MangaResponse[]>([]);
     const [ranking, setRanking] = useState<MangaRankingResponse[]>([]);
     const [likedRanking, setLikedRanking] = useState<MangaRankingResponse[]>([]);
-    const [rankingMode, setRankingMode] = useState<'likes' | 'follows'>('likes');
+    const [rankingMode, setRankingMode] = useState<'likes' | 'views'>('likes');
     const [readingHistory, setReadingHistory] = useState<ReadingHistoryResponse[]>([]);
     const [recentComments, setRecentComments] = useState<RecentCommentResponse[]>([]);
     const [error, setError] = useState<string | null>(null);
@@ -202,13 +202,13 @@ export function Home() {
                                 <Heart className={styles.inlineIcon} aria-hidden="true" />
                             </button>
                             <button
-                                className={rankingMode === "follows" ? styles.activeFilter : ""}
+                                className={rankingMode === "views" ? styles.activeFilter : ""}
                                 type="button"
-                                aria-label="Xếp hạng theo lượt theo dõi"
-                                title="Lượt theo dõi"
-                                onClick={() => setRankingMode("follows")}
+                                aria-label="Xếp hạng theo lượt đọc"
+                                title="Lượt đọc"
+                                onClick={() => setRankingMode("views")}
                             >
-                                <Bookmark className={styles.inlineIcon} aria-hidden="true" />
+                                <Eye className={styles.inlineIcon} aria-hidden="true" />
                             </button>
                         </div>
                     </div>
@@ -225,9 +225,9 @@ export function Home() {
                                         {rankingMode === "likes" ? (
                                             <Heart className={styles.inlineIcon} aria-hidden="true" />
                                         ) : (
-                                            <Bookmark className={styles.inlineIcon} aria-hidden="true" />
+                                            <Eye className={styles.inlineIcon} aria-hidden="true" />
                                         )}
-                                        {formatRankingCount(rankingMode === "likes" ? item.likeCount : item.followCount)}
+                                        {formatRankingCount(rankingMode === "likes" ? item.likeCount : item.viewCount)}
                                     </span>
                                 </span>
                             </Link>
