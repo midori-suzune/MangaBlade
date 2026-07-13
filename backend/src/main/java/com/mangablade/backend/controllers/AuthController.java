@@ -3,6 +3,7 @@ package com.mangablade.backend.controllers;
 import com.mangablade.backend.dtos.request.LoginRequest;
 import com.mangablade.backend.dtos.request.RegisterRequest;
 import com.mangablade.backend.dtos.request.ForgotPasswordRequest;
+import com.mangablade.backend.dtos.request.GoogleLoginRequest;
 import com.mangablade.backend.dtos.request.ResetPasswordRequest;
 import com.mangablade.backend.dtos.response.ApiResponse;
 import com.mangablade.backend.dtos.response.AuthResponse;
@@ -65,6 +66,17 @@ public class AuthController {
                 ApiResponse.<Void>builder()
                         .success(true)
                         .message("Password has been updated successfully")
+                        .build()
+        );
+    }
+
+    @PostMapping("/google")
+    public ResponseEntity<ApiResponse<AuthResponse>> googleLogin(@Valid @RequestBody GoogleLoginRequest request) {
+        return ResponseEntity.ok(
+                ApiResponse.<AuthResponse>builder()
+                        .success(true)
+                        .message("Google login successful")
+                        .payload(authService.googleLogin(request))
                         .build()
         );
     }

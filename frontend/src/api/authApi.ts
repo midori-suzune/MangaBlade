@@ -1,4 +1,4 @@
-import type { LoginRequest, RegisterRequest, AuthResponse, ApiResponse, ForgotPasswordRequest, ResetPasswordRequest } from '../types/auth';
+import type { LoginRequest, RegisterRequest, AuthResponse, ApiResponse, ForgotPasswordRequest, ResetPasswordRequest, GoogleLoginRequest } from '../types/auth';
 import axiosInstance from './axiosInstance';
 
 export async function login(data: LoginRequest): Promise<ApiResponse<AuthResponse>> {
@@ -20,3 +20,8 @@ export async function resetPassword(data: ResetPasswordRequest): Promise<ApiResp
   const response = await axiosInstance.post<ApiResponse<void>>('/api/v1/auth/reset-password', data);
   return response.data;
 }
+
+export const googleLogin = async (data: GoogleLoginRequest): Promise<ApiResponse<AuthResponse>> => {
+  const response = await axiosInstance.post('/api/v1/auth/google', data);
+  return response.data;
+};
