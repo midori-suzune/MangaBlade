@@ -2,6 +2,12 @@ export type MangaResponse = {
     title: string,
     thumbUrl: string,
     updatedAt: string,
+    latestChapter?: {
+        chapterNumber?: string | null
+    } | null
+}
+
+export type MangaWithLatestChapter = MangaResponse & {
     latestChapter: {
         chapterNumber: string
     }
@@ -13,6 +19,15 @@ export type MangaRankingResponse = {
     thumbUrl: string,
     likeCount: number,
     followCount: number,
+}
+
+export type MangaSearchResponse = {
+    title: string,
+    slug: string,
+    thumbUrl: string,
+    latestChapterNumber: string | null,
+    updatedAt: string,
+    authors: string[],
 }
 
 export type ReadingHistoryResponse = {
@@ -97,8 +112,6 @@ export type ChapterPageResponse = {
     previousChapterNumber?: string,
     nextChapterNumber?: string,
 }
-
-
 
 
 

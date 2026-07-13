@@ -70,6 +70,99 @@
     stroke-width: 2;
 }
 
+.searchDropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    max-height: 420px;
+    overflow-y: auto;
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 16px 35px rgba(15, 23, 42, 0.12);
+    z-index: 140;
+}
+
+.searchItem {
+    display: flex;
+    gap: 12px;
+    min-height: 92px;
+    padding: 10px;
+    color: #0f172a;
+    border-bottom: 1px solid #f1f5f9;
+    text-decoration: none;
+    transition: background-color 0.15s;
+}
+
+.searchItem:last-child {
+    border-bottom: none;
+}
+
+.searchItem:hover {
+    background-color: #CACECE;
+}
+
+.searchItem:hover .searchTitle {
+    color: #0f172a;
+}
+
+.searchItem:hover .searchMeta,
+.searchItem:hover .searchAuthors {
+    color: #475569;
+}
+
+.searchThumb {
+    flex: 0 0 54px;
+    width: 54px;
+    height: 72px;
+    overflow: hidden;
+    border-radius: 4px;
+    background-color: #e2e8f0;
+}
+
+.searchThumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.searchInfo {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 3px;
+}
+
+.searchTitle {
+    color: #0f172a;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.searchMeta,
+.searchAuthors {
+    color: #94a3b8;
+    font-size: 12px;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.searchState {
+    padding: 18px 14px;
+    color: #64748b;
+    font-size: 13px;
+    text-align: center;
+}
+
 .authButtons {
     display: flex;
     gap: 10px;

@@ -39,6 +39,7 @@ public class SecurityConfig {
             "/api/v1/auth/google",
             "/api/v1/manga",
             "/api/v1/manga/ranking",
+            "/api/v1/manga/search",
             "/api/v1/manga/comments/recent-users",
             "/api/v1/manga/{slug}",
             "/api/v1/chapter"
