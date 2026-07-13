@@ -41,6 +41,9 @@ jwt:
   secret-key: ${JWT_SECRET_KEY}
   expiration-ms: 3600000
 
+google:
+  client-id: ${GOOGLE_CLIENT_ID}
+
 logging:
   charset:
     console: UTF-8

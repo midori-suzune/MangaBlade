@@ -9,6 +9,8 @@ import {
 import { useAuthStore } from "../../stores/authStore";
 import type { ApiResponse, AuthResponse } from "../../types/auth";
 import axios from "axios";
+import { useGoogleLogin } from '@react-oauth/google';
+import { googleLogin as googleLoginApi } from '../../api/authApi';
 
 export function AuthModal() {
   const {
@@ -34,11 +36,16 @@ export function AuthModal() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const modalRef = useRef<HTMLDivElement>(null);
+  const justRegistered = useRef(false);
 
   useEffect(() => {
     const resetId = window.setTimeout(() => {
       setError("");
-      setSuccess("");
+      if (!justRegistered.current) {
+        setSuccess("");
+      } else {
+        justRegistered.current = false;
+      }
       setFieldErrors({});
       setShowPassword(false);
       setShowConfirmPassword(false);
@@ -63,6 +70,34 @@ export function AuthModal() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isAuthModalOpen, closeAuthModal]);
+
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setLoading(true);
+      setError('');
+      try {
+        const result = await googleLoginApi({ credential: tokenResponse.access_token });
+        if (result.success) {
+          authLogin(result.payload.accessToken, result.payload.user, true);
+          closeAuthModal();
+        } else {
+          setError(result.message || 'Google login failed');
+        }
+      } catch (err: unknown) {
+        if (axios.isAxiosError(err) && err.response?.data) {
+          const data = err.response.data as ApiResponse<AuthResponse>;
+          setError(data.message || 'Google login failed');
+        } else {
+          setError('An error occurred. Please try again later.');
+        }
+      } finally {
+        setLoading(false);
+      }
+    },
+    onError: () => {
+      setError('Google login failed. Please try again.');
+    },
+  });
 
   if (!isAuthModalOpen) return null;
 
@@ -157,6 +192,7 @@ export function AuthModal() {
     try {
       const result = await registerApi({ username, email, password });
       if (result.success) {
+        justRegistered.current = true;
         setSuccess("Registration successful! Please log in.");
         openAuthModal("login");
         setPassword("");
@@ -450,9 +486,7 @@ export function AuthModal() {
             <button
               type="button"
               className={styles.googleBtn}
-              onClick={() =>
-                alert("Google sign-in coming soon")
-              }
+              onClick={() => handleGoogleLogin()}
             >
               <svg width="18" height="18" viewBox="0 0 24 24">
                 <path

@@ -9,7 +9,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ErrorCode {
     USER_NOT_FOUND(404, "User not found", HttpStatus.NOT_FOUND),
-    USER_EXISTED(400, "User already existed", HttpStatus.BAD_REQUEST),
+    USER_EXISTED(400, "Account already exists", HttpStatus.BAD_REQUEST),
     INVALID_PASSWORD(400, "Invalid password", HttpStatus.BAD_REQUEST),
     INVALID_TOKEN(400, "Invalid or already used password reset link", HttpStatus.BAD_REQUEST),
     EXPIRED_TOKEN(400, "Password reset link has expired", HttpStatus.BAD_REQUEST),
