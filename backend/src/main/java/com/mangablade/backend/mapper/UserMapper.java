@@ -1,11 +1,11 @@
 package com.mangablade.backend.mapper;
 
-import com.mangablade.backend.dtos.request.RegisterRequest;
-import com.mangablade.backend.entities.User;
+import java.time.LocalDateTime;
 
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
+import com.mangablade.backend.dtos.request.RegisterRequest;
+import com.mangablade.backend.entities.User;
 
 import lombok.NoArgsConstructor;
 
@@ -17,8 +17,8 @@ public class UserMapper {
         return User.builder()
                 .username(request.getUsername())
                 .email(request.getEmail())
-                .createdAt(Instant.now())
-                .updatedAt(Instant.now())
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
                 .build();
     }
 }
