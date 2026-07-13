@@ -1,5 +1,5 @@
 import styles from "./Home.module.css";
-import {useEffect, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import {Link} from "react-router-dom";
 import {Eye, Heart} from "lucide-react";
 import {getManga, getMangaRanking, getReadingHistory, getRecentUserComments} from "../../api/mangaApi.ts";
@@ -30,7 +30,6 @@ export function Home() {
     const [manga, setManga] = useState<MangaResponse[]>([]);
     const [ranking, setRanking] = useState<MangaRankingResponse[]>([]);
     const [likedRanking, setLikedRanking] = useState<MangaRankingResponse[]>([]);
-    const [featuredManga, setFeaturedManga] = useState<MangaResponse[]>([]);
     const [rankingMode, setRankingMode] = useState<'likes' | 'follows'>('likes');
     const [readingHistory, setReadingHistory] = useState<ReadingHistoryResponse[]>([]);
     const [recentComments, setRecentComments] = useState<RecentCommentResponse[]>([]);
@@ -81,10 +80,9 @@ export function Home() {
         void getLikedRanking();
     }, []);
 
-    useEffect(() => {
+    const featuredManga = useMemo(() => {
         if (manga.length === 0) {
-            setFeaturedManga([]);
-            return;
+            return [];
         }
 
         const rankedManga = likedRanking
@@ -94,11 +92,10 @@ export function Home() {
             .filter((comic): comic is MangaResponse => Boolean(comic));
 
         if (rankedManga.length > 0) {
-            setFeaturedManga(getRandomManga(rankedManga, 5));
-            return;
+            return getRandomManga(rankedManga, 5);
         }
 
-        setFeaturedManga(getRandomManga(manga, 5));
+        return getRandomManga(manga, 5);
     }, [likedRanking, manga]);
 
     useEffect(() => {
