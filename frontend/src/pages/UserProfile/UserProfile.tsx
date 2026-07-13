@@ -7,23 +7,11 @@ import { MangaMarkTag } from "./components/MangaMarkTag";
 import { HistoryTab } from "./components/HistoryTab";
 import { DailyTasksTab } from "./components/DailyTasksTab";
 import styles from "./UserProfile.module.css";
-import { useMemo } from "react";
 
 export function UserProfile() {
-    const { isAuthenticated, user, openAuthModal, logout } = useAuthStore();
+    const { isAuthenticated, user, openAuthModal, logout, displayName } = useAuthStore();
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = searchParams.get("tab") || "settings";
-    const avatarUrl = useMemo(() => {
-        if (user) return localStorage.getItem(`avatar_${user.id}`);
-        return null;
-    }, [user]);
-    const displayName = useMemo(() => {
-        if (user) {
-            const saved = localStorage.getItem(`displayName_${user.id}`);
-            return saved || user.username;
-        }
-        return "";
-    }, [user]);
 
     if (!isAuthenticated || !user) {
         return (
@@ -56,15 +44,6 @@ export function UserProfile() {
                 <div className={styles.profileLayoutContainer}>
                     <aside className={styles.profileSidebar}>
                         <div className={styles.sidebarUserCard}>
-                            <div className={styles.sidebarAvatar}>
-                                {avatarUrl ? (
-                                    <img src={avatarUrl} alt="Avatar" />
-                                ) : (
-                                    <span className={styles.sidebarAvatarPlaceholder}>
-                                        {displayName.substring(0, 1).toUpperCase()}
-                                    </span>
-                                )}
-                            </div>
                             <div className={styles.sidebarUserMeta}>
                                 <span className={styles.sidebarUserTitleLabel}>Tài khoản của</span>
                                 <span className={styles.sidebarUserName}>{displayName}</span>

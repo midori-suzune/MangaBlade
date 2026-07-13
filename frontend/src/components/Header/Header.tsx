@@ -4,19 +4,9 @@ import { useAuthStore } from "../../stores/authStore";
 import styles from "./Header.module.css";
 
 export function Header() {
-    const { isAuthenticated, user, logout, openAuthModal } = useAuthStore();
+    const { isAuthenticated, user, logout, openAuthModal, avatarUrl } = useAuthStore();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
-    const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-
-    useEffect(() => {
-        if (user) {
-            const savedAvatar = localStorage.getItem(`avatar_${user.id}`);
-            setAvatarUrl(savedAvatar);
-        } else {
-            setAvatarUrl(null);
-        }
-    }, [user]);
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {

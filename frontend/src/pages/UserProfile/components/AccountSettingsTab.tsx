@@ -4,19 +4,8 @@ import { useAuthStore } from "../../../stores/authStore";
 import styles from "../UserProfile.module.css";
 
 export function AccountSettingsTab() {
-    const { user } = useAuthStore();
-    const [displayName, setDisplayName] = useState(() => {
-        if (user) {
-            const saved = localStorage.getItem(`displayName_${user.id}`);
-            if (saved) return saved;
-            if (user.username) return user.username;
-        }
-        return "";
-    });
-    const [avatarUrl, setAvatarUrl] = useState<string | null>(() => {
-        if (user) return localStorage.getItem(`avatar_${user.id}`);
-        return null;
-    });
+    const { user, avatarUrl, displayName: storeDisplayName, updateAvatar, updateDisplayName } = useAuthStore();
+    const [displayName, setDisplayName] = useState(storeDisplayName || "");
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [exp] = useState(() => {
@@ -34,10 +23,7 @@ export function AccountSettingsTab() {
             return;
         }
 
-        if (user) {
-            localStorage.setItem(`displayName_${user.id}`, displayName);
-        }
-
+        updateDisplayName(displayName);
         alert("Cập nhật tài khoản thành công!");
     };
 
@@ -51,10 +37,7 @@ export function AccountSettingsTab() {
             const reader = new FileReader();
             reader.onloadend = () => {
                 const result = reader.result as string;
-                setAvatarUrl(result);
-                if (user?.id) {
-                    localStorage.setItem(`avatar_${user.id}`, result);
-                }
+                updateAvatar(result);
             };
             reader.readAsDataURL(file);
         }

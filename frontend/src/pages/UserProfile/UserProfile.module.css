@@ -32,11 +32,11 @@
 }
 
 .profileCard {
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--border-radius-md);
+  background-color: transparent;
+  border: none;
+  border-radius: 0;
   padding: 32px;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  box-shadow: none;
 }
 
 .pageTitleSection {
@@ -878,51 +878,30 @@
 
 .profileLayoutContainer {
   display: flex;
-  gap: 28px;
-  align-items: flex-start;
+  gap: 0;
+  align-items: stretch;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  overflow: hidden;
 }
 
 .profileSidebar {
   width: 260px;
   flex-shrink: 0;
+  border-right: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
 }
 
 .sidebarUserCard {
   background: linear-gradient(135deg, #4f46e5, #7c3aed);
-  padding: 16px;
-  border-radius: var(--border-radius-md) var(--border-radius-md) 0 0;
+  padding: 24px 20px;
   display: flex;
   align-items: center;
-  gap: 12px;
-}
-
-.sidebarAvatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 2px solid white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.sidebarAvatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.sidebarAvatarPlaceholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  background-color: #ffffff;
-  color: #4f46e5;
-  font-weight: 700;
-  font-size: 18px;
+  border-radius: 0;
 }
 
 .sidebarUserMeta {
@@ -949,12 +928,12 @@
 
 .sidebarNav {
   background-color: white;
-  border: 1px solid var(--color-border);
-  border-top: none;
-  border-radius: 0 0 var(--border-radius-md) var(--border-radius-md);
+  border: none;
+  border-radius: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  flex-grow: 1;
 }
 
 .sidebarNavItem {
@@ -1032,6 +1011,8 @@
   }
   .profileSidebar {
     width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
   }
   .sidebarNav {
     flex-direction: row;
