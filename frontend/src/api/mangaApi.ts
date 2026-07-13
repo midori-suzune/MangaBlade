@@ -18,6 +18,11 @@ export async function getManga(): Promise<ApiResponse<MangaResponse[]>> {
   return response.data;
 }
 
+export async function getFollowedManga(): Promise<ApiResponse<MangaResponse[]>> {
+  const response = await axiosInstance.get<ApiResponse<MangaResponse[]>>('/api/v1/manga/followed');
+  return response.data;
+}
+
 export async function getMangaRanking(sort: 'likes' | 'follows'): Promise<ApiResponse<MangaRankingResponse[]>> {
   const response = await axiosInstance.get<ApiResponse<MangaRankingResponse[]>>('/api/v1/manga/ranking', {
     params: { sort },

@@ -5,13 +5,16 @@ import com.mangablade.backend.dtos.request.RegisterRequest;
 import com.mangablade.backend.dtos.request.ForgotPasswordRequest;
 import com.mangablade.backend.dtos.request.GoogleLoginRequest;
 import com.mangablade.backend.dtos.request.ResetPasswordRequest;
+import com.mangablade.backend.dtos.request.ChangePasswordRequest;
 import com.mangablade.backend.dtos.response.ApiResponse;
 import com.mangablade.backend.dtos.response.AuthResponse;
 import com.mangablade.backend.services.mangablade.AuthService;
+import com.mangablade.backend.entities.User;
 
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import lombok.RequiredArgsConstructor;
@@ -77,6 +80,20 @@ public class AuthController {
                         .success(true)
                         .message("Google login successful")
                         .payload(authService.googleLogin(request))
+                        .build()
+        );
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<ApiResponse<Void>> changePassword(
+            @Valid @RequestBody ChangePasswordRequest request,
+            @AuthenticationPrincipal User user
+    ) {
+        authService.changePassword(user, request.getCurrentPassword(), request.getNewPassword());
+        return ResponseEntity.ok(
+                ApiResponse.<Void>builder()
+                        .success(true)
+                        .message("Password updated successfully")
                         .build()
         );
     }

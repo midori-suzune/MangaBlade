@@ -156,4 +156,15 @@ public class MangaServiceImpl implements MangaService {
                     return new AppException(ErrorCode.MANGA_NOT_FOUND);
                 });
     }
+
+    @Override
+    public List<MangaResponse> fetchFollowedManga(Long userId) {
+        var entity = mangaRepository.findFollowedMangaByUserId(userId);
+        return entity.stream().map(e -> {
+            var latestChapter = chapterService.getLastestChapterByMangaId(e.getId());
+            var response = mangaMapper.toResponse(e);
+            response.getLatestChapter().setChapterNumber(latestChapter);
+            return response;
+        }).toList();
+    }
 }

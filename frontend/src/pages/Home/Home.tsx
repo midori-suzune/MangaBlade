@@ -1,7 +1,7 @@
 import styles from "./Home.module.css";
 import {useEffect, useMemo, useState} from "react";
 import {Link} from "react-router-dom";
-import {Eye, Heart} from "lucide-react";
+import {Bookmark, Heart} from "lucide-react";
 import {getManga, getMangaRanking, getReadingHistory, getRecentUserComments} from "../../api/mangaApi.ts";
 import type {
     MangaRankingResponse,
@@ -208,7 +208,7 @@ export function Home() {
                                 title="Lượt theo dõi"
                                 onClick={() => setRankingMode("follows")}
                             >
-                                <Eye className={styles.inlineIcon} aria-hidden="true" />
+                                <Bookmark className={styles.inlineIcon} aria-hidden="true" />
                             </button>
                         </div>
                     </div>
@@ -225,7 +225,7 @@ export function Home() {
                                         {rankingMode === "likes" ? (
                                             <Heart className={styles.inlineIcon} aria-hidden="true" />
                                         ) : (
-                                            <Eye className={styles.inlineIcon} aria-hidden="true" />
+                                            <Bookmark className={styles.inlineIcon} aria-hidden="true" />
                                         )}
                                         {formatRankingCount(rankingMode === "likes" ? item.likeCount : item.followCount)}
                                     </span>

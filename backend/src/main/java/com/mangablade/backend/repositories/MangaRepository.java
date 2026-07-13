@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import org.springframework.data.repository.query.Param;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -47,4 +49,11 @@ public interface MangaRepository extends JpaRepository<Manga, Long> {
             limit 5
             """)
     List<MangaRankingResponse> findTopRankedByFollows();
+
+    @Query("""
+            select m from Manga m
+            where exists (select f from Favorite f where f.mangaId = m.id and f.userId = :userId)
+            order by m.updatedAt desc
+            """)
+    List<Manga> findFollowedMangaByUserId(@Param("userId") Long userId);
 }
