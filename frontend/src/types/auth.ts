@@ -42,3 +42,8 @@ export interface ResetPasswordRequest {
 export interface GoogleLoginRequest {
   credential: string;
 }
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
