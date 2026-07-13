@@ -1,20 +1,33 @@
 package com.mangablade.backend.services.mangablade.impl;
 
 import com.mangablade.backend.dtos.response.MangaDetailResponse;
+import com.mangablade.backend.dtos.response.MangaInteractionResponse;
+import com.mangablade.backend.dtos.response.MangaRankingResponse;
 import com.mangablade.backend.dtos.response.MangaResponse;
+import com.mangablade.backend.entities.Favorite;
+import com.mangablade.backend.entities.Manga;
+import com.mangablade.backend.entities.MangaLike;
+import com.mangablade.backend.exceptions.AppException;
+import com.mangablade.backend.exceptions.ErrorCode;
 import com.mangablade.backend.mapper.MangaMapper;
 import com.mangablade.backend.repositories.CategoryRepository;
+import com.mangablade.backend.repositories.FavoriteRepository;
+import com.mangablade.backend.repositories.MangaLikeRepository;
 import com.mangablade.backend.repositories.MangaRepository;
 import com.mangablade.backend.services.mangablade.AuthorService;
 import com.mangablade.backend.services.mangablade.ChapterService;
 import com.mangablade.backend.services.mangablade.MangaService;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MangaServiceImpl implements MangaService {
@@ -24,6 +37,8 @@ public class MangaServiceImpl implements MangaService {
     private final MangaMapper mangaMapper;
     private final AuthorService authorService;
     private final CategoryRepository categoryRepository;
+    private final FavoriteRepository favoriteRepository;
+    private final MangaLikeRepository mangaLikeRepository;
 
     @Override
     public List<MangaResponse> fetchAllManga() {
@@ -37,8 +52,17 @@ public class MangaServiceImpl implements MangaService {
     }
 
     @Override
-    public MangaDetailResponse fetchMangaDetailBySlug(String slug) {
-        var manga = mangaRepository.findBySlug(slug);
+    public List<MangaRankingResponse> fetchRanking(String sort) {
+        if ("follows".equalsIgnoreCase(sort)) {
+            return mangaRepository.findTopRankedByFollows();
+        }
+
+        return mangaRepository.findTopRankedByLikes();
+    }
+
+    @Override
+    public MangaDetailResponse fetchMangaDetailBySlug(String slug, Long userId) {
+        var manga = findMangaBySlugOrThrow(slug);
         var chapterList = chapterService.getChapterByMangaId(manga.getId());
         var list = chapterList.stream().map(chapter -> MangaDetailResponse.Chapter.builder()
                 .chapterNumber(chapter.getChapterNumber())
@@ -50,6 +74,7 @@ public class MangaServiceImpl implements MangaService {
         var categories = categoryRepository.findByMangaId(manga.getId()).stream()
                 .map(category -> new MangaDetailResponse.Category(category.getId(), category.getName(), category.getSlug()))
                 .toList();
+        var interaction = getInteraction(manga.getId(), userId);
 
         return MangaDetailResponse.builder()
                 .title(manga.getTitle())
@@ -58,9 +83,77 @@ public class MangaServiceImpl implements MangaService {
                 .description(manga.getDescription())
                 .sourceType(manga.getSourceType())
                 .updatedAt(manga.getUpdatedAt())
+                .followed(interaction.isFollowed())
+                .liked(interaction.isLiked())
                 .authors(authors)
                 .categories(categories)
                 .chapters(list)
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public MangaInteractionResponse toggleFollow(String slug, Long userId) {
+        var manga = findMangaBySlugOrThrow(slug);
+        var isFollowed = favoriteRepository.existsByUserIdAndMangaId(userId, manga.getId());
+
+        if (isFollowed) {
+            favoriteRepository.deleteByUserIdAndMangaId(userId, manga.getId());
+        } else {
+            favoriteRepository.save(Favorite.builder()
+                    .userId(userId)
+                    .mangaId(manga.getId())
+                    .createdAt(Instant.now())
+                    .build());
+        }
+
+        return MangaInteractionResponse.builder()
+                .followed(!isFollowed)
+                .liked(mangaLikeRepository.existsByUserIdAndMangaId(userId, manga.getId()))
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public MangaInteractionResponse toggleLike(String slug, Long userId) {
+        var manga = findMangaBySlugOrThrow(slug);
+        var isLiked = mangaLikeRepository.existsByUserIdAndMangaId(userId, manga.getId());
+
+        if (isLiked) {
+            mangaLikeRepository.deleteByUserIdAndMangaId(userId, manga.getId());
+        } else {
+            mangaLikeRepository.save(MangaLike.builder()
+                    .userId(userId)
+                    .mangaId(manga.getId())
+                    .createdAt(Instant.now())
+                    .build());
+        }
+
+        return MangaInteractionResponse.builder()
+                .followed(favoriteRepository.existsByUserIdAndMangaId(userId, manga.getId()))
+                .liked(!isLiked)
+                .build();
+    }
+
+    private MangaInteractionResponse getInteraction(Long mangaId, Long userId) {
+        if (userId == null) {
+            return MangaInteractionResponse.builder()
+                    .followed(false)
+                    .liked(false)
+                    .build();
+        }
+
+        return MangaInteractionResponse.builder()
+                .followed(favoriteRepository.existsByUserIdAndMangaId(userId, mangaId))
+                .liked(mangaLikeRepository.existsByUserIdAndMangaId(userId, mangaId))
+                .build();
+    }
+
+    private Manga findMangaBySlugOrThrow(String slug) {
+        return mangaRepository.findBySlug(slug)
+                .orElseThrow(() -> {
+                    log.warn("Manga not found: slug={}", slug);
+                    return new AppException(ErrorCode.MANGA_NOT_FOUND);
+                });
     }
 }

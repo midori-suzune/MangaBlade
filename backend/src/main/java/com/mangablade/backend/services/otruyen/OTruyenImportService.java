@@ -47,7 +47,7 @@ public class OTruyenImportService {
     @Scheduled(cron = "${spring.app.otruyen.chapter-page-import-cron}", zone = "Asia/Ho_Chi_Minh")
     public void fetchChapterPages() {
         log.info("Starting chapter page import");
-        var chapters = chapterRepository.findChaptersWithoutPages(PageRequest.of(0, 5));
+        var chapters = chapterRepository.findChaptersWithoutPages(PageRequest.of(0, 20));
         log.info("Found {} chapters without pages", chapters.size());
 
         for (Chapter chapter : chapters) {

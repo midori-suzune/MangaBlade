@@ -1,10 +1,18 @@
-import {Link} from "react-router-dom";
+import {Link, useParams} from "react-router-dom";
 
-import type {MangaDetailResponse} from "../../types/manga.ts";
+import type {MangaCommentResponse, MangaDetailResponse, ReadingHistoryResponse} from "../../types/manga.ts";
 import {getTimeAgo} from "../../utils/time.ts";
 import styles from "./MangaDetailPage.module.css";
 import {useEffect, useLayoutEffect, useMemo, useRef, useState} from "react";
-import {getMangaBySlug} from "../../api/mangaApi.ts";
+import {
+    createMangaComment,
+    getLatestReadingHistory,
+    getMangaBySlug,
+    getMangaComments,
+    toggleMangaFollow,
+    toggleMangaLike
+} from "../../api/mangaApi.ts";
+import {useAuthStore} from "../../stores/authStore.ts";
 
 function getPlainTextFromHtml(html?: string) {
     if (!html) return "";
@@ -29,20 +37,41 @@ function getChapterNumbersFromStorage(key: string) {
     return [];
 }
 
+function getPublicUsername(username: string) {
+    const atIndex = username.indexOf("@");
+    if (atIndex > 0) {
+        return username.slice(0, atIndex);
+    }
+
+    return username;
+}
+
 const EMPTY_CHAPTERS: MangaDetailResponse["chapters"] = [];
 const EMPTY_AUTHORS: MangaDetailResponse["authors"] = [];
 const EMPTY_CATEGORIES: MangaDetailResponse["categories"] = [];
+const COMMENTS_PER_PAGE = 5;
 
 export function MangaDetailPage() {
-    // const {slug} = useParams<{slug: string}>();
+    const {slug = ""} = useParams<{slug: string}>();
     const [manga, setManga] = useState<MangaDetailResponse>();
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [actionError, setActionError] = useState<string | null>(null);
+    const [comments, setComments] = useState<MangaCommentResponse[]>([]);
+    const [continueHistory, setContinueHistory] = useState<ReadingHistoryResponse | null>(null);
+    const [commentContent, setCommentContent] = useState("");
+    const [commentError, setCommentError] = useState<string | null>(null);
+    const [replyParentId, setReplyParentId] = useState<number | null>(null);
+    const [replyContent, setReplyContent] = useState("");
+    const [replyingToUsername, setReplyingToUsername] = useState<string | null>(null);
+    const [replyError, setReplyError] = useState<string | null>(null);
+    const [expandedReplyParentIds, setExpandedReplyParentIds] = useState<number[]>([]);
+    const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+    const [submittingReplyParentId, setSubmittingReplyParentId] = useState<number | null>(null);
+    const [visibleCommentCount, setVisibleCommentCount] = useState(COMMENTS_PER_PAGE);
     const chapterListRef = useRef<HTMLDivElement>(null);
     const chapterListScrollTop = useRef(0);
     const selectedChapterRef = useRef<HTMLLIElement>(null);
-    const url = window.location.href
-    const slug = url.substring(url.lastIndexOf("/") + 1)
     const activeChapterStorageKey = `manga-detail-active-chapter-${slug}`;
     const visitedChaptersStorageKey = `manga-detail-visited-chapters-${slug}`;
     const [activeChapterNumber, setActiveChapterNumber] = useState<string | null>(() => {
@@ -51,6 +80,9 @@ export function MangaDetailPage() {
     const [visitedChapterNumbers, setVisitedChapterNumbers] = useState<string[]>(() => {
         return getChapterNumbersFromStorage(visitedChaptersStorageKey);
     });
+    const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+    const user = useAuthStore((state) => state.user);
+    const openAuthModal = useAuthStore((state) => state.openAuthModal);
 
     useEffect(() => {
 
@@ -76,6 +108,41 @@ export function MangaDetailPage() {
         void loadMangaDetail();
     }, [slug]);
 
+    useEffect(() => {
+        async function loadComments() {
+            try {
+                const response = await getMangaComments(slug);
+                if (response.success) {
+                    setComments(response.payload);
+                    setVisibleCommentCount(COMMENTS_PER_PAGE);
+                }
+            } catch {
+                setComments([]);
+                setVisibleCommentCount(COMMENTS_PER_PAGE);
+            }
+        }
+
+        void loadComments();
+    }, [slug]);
+
+    useEffect(() => {
+        async function loadContinueHistory() {
+            if (!isAuthenticated) {
+                setContinueHistory(null);
+                return;
+            }
+
+            try {
+                const response = await getLatestReadingHistory(slug);
+                setContinueHistory(response.success ? response.payload : null);
+            } catch {
+                setContinueHistory(null);
+            }
+        }
+
+        void loadContinueHistory();
+    }, [isAuthenticated, slug]);
+
     const title = manga?.title
     const thumbUrl = manga?.thumbUrl
     const updatedAt = manga?.updatedAt
@@ -87,6 +154,8 @@ export function MangaDetailPage() {
     const categories = manga?.categories ?? EMPTY_CATEGORIES
     const firstChapter = chapters[chapters.length - 1]
     const descriptionText = useMemo(() => getPlainTextFromHtml(description), [description]);
+    const visibleComments = comments.slice(0, visibleCommentCount);
+    const hasMoreComments = visibleCommentCount < comments.length;
 
     useLayoutEffect(() => {
         if (activeChapterNumber && selectedChapterRef.current) {
@@ -123,6 +192,126 @@ export function MangaDetailPage() {
         });
     }
 
+    async function handleToggleFollow() {
+        if (!isAuthenticated) {
+            openAuthModal("login");
+            return;
+        }
+
+        try {
+            setActionError(null);
+            const response = await toggleMangaFollow(slug);
+            if (response.success && response.payload) {
+                setManga((currentManga) => currentManga ? {
+                    ...currentManga,
+                    followed: response.payload.followed,
+                    liked: response.payload.liked,
+                } : currentManga);
+            }
+        } catch {
+            setActionError("Không thể cập nhật theo dõi");
+        }
+    }
+
+    async function handleToggleLike() {
+        if (!isAuthenticated) {
+            openAuthModal("login");
+            return;
+        }
+
+        try {
+            setActionError(null);
+            const response = await toggleMangaLike(slug);
+            if (response.success && response.payload) {
+                setManga((currentManga) => currentManga ? {
+                    ...currentManga,
+                    followed: response.payload.followed,
+                    liked: response.payload.liked,
+                } : currentManga);
+            }
+        } catch {
+            setActionError("Không thể cập nhật lượt thích");
+        }
+    }
+
+    async function handleSubmitComment() {
+        const content = commentContent.trim();
+
+        if (!isAuthenticated) {
+            openAuthModal("login");
+            return;
+        }
+
+        if (!content) {
+            setCommentError("Vui lòng nhập bình luận");
+            return;
+        }
+
+        try {
+            setIsSubmittingComment(true);
+            setCommentError(null);
+            const response = await createMangaComment(slug, {content});
+            if (response.success && response.payload) {
+                setComments((currentComments) => [response.payload, ...currentComments]);
+                setVisibleCommentCount((currentCount) => Math.max(currentCount, COMMENTS_PER_PAGE));
+                setCommentContent("");
+            }
+        } catch {
+            setCommentError("Không thể gửi bình luận");
+        } finally {
+            setIsSubmittingComment(false);
+        }
+    }
+
+    async function handleSubmitReply(parentId: number) {
+        const content = replyContent.trim();
+
+        if (!isAuthenticated) {
+            openAuthModal("login");
+            return;
+        }
+
+        if (!content) {
+            setReplyError("Vui lòng nhập trả lời");
+            return;
+        }
+
+        try {
+            setSubmittingReplyParentId(parentId);
+            setReplyError(null);
+            const replyText = replyingToUsername ? `@${replyingToUsername} ${content}` : content;
+            const response = await createMangaComment(slug, {content: replyText, parentId});
+            if (response.success && response.payload) {
+                setComments((currentComments) => currentComments.map((comment) => {
+                    if (comment.id !== parentId) {
+                        return comment;
+                    }
+
+                    return {
+                        ...comment,
+                        replies: [...(comment.replies ?? []), response.payload],
+                    };
+                }));
+                setExpandedReplyParentIds((currentIds) => currentIds.includes(parentId)
+                    ? currentIds
+                    : [...currentIds, parentId]);
+                setReplyParentId(null);
+                setReplyContent("");
+                setReplyingToUsername(null);
+            }
+        } catch {
+            setReplyError("Không thể gửi trả lời");
+        } finally {
+            setSubmittingReplyParentId(null);
+        }
+    }
+
+    function toggleReplies(parentId: number) {
+        setExpandedReplyParentIds((currentIds) => currentIds.includes(parentId)
+            ? currentIds.filter((currentId) => currentId !== parentId)
+            : [...currentIds, parentId]);
+    }
+
     return (
         <div className={styles.mainContainer}>
             <section className={styles.detailContainer}>
@@ -136,7 +325,8 @@ export function MangaDetailPage() {
 
                 <section className={styles.mangaInfoBox}>
                     <div className={styles.coverFrame}>
-                        {thumbUrl ? <img src={thumbUrl} alt={title} /> : <span className={styles.coverPlaceholder}>Ảnh Bìa</span>}
+                        {thumbUrl ? <img src={thumbUrl} alt={title}/> :
+                            <span className={styles.coverPlaceholder}>Ảnh Bìa</span>}
                     </div>
 
                     <div className={styles.mangaDetails}>
@@ -161,7 +351,8 @@ export function MangaDetailPage() {
                             </li>
                             <li>
                                 <span className={styles.metaLabel}>Cập nhật</span>
-                                <span className={styles.metaValue}>{updatedAt ? updatedAt.split("T")[0] : "Đang cập nhật"}</span>
+                                <span
+                                    className={styles.metaValue}>{updatedAt ? updatedAt.split("T")[0] : "Đang cập nhật"}</span>
                             </li>
 
                             <li>
@@ -182,11 +373,30 @@ export function MangaDetailPage() {
                             >
                                 Đọc từ đầu
                             </Link>
-                            <button className={`${styles.actionButton} ${styles.followButton}`} type="button">Theo dõi</button>
-                            <button className={`${styles.actionButton} ${styles.likeButton}`} type="button">
-                                <Link to={""}>Thich</Link>
+                            {continueHistory && (
+                                <Link
+                                    className={`${styles.actionButton} ${styles.continueButton}`}
+                                    to={`/manga/${slug}/c/${continueHistory.chapterNumber}`}
+                                >
+                                    Đọc tiếp
+                                </Link>
+                            )}
+                            <button
+                                className={`${styles.actionButton} ${styles.followButton} ${manga?.followed ? styles.activeActionButton : ""}`}
+                                type="button"
+                                onClick={handleToggleFollow}
+                            >
+                                {manga?.followed ? "Đã theo dõi" : "Theo dõi"}
+                            </button>
+                            <button
+                                className={`${styles.actionButton} ${styles.likeButton} ${manga?.liked ? styles.activeActionButton : ""}`}
+                                type="button"
+                                onClick={handleToggleLike}
+                            >
+                                {manga?.liked ? "Đã thích" : "Thích"}
                             </button>
                         </div>
+                        {actionError && <p className={styles.actionErrorText}>{actionError}</p>}
                     </div>
                 </section>
 
@@ -220,7 +430,8 @@ export function MangaDetailPage() {
                                             >
                                                 Chương {chapter.chapterNumber}
                                             </Link>
-                                            <span className={styles.chapterDate}>{updatedAt ? getTimeAgo(updatedAt) : "Đang cập nhật"}</span>
+                                            <span
+                                                className={styles.chapterDate}>{updatedAt ? getTimeAgo(updatedAt) : "Đang cập nhật"}</span>
                                         </li>
                                     );
                                 })}
@@ -234,34 +445,171 @@ export function MangaDetailPage() {
                 <section className={styles.mangaSection}>
                     <h2 className={styles.sectionTitle}>Bình Luận</h2>
                     <div className={styles.commentInputBox}>
-                        <div className={styles.commentAvatar}>U</div>
+                        <div className={styles.commentAvatar}>
+                            {user?.username?.slice(0, 1).toUpperCase() ?? "U"}
+                        </div>
                         <div className={styles.commentInputWrapper}>
-                            <textarea placeholder="Nhập bình luận của bạn về truyện này..." rows={3}></textarea>
+                            <textarea
+                                placeholder="Nhập bình luận của bạn về truyện này..."
+                                rows={3}
+                                value={commentContent}
+                                onChange={(event) => setCommentContent(event.target.value)}
+                            ></textarea>
                             <div className={styles.commentActions}>
-                                <button className={styles.submitCommentButton} type="button">Gửi bình luận</button>
+                                <button
+                                    className={styles.submitCommentButton}
+                                    type="button"
+                                    onClick={handleSubmitComment}
+                                    disabled={isSubmittingComment}
+                                >
+                                    {isSubmittingComment ? "Đang gửi..." : "Gửi bình luận"}
+                                </button>
                             </div>
+                            {commentError && <p className={styles.commentErrorText}>{commentError}</p>}
                         </div>
                     </div>
 
                     <div className={styles.commentList}>
-                        <article className={styles.commentItem}>
-                            <div className={styles.commentAvatar}>M</div>
-                            <div className={styles.commentBody}>
-                                <div className={styles.commentBubble}>
-                                    <div className={styles.commentAuthorRow}>
-                                        <span className={styles.commentAuthor}>MangaBlade</span>
-                                        {/*{latestChapter && <span className={styles.commentBadge}>Chapter {latestChapter}</span>}*/}
-                                    </div>
-                                    <p className={styles.commentText}>Khu vực bình luận mẫu cho trang chi tiết truyện.</p>
-                                </div>
-                                <div className={styles.commentFooter}>
-                                    <span>Vừa xong</span>
-                                    <button type="button">Thích</button>
-                                    <button type="button">Báo cáo</button>
-                                </div>
-                            </div>
-                        </article>
+                        {comments.length > 0 ? (
+                            visibleComments.map((comment) => (
+                                <article className={styles.commentItem} key={comment.id}>
+                                    {(() => {
+                                        const isRepliesExpanded = expandedReplyParentIds.includes(comment.id);
+
+                                        return (
+                                            <>
+                                                <div className={styles.commentAvatar}>
+                                                    {getPublicUsername(comment.user.username).slice(0, 1).toUpperCase()}
+                                                </div>
+                                                <div className={styles.commentBody}>
+                                                    <div className={styles.commentBubble}>
+                                                        <div className={styles.commentAuthorRow}>
+                                                            <span
+                                                                className={styles.commentAuthor}>{getPublicUsername(comment.user.username)}</span>
+                                                        </div>
+                                                        <p className={styles.commentText}>{comment.content}</p>
+                                                    </div>
+                                                    <div className={styles.commentFooter}>
+                                                        <span>{getTimeAgo(comment.createdAt)}</span>
+                                                        <button type="button">Thích</button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setReplyParentId(comment.id);
+                                                                setReplyContent("");
+                                                                setReplyingToUsername(getPublicUsername(comment.user.username));
+                                                                setReplyError(null);
+                                                            }}
+                                                        >
+                                                            Trả lời
+                                                        </button>
+                                                        <button type="button">Báo cáo</button>
+                                                    </div>
+                                                    {comment.replies?.length > 0 && (
+                                                        <button
+                                                            className={styles.replyCountButton}
+                                                            type="button"
+                                                            onClick={() => toggleReplies(comment.id)}
+                                                        >
+                                                            {isRepliesExpanded ? "Ẩn phản hồi" : `${comment.replies.length} phản hồi`}
+                                                        </button>
+                                                    )}
+                                                    {comment.replies?.length > 0 && isRepliesExpanded && (
+                                            <div className={styles.replyList}>
+                                                {comment.replies.map((reply) => (
+                                                    <article className={styles.replyItem} key={reply.id}>
+                                                        <div className={styles.replyAvatar}>
+                                                            {getPublicUsername(reply.user.username).slice(0, 1).toUpperCase()}
+                                                        </div>
+                                                        <div className={styles.replyBody}>
+                                                            <div className={styles.commentBubble}>
+                                                                <div className={styles.commentAuthorRow}>
+                                                                    <span className={styles.commentAuthor}>
+                                                                        {getPublicUsername(reply.user.username)}
+                                                                    </span>
+                                                                </div>
+                                                                <p className={styles.commentText}>{reply.content}</p>
+                                                            </div>
+                                                            <div className={styles.commentFooter}>
+                                                                <span>{getTimeAgo(reply.createdAt)}</span>
+                                                                <button type="button">Thích</button>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setReplyParentId(comment.id);
+                                                                        setReplyContent("");
+                                                                        setReplyingToUsername(getPublicUsername(reply.user.username));
+                                                                        setReplyError(null);
+                                                                    }}
+                                                                >
+                                                                    Trả lời
+                                                                </button>
+                                                                <button type="button">Báo cáo</button>
+                                                            </div>
+                                                        </div>
+                                                    </article>
+                                                ))}
+                                            </div>
+                                                    )}
+                                                    {replyParentId === comment.id && (
+                                            <div className={styles.replyInputBox}>
+                                                <div className={styles.replyAvatar}>
+                                                    {user?.username?.slice(0, 1).toUpperCase() ?? "U"}
+                                                </div>
+                                                <div className={styles.commentInputWrapper}>
+                                                    <textarea
+                                                        placeholder={`Trả lời ${replyingToUsername ?? getPublicUsername(comment.user.username)}...`}
+                                                        rows={2}
+                                                        value={replyContent}
+                                                        onChange={(event) => setReplyContent(event.target.value)}
+                                                    ></textarea>
+                                                    <div className={styles.replyActions}>
+                                                        <button
+                                                            className={styles.cancelReplyButton}
+                                                            type="button"
+                                                        onClick={() => {
+                                                                setReplyParentId(null);
+                                                                setReplyContent("");
+                                                                setReplyingToUsername(null);
+                                                                setReplyError(null);
+                                                            }}
+                                                        >
+                                                            Hủy
+                                                        </button>
+                                                        <button
+                                                            className={styles.submitCommentButton}
+                                                            type="button"
+                                                            onClick={() => handleSubmitReply(comment.id)}
+                                                            disabled={submittingReplyParentId === comment.id}
+                                                        >
+                                                            {submittingReplyParentId === comment.id ? "Đang gửi..." : "Gửi trả lời"}
+                                                        </button>
+                                                    </div>
+                                                    {replyError && <p className={styles.commentErrorText}>{replyError}</p>}
+                                                </div>
+                                            </div>
+                                                    )}
+                                                </div>
+                                            </>
+                                        );
+                                    })()}
+                                </article>
+                            ))
+                        ) : (
+                            <p className={styles.emptyText}>Chưa có bình luận nào.</p>
+                        )}
                     </div>
+                    {hasMoreComments && (
+                        <div className={styles.commentMoreActions}>
+                            <button
+                                className={styles.loadMoreCommentsButton}
+                                type="button"
+                                onClick={() => setVisibleCommentCount((currentCount) => currentCount + COMMENTS_PER_PAGE)}
+                            >
+                                Xem thêm
+                            </button>
+                        </div>
+                    )}
                 </section>
             </section>
         </div>

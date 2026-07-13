@@ -15,6 +15,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.http.HttpMethod;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -37,6 +38,8 @@ public class SecurityConfig {
             "/api/v1/auth/reset-password",
             "/api/v1/auth/google",
             "/api/v1/manga",
+            "/api/v1/manga/ranking",
+            "/api/v1/manga/comments/recent-users",
             "/api/v1/manga/{slug}",
             "/api/v1/chapter"
     };
@@ -50,6 +53,7 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(request ->
                         request.requestMatchers(PUBLIC_ENDPOINTS).permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/v1/manga/{slug}/comments").permitAll()
                                 .anyRequest().authenticated()
                 ).authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

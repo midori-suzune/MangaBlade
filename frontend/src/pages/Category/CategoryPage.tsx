@@ -23,25 +23,15 @@ const CATEGORIES: Category[] = [
   { id: 'phieu-luu', name: 'Phiêu lưu', description: 'Thể loại phiêu lưu, mạo hiểm, thường là hành trình của các nhân vật khám phá thế giới mới.' },
   { id: 'hoat-hinh', name: 'Hoạt hình', description: 'Những câu chuyện truyện tranh được vẽ theo phong cách anime sống động.' },
   { id: 'chuyen-sinh', name: 'Chuyển sinh', description: 'Hành trình bắt đầu lại cuộc đời mới ở một thế giới khác sau khi chuyển thế.' },
-  { id: 'hai-huoc', name: 'Hài hước', description: 'Thể loại mang lại tiếng cười sảng khoái, các tình huống dí dỏm, vui nhộn đời thường.' },
-  { id: 'truyen-tranh', name: 'Truyện tranh', description: 'Các tác phẩm truyện tranh vẽ tay (Comic) phương Tây hoặc nội địa.' },
-  { id: 'nau-an', name: 'Nấu ăn', description: 'Câu chuyện xoay quanh thế giới ẩm thực, thi đấu nấu ăn và các món ngon.' },
-  { id: 'co-dai', name: 'Cổ đại', description: 'Truyện lấy bối cảnh lịch sử xưa, hoàng cung hoặc võ hiệp thời xưa.' },
-  { id: 'dong-nhan', name: 'Đồng nhân', description: 'Thể loại truyện viết về các nhân vật sẵn có từ tác phẩm khác theo góc nhìn mới.' },
-  { id: 'kich-tinh', name: 'Kịch tính', description: 'Những tình huống cao trào, thắt nút mở nút kích thích tâm lý người đọc.' },
-  { id: 'ky-ao', name: 'Kỳ ảo', description: 'Thế giới tưởng tượng phong phú với phép thuật, thần thoại và các sinh vật huyền bí.' },
-  { id: 'lich-su', name: 'Lịch sử', description: 'Các tác phẩm lấy cảm hứng hoặc tái hiện các sự kiện lịch sử có thật.' },
-  { id: 'kinh-di', name: 'Kinh dị', description: 'Yếu tố giật gân, đáng sợ, khám phá khía cạnh tâm linh rùng rợn và hồi hộp.' },
-  { id: 'nguoi-dong', name: 'Người đóng', description: 'Các bộ truyện được chuyển thể hoặc lấy phong cách từ phim ảnh đời thực.' },
-  { id: 'vo-thuat', name: 'Võ thuật', description: 'Tập trung vào tinh thần thượng võ, các kỹ năng chiến đấu võ đạo đỉnh cao.' },
-  { id: 'co-giap', name: 'Cơ giáp', description: 'Thể loại viễn tưởng tập trung vào các robot khổng lồ, chiến tranh công nghệ cao.' },
-  { id: 'huyen-bi', name: 'Huyền bí', description: 'Những hiện tượng siêu nhiên chưa có lời giải đáp, kích thích sự tò mò.' },
-  { id: 'ngon-tinh', name: 'Ngôn tình', description: 'Những câu chuyện tình cảm lãng mạn, sâu lắng và nhiều cung bậc cảm xúc giữa các nhân vật chính.' },
-  { id: 'tam-ly', name: 'Tâm lý', description: 'Khai thác sâu vào thế giới nội tâm, suy nghĩ phức tạp của nhân vật.' },
-  { id: 'doi-thuong', name: 'Đời thường', description: 'Những câu chuyện nhẹ nhàng, mộc mạc về cuộc sống hàng ngày đầy ý nghĩa.' },
-  { id: 'the-thao', name: 'Thể thao', description: 'Xoay quanh hoạt động thể thao cá nhân hay đồng đội, tinh thần nỗ lực bền bỉ.' },
-  { id: 'trinh-tham', name: 'Trinh thám', description: 'Những vụ án bí ẩn, các suy luận logic và cuộc đấu trí căng thẳng để tìm ra sự thật.' },
-  { id: 'hoc-duong', name: 'Học đường', description: 'Xoay quanh cuộc sống học sinh, sinh viên, tình bạn, tình yêu tuổi học trò hồn nhiên.' }
+  { id: 'hai-huoc', name: 'Hài hước', description: 'Thể loại mang lại tiếng cười sảng khoái, các tình huống dí dỏm, vui nhộn đời thường.' }
+];
+
+const SORT_OPTIONS = [
+  { id: 'update', label: 'Ngày cập nhật giảm dần' },
+  { id: 'new', label: 'Truyện mới' },
+  { id: 'chapters', label: 'Số chapter giảm dần' },
+  { id: 'follow', label: 'Theo dõi' },
+  { id: 'comment', label: 'Bình luận' }
 ];
 
 const MOCK_MANGAS: MangaMock[] = [
@@ -62,14 +52,6 @@ const MOCK_MANGAS: MangaMock[] = [
   { id: '15', title: 'Doraemon', chapter: 'Chapter 820', timeAgo: '7 Giờ Trước', isHot: false, status: 'ongoing', categories: ['hai-huoc', 'phieu-luu', 'doi-thuong'], author: 'Fujiko F. Fujio' }
 ];
 
-function CheckIcon() {
-  return (
-    <svg width="8" height="8" viewBox="0 0 8 8" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block' }}>
-      <polyline points="1.5 4 3.5 6 6.5 2" />
-    </svg>
-  );
-}
-
 export function CategoryPage() {
   // Pending filter states
   const [pendingCategoryIds, setPendingCategoryIds] = useState<string[]>([]);
@@ -77,76 +59,36 @@ export function CategoryPage() {
   const [pendingSortBy, setPendingSortBy] = useState<string>('update');
   const [pendingAuthor, setPendingAuthor] = useState<string>('');
 
-  // Applied filter states
-  const [appliedCategoryIds, setAppliedCategoryIds] = useState<string[]>([]);
-  const [appliedStatus, setAppliedStatus] = useState<'all' | 'completed' | 'ongoing'>('all');
-  const [appliedSortBy, setAppliedSortBy] = useState<string>('update');
-  const [appliedAuthor, setAppliedAuthor] = useState<string>('');
-
-  const handleToggleCategory = (id: string) => {
-    if (id === 'all') {
-      setPendingCategoryIds([]);
-      return;
-    }
-    setPendingCategoryIds(prev => {
-      const exists = prev.includes(id);
-      if (exists) {
-        return prev.filter(cId => cId !== id);
-      } else {
-        return [...prev, id];
-      }
-    });
-  };
-
-  const handleApplyFilters = () => {
-    setAppliedCategoryIds(pendingCategoryIds);
-    setAppliedStatus(pendingStatus);
-    setAppliedSortBy(pendingSortBy);
-    setAppliedAuthor(pendingAuthor);
-  };
-
-  const handleResetFilters = () => {
-    setPendingCategoryIds([]);
-    setPendingStatus('all');
-    setPendingSortBy('update');
-    setPendingAuthor('');
-
-    setAppliedCategoryIds([]);
-    setAppliedStatus('all');
-    setAppliedSortBy('update');
-    setAppliedAuthor('');
-  };
-
   const selectedCategoryNames = useMemo(() => {
-    if (appliedCategoryIds.length === 0) return '';
+    if (pendingCategoryIds.length === 0) return '';
     return CATEGORIES
-      .filter(c => appliedCategoryIds.includes(c.id))
+      .filter(c => pendingCategoryIds.includes(c.id))
       .map(c => c.name)
       .join(', ');
-  }, [appliedCategoryIds]);
+  }, [pendingCategoryIds]);
 
   const descriptionText = useMemo(() => {
-    if (appliedCategoryIds.length === 0) {
+    if (pendingCategoryIds.length === 0) {
       return 'Danh sách tổng hợp tất cả các bộ truyện tranh thuộc mọi thể loại.';
     }
-    if (appliedCategoryIds.length === 1) {
-      const cat = CATEGORIES.find(c => c.id === appliedCategoryIds[0]);
+    if (pendingCategoryIds.length === 1) {
+      const cat = CATEGORIES.find(c => c.id === pendingCategoryIds[0]);
       return cat ? cat.description : '';
     }
     return `Đang lọc truyện theo sự kết hợp của các thể loại: ${selectedCategoryNames}.`;
-  }, [appliedCategoryIds, selectedCategoryNames]);
+  }, [pendingCategoryIds, selectedCategoryNames]);
 
   const filteredAndSortedMangas = useMemo(() => {
     const list = MOCK_MANGAS.filter(manga => {
-      const matchesCategory = appliedCategoryIds.length === 0 || 
-        appliedCategoryIds.every(cId => manga.categories.includes(cId));
-      const matchesStatus = appliedStatus === 'all' || manga.status === appliedStatus;
-      const matchesAuthor = !appliedAuthor.trim() || 
-        manga.author.toLowerCase().includes(appliedAuthor.toLowerCase().trim());
+      const matchesCategory = pendingCategoryIds.length === 0 || 
+        pendingCategoryIds.every(cId => manga.categories.includes(cId));
+      const matchesStatus = pendingStatus === 'all' || manga.status === pendingStatus;
+      const matchesAuthor = !pendingAuthor.trim() || 
+        manga.author.toLowerCase().includes(pendingAuthor.toLowerCase().trim());
       return matchesCategory && matchesStatus && matchesAuthor;
     });
 
-    if (appliedSortBy === 'chapters') {
+    if (pendingSortBy === 'chapters') {
       return [...list].sort((a, b) => {
         const numA = parseFloat(a.chapter.replace(/[^\d.]/g, '')) || 0;
         const numB = parseFloat(b.chapter.replace(/[^\d.]/g, '')) || 0;
@@ -154,12 +96,12 @@ export function CategoryPage() {
       });
     }
 
-    if (appliedSortBy === 'new') {
+    if (pendingSortBy === 'new') {
       return [...list].sort((a, b) => b.id.localeCompare(a.id));
     }
 
     return list;
-  }, [appliedCategoryIds, appliedStatus, appliedAuthor, appliedSortBy]);
+  }, [pendingCategoryIds, pendingStatus, pendingAuthor, pendingSortBy]);
 
   return (
     <div className={styles.mainContainer}>
@@ -170,37 +112,77 @@ export function CategoryPage() {
           <p>{descriptionText}</p>
         </div>
 
-        {/* Horizontal Category Selector with Checkboxes */}
-        <div className={styles.categoriesSelector}>
-          <span className={styles.selectorLabel}>Thể loại:</span>
-          <div className={styles.categoriesList}>
-            <button
-              type="button"
-              className={`${styles.categoryTag} ${pendingCategoryIds.length === 0 ? styles.activeTag : ''}`}
-              onClick={() => handleToggleCategory('all')}
+        <div className={styles.filterPanel}>
+          <div className={styles.filterRow}>
+            <span className={styles.filterGroupLabel}>Thể loại truyện</span>
+            <select
+              className={styles.filterSelect}
+              value={pendingCategoryIds[0] ?? 'all'}
+              onChange={(event) => {
+                const nextCategoryId = event.target.value;
+                setPendingCategoryIds(nextCategoryId === 'all' ? [] : [nextCategoryId]);
+              }}
             >
-              <span className={`${styles.checkbox} ${pendingCategoryIds.length === 0 ? styles.checked : ''}`}>
-                {pendingCategoryIds.length === 0 && <CheckIcon />}
-              </span>
-              Tất cả
-            </button>
-            {CATEGORIES.map(category => {
-              const isChecked = pendingCategoryIds.includes(category.id);
-              return (
-                <button
-                  key={category.id}
-                  type="button"
-                  className={`${styles.categoryTag} ${isChecked ? styles.activeTag : ''}`}
-                  onClick={() => handleToggleCategory(category.id)}
-                >
-                  <span className={`${styles.checkbox} ${isChecked ? styles.checked : ''}`}>
-                    {isChecked && <CheckIcon />}
-                  </span>
-                  {category.name}
-                </button>
-              );
-            })}
+              <option value="all">Tất cả</option>
+              {CATEGORIES.map(category => (
+                <option key={category.id} value={category.id}>{category.name}</option>
+              ))}
+            </select>
           </div>
+
+          <div className={styles.filterRow}>
+            <span className={styles.filterGroupLabel}>Tình trạng</span>
+            <div className={styles.statusFilters}>
+              <button
+                type="button"
+                className={`${styles.filterBtn} ${pendingStatus === 'all' ? styles.activeStatus : ''}`}
+                onClick={() => setPendingStatus('all')}
+              >
+                Tất cả
+              </button>
+              <button
+                type="button"
+                className={`${styles.filterBtn} ${pendingStatus === 'ongoing' ? styles.activeStatus : ''}`}
+                onClick={() => setPendingStatus('ongoing')}
+              >
+                Đang tiến hành
+              </button>
+              <button
+                type="button"
+                className={`${styles.filterBtn} ${pendingStatus === 'completed' ? styles.activeStatus : ''}`}
+                onClick={() => setPendingStatus('completed')}
+              >
+                Hoàn thành
+              </button>
+            </div>
+          </div>
+
+          <div className={styles.filterRow}>
+            <span className={styles.filterGroupLabel}>Tác giả</span>
+            <input
+              type="text"
+              className={styles.authorInput}
+              placeholder="Nhập tên tác giả..."
+              value={pendingAuthor}
+              onChange={(e) => setPendingAuthor(e.target.value)}
+            />
+          </div>
+
+          <div className={styles.filterRow}>
+            <span className={styles.filterGroupLabel}>Sắp xếp</span>
+            <select
+              className={styles.filterSelect}
+              value={pendingSortBy}
+              onChange={(event) => setPendingSortBy(event.target.value)}
+            >
+              {SORT_OPTIONS.map(sortOpt => (
+                <option key={sortOpt.id} value={sortOpt.id}>
+                  {sortOpt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
         </div>
 
         <div className={styles.comicGrid}>
@@ -231,86 +213,6 @@ export function CategoryPage() {
         </nav>
       </section>
 
-      {/* Advanced Filter Panel on the Right */}
-      <aside className={styles.rightMain}>
-        <div className={styles.filterPanel}>
-          <h2 className={styles.filterTitle}>Bộ lọc nâng cao</h2>
-          
-          <div className={styles.filterGroup}>
-            <span className={styles.filterGroupLabel}>Trạng thái:</span>
-            <div className={styles.statusFilters}>
-              <button 
-                type="button"
-                className={`${styles.filterBtn} ${pendingStatus === 'all' ? styles.activeStatus : ''}`}
-                onClick={() => setPendingStatus('all')}
-              >
-                Tất cả
-              </button>
-              <button 
-                type="button"
-                className={`${styles.filterBtn} ${pendingStatus === 'completed' ? styles.activeStatus : ''}`}
-                onClick={() => setPendingStatus('completed')}
-              >
-                Hoàn thành
-              </button>
-              <button 
-                type="button"
-                className={`${styles.filterBtn} ${pendingStatus === 'ongoing' ? styles.activeStatus : ''}`}
-                onClick={() => setPendingStatus('ongoing')}
-              >
-                Đang tiến hành
-              </button>
-            </div>
-          </div>
-
-          <div className={styles.filterGroup}>
-            <span className={styles.filterGroupLabel}>Tác giả:</span>
-            <input 
-              type="text" 
-              className={styles.authorInput}
-              placeholder="Nhập tên tác giả..." 
-              value={pendingAuthor}
-              onChange={(e) => setPendingAuthor(e.target.value)}
-            />
-          </div>
-
-          <div className={styles.filterGroup}>
-            <span className={styles.filterGroupLabel}>Sắp xếp theo:</span>
-            <div className={styles.sortFilters}>
-              {[
-                { id: 'update', label: 'Ngày cập nhật' },
-                { id: 'new', label: 'Truyện mới' },
-                { id: 'topall', label: 'Top tất cả' },
-                { id: 'topmonth', label: 'Top tháng' },
-                { id: 'topweek', label: 'Top tuần' },
-                { id: 'topday', label: 'Top ngày' },
-                { id: 'follow', label: 'Theo dõi' },
-                { id: 'comment', label: 'Bình luận' },
-                { id: 'chapters', label: 'Số chapter' },
-                { id: 'topfollow', label: 'Top theo dõi' }
-              ].map(sortOpt => (
-                <button
-                  key={sortOpt.id}
-                  type="button"
-                  className={`${styles.sortBtn} ${pendingSortBy === sortOpt.id ? styles.activeSort : ''}`}
-                  onClick={() => setPendingSortBy(sortOpt.id)}
-                >
-                  {sortOpt.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className={styles.actionButtons}>
-            <button type="button" onClick={handleApplyFilters} className={styles.applyBtn}>
-              Áp dụng
-            </button>
-            <button type="button" onClick={handleResetFilters} className={styles.resetBtn}>
-              Đặt lại
-            </button>
-          </div>
-        </div>
-      </aside>
     </div>
   );
 }

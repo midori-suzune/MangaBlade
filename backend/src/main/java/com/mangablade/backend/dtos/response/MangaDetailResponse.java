@@ -20,6 +20,8 @@ public class MangaDetailResponse {
     private String status ;
     private String thumbUrl ;
     private Instant updatedAt ;
+    private boolean followed;
+    private boolean liked;
     @Builder.Default
     private List<Chapter> chapters = new ArrayList<>();
     @Builder.Default

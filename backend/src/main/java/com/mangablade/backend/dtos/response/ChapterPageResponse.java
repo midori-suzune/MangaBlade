@@ -11,4 +11,6 @@ public interface ChapterPageResponse {
      String getChapterNumber() ;
      String getImageUrl();
      String getLatestChapterNumber() ;
+     String getPreviousChapterNumber();
+     String getNextChapterNumber();
 }
