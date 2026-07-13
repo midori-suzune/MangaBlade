@@ -1,21 +1,14 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { filterManga } from '../../api/mangaApi';
+import type { MangaSearchResponse } from '../../types/manga';
+import { getTimeAgo } from '../../utils/time';
 import styles from './CategoryPage.module.css';
 
 interface Category {
   id: string;
   name: string;
   description: string;
-}
-
-interface MangaMock {
-  id: string;
-  title: string;
-  chapter: string;
-  timeAgo: string;
-  isHot?: boolean;
-  status: 'completed' | 'ongoing';
-  categories: string[];
-  author: string;
 }
 
 const CATEGORIES: Category[] = [
@@ -28,36 +21,20 @@ const CATEGORIES: Category[] = [
 
 const SORT_OPTIONS = [
   { id: 'update', label: 'Ngày cập nhật giảm dần' },
-  { id: 'new', label: 'Truyện mới' },
   { id: 'chapters', label: 'Số chapter giảm dần' },
   { id: 'follow', label: 'Theo dõi' },
   { id: 'comment', label: 'Bình luận' }
 ];
 
-const MOCK_MANGAS: MangaMock[] = [
-  { id: '1', title: 'Bảng Trạng Thái Bị Khóa', chapter: 'Chapter 32', timeAgo: '42 Phút Trước', isHot: true, status: 'ongoing', categories: ['hanh-dong', 'phieu-luu', 'chuyen-sinh'], author: 'Tiêu Đỉnh' },
-  { id: '2', title: 'Destiny Unchain Online', chapter: 'Chapter 41', timeAgo: '1 Giờ Trước', isHot: true, status: 'ongoing', categories: ['phieu-luu', 'ky-ao'], author: 'Cổ Long' },
-  { id: '3', title: 'Sự Thức Tỉnh Của Thần', chapter: 'Chapter 183', timeAgo: '1 Giờ Trước', isHot: true, status: 'completed', categories: ['hanh-dong', 'ky-ao'], author: 'Đường Gia Tam Thiếu' },
-  { id: '4', title: 'Lúc Đó Tôi Không Biết', chapter: 'Chapter 80', timeAgo: '2 Giờ Trước', isHot: false, status: 'ongoing', categories: ['ngon-tinh', 'doi-thuong'], author: 'Ngã Chi Cật Tây Hồng Thị' },
-  { id: '5', title: 'Shakkin 100 Oku No Vợ', chapter: 'Chapter 6.5', timeAgo: '2 Giờ Trước', isHot: false, status: 'completed', categories: ['hai-huoc', 'ngon-tinh'], author: 'Kim Dung' },
-  { id: '6', title: 'Ta Là Tà Đế', chapter: 'Chapter 442', timeAgo: '2 Giờ Trước', isHot: true, status: 'ongoing', categories: ['hanh-dong', 'vo-thuat', 'chuyen-sinh'], author: 'Tiêu Đỉnh' },
-  { id: '7', title: 'Trọng Sinh Đô Thị Tu Tiên', chapter: 'Chapter 925', timeAgo: '3 Giờ Trước', isHot: false, status: 'ongoing', categories: ['vo-thuat', 'chuyen-sinh'], author: 'Thiên Tằm Thổ Đậu' },
-  { id: '8', title: 'Solo Leveling', chapter: 'Chapter 179', timeAgo: '3 Giờ Trước', isHot: true, status: 'completed', categories: ['hanh-dong', 'phieu-luu', 'ky-ao'], author: 'Chugong' },
-  { id: '9', title: 'Toàn Trí Độc Giả', chapter: 'Chapter 199', timeAgo: '4 Giờ Trước', isHot: true, status: 'ongoing', categories: ['phieu-luu', 'hanh-dong', 'trinh-tham'], author: 'singNsong' },
-  { id: '10', title: 'Đại Quản Gia Là Ma Hoàng', chapter: 'Chapter 450', timeAgo: '4 Giờ Trước', isHot: true, status: 'ongoing', categories: ['hanh-dong', 'chuyen-sinh', 'vo-thuat'], author: 'Thiên Tằm Thổ Đậu' },
-  { id: '11', title: 'Thám Tử Lừng Danh Conan', chapter: 'Chapter 1125', timeAgo: '5 Giờ Trước', isHot: false, status: 'ongoing', categories: ['trinh-tham', 'hoc-duong'], author: 'Aoyama Gosho' },
-  { id: '12', title: 'Kẻ Ăn Hồn', chapter: 'Chapter 15', timeAgo: '5 Giờ Trước', isHot: false, status: 'completed', categories: ['kinh-di', 'huyen-bi'], author: 'Nguyễn Nhật Ánh' },
-  { id: '13', title: 'Tiệm Ăn Kỳ Quái', chapter: 'Chapter 48', timeAgo: '6 Giờ Trước', isHot: false, status: 'ongoing', categories: ['doi-thuong', 'hai-huoc', 'ky-ao'], author: 'Kim Dung' },
-  { id: '14', title: 'Lớp Học Ám Sát', chapter: 'Chapter 180', timeAgo: '6 Giờ Trước', isHot: false, status: 'completed', categories: ['hoc-duong', 'hai-huoc', 'hanh-dong'], author: 'Yusei Matsui' },
-  { id: '15', title: 'Doraemon', chapter: 'Chapter 820', timeAgo: '7 Giờ Trước', isHot: false, status: 'ongoing', categories: ['hai-huoc', 'phieu-luu', 'doi-thuong'], author: 'Fujiko F. Fujio' }
-];
-
 export function CategoryPage() {
   // Pending filter states
   const [pendingCategoryIds, setPendingCategoryIds] = useState<string[]>([]);
-  const [pendingStatus, setPendingStatus] = useState<'all' | 'completed' | 'ongoing'>('all');
   const [pendingSortBy, setPendingSortBy] = useState<string>('update');
   const [pendingAuthor, setPendingAuthor] = useState<string>('');
+  const [debouncedAuthor, setDebouncedAuthor] = useState('');
+  const [manga, setManga] = useState<MangaSearchResponse[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const selectedCategoryNames = useMemo(() => {
     if (pendingCategoryIds.length === 0) return '';
@@ -78,30 +55,51 @@ export function CategoryPage() {
     return `Đang lọc truyện theo sự kết hợp của các thể loại: ${selectedCategoryNames}.`;
   }, [pendingCategoryIds, selectedCategoryNames]);
 
-  const filteredAndSortedMangas = useMemo(() => {
-    const list = MOCK_MANGAS.filter(manga => {
-      const matchesCategory = pendingCategoryIds.length === 0 || 
-        pendingCategoryIds.every(cId => manga.categories.includes(cId));
-      const matchesStatus = pendingStatus === 'all' || manga.status === pendingStatus;
-      const matchesAuthor = !pendingAuthor.trim() || 
-        manga.author.toLowerCase().includes(pendingAuthor.toLowerCase().trim());
-      return matchesCategory && matchesStatus && matchesAuthor;
-    });
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setDebouncedAuthor(pendingAuthor.trim());
+    }, 300);
 
-    if (pendingSortBy === 'chapters') {
-      return [...list].sort((a, b) => {
-        const numA = parseFloat(a.chapter.replace(/[^\d.]/g, '')) || 0;
-        const numB = parseFloat(b.chapter.replace(/[^\d.]/g, '')) || 0;
-        return numB - numA;
-      });
+    return () => window.clearTimeout(timer);
+  }, [pendingAuthor]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadManga() {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await filterManga({
+          category: pendingCategoryIds[0],
+          author: debouncedAuthor || undefined,
+          sort: pendingSortBy,
+          page: 0,
+          size: 20,
+        });
+
+        if (!cancelled) {
+          setManga(response.success ? response.payload : []);
+        }
+      } catch {
+        if (!cancelled) {
+          setManga([]);
+          setError('Không thể tải danh sách truyện.');
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
     }
 
-    if (pendingSortBy === 'new') {
-      return [...list].sort((a, b) => b.id.localeCompare(a.id));
-    }
+    void loadManga();
 
-    return list;
-  }, [pendingCategoryIds, pendingStatus, pendingAuthor, pendingSortBy]);
+    return () => {
+      cancelled = true;
+    };
+  }, [pendingCategoryIds, debouncedAuthor, pendingSortBy]);
 
   return (
     <div className={styles.mainContainer}>
@@ -128,33 +126,6 @@ export function CategoryPage() {
                 <option key={category.id} value={category.id}>{category.name}</option>
               ))}
             </select>
-          </div>
-
-          <div className={styles.filterRow}>
-            <span className={styles.filterGroupLabel}>Tình trạng</span>
-            <div className={styles.statusFilters}>
-              <button
-                type="button"
-                className={`${styles.filterBtn} ${pendingStatus === 'all' ? styles.activeStatus : ''}`}
-                onClick={() => setPendingStatus('all')}
-              >
-                Tất cả
-              </button>
-              <button
-                type="button"
-                className={`${styles.filterBtn} ${pendingStatus === 'ongoing' ? styles.activeStatus : ''}`}
-                onClick={() => setPendingStatus('ongoing')}
-              >
-                Đang tiến hành
-              </button>
-              <button
-                type="button"
-                className={`${styles.filterBtn} ${pendingStatus === 'completed' ? styles.activeStatus : ''}`}
-                onClick={() => setPendingStatus('completed')}
-              >
-                Hoàn thành
-              </button>
-            </div>
           </div>
 
           <div className={styles.filterRow}>
@@ -185,21 +156,28 @@ export function CategoryPage() {
 
         </div>
 
+        {error && <p className={styles.errorText}>{error}</p>}
+
         <div className={styles.comicGrid}>
-          {filteredAndSortedMangas.map(comic => (
-            <article className={styles.comicCard} key={comic.id}>
-              <div className={styles.comicCover}>
-                <span className={styles.comicTag}>{comic.timeAgo}</span>
-                {comic.isHot && <span className={`${styles.comicTag} ${styles.hot}`}>Hot</span>}
+          {manga.map(comic => (
+            <article className={styles.comicCard} key={comic.slug}>
+              <Link to={`/manga/${comic.slug}`} className={styles.comicCover} aria-label={comic.title}>
+                <span className={styles.comicTag}>{getTimeAgo(comic.updatedAt)}</span>
+                {comic.thumbUrl && <img src={comic.thumbUrl} alt={comic.title} />}
                 <span className={styles.coverText}>Ảnh Bìa</span>
-              </div>
+              </Link>
               <div className={styles.comicInfo}>
-                <span className={styles.comicTitle}>{comic.title}</span>
-                <span className={styles.comicChapter}>{comic.chapter}</span>
+                <Link to={`/manga/${comic.slug}`} className={styles.comicTitle}>{comic.title}</Link>
+                <span className={styles.comicChapter}>
+                  {comic.latestChapterNumber ? `Chapter ${comic.latestChapterNumber}` : 'Chưa có chapter'}
+                </span>
               </div>
             </article>
           ))}
-          {filteredAndSortedMangas.length === 0 && (
+          {loading && (
+            <p className={styles.noResults}>Đang tải truyện...</p>
+          )}
+          {!loading && manga.length === 0 && (
             <p className={styles.noResults}>Không tìm thấy truyện nào thuộc bộ lọc này.</p>
           )}
         </div>

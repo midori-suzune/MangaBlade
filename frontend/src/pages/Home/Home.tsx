@@ -6,6 +6,7 @@ import {getManga, getMangaRanking, getReadingHistory, getRecentUserComments} fro
 import type {
     MangaRankingResponse,
     MangaResponse,
+    MangaWithLatestChapter,
     ReadingHistoryResponse,
     RecentCommentResponse
 } from "../../types/manga.ts";
@@ -14,7 +15,7 @@ import {MangaSlider} from "../../components/MangaSlider/MangaSlider.tsx";
 import {toSlug} from "../../utils/slug.ts";
 import {useAuthStore} from "../../stores/authStore.ts";
 
-function getRandomManga(items: MangaResponse[], limit: number) {
+function getRandomManga<T>(items: T[], limit: number) {
     const shuffledItems = [...items];
 
     for (let index = shuffledItems.length - 1; index > 0; index--) {
@@ -23,6 +24,10 @@ function getRandomManga(items: MangaResponse[], limit: number) {
     }
 
     return shuffledItems.slice(0, limit);
+}
+
+function hasLatestChapter(comic: MangaResponse): comic is MangaWithLatestChapter {
+    return Boolean(comic.latestChapter?.chapterNumber);
 }
 
 export function Home() {
@@ -35,6 +40,8 @@ export function Home() {
     const [recentComments, setRecentComments] = useState<RecentCommentResponse[]>([]);
     const [error, setError] = useState<string | null>(null);
     const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
+    const readableManga = useMemo(() => manga.filter(hasLatestChapter), [manga]);
 
     useEffect(() => {
         async function getData() {
@@ -81,22 +88,22 @@ export function Home() {
     }, []);
 
     const featuredManga = useMemo(() => {
-        if (manga.length === 0) {
+        if (readableManga.length === 0) {
             return [];
         }
 
         const rankedManga = likedRanking
-            .map((rankedItem) => manga.find((comic) => (
+            .map((rankedItem) => readableManga.find((comic) => (
                 toSlug(comic.title) === rankedItem.slug || comic.title === rankedItem.title
             )))
-            .filter((comic): comic is MangaResponse => Boolean(comic));
+            .filter((comic): comic is MangaWithLatestChapter => Boolean(comic));
 
         if (rankedManga.length > 0) {
             return getRandomManga(rankedManga, 5);
         }
 
-        return getRandomManga(manga, 5);
-    }, [likedRanking, manga]);
+        return getRandomManga(readableManga, 5);
+    }, [likedRanking, readableManga]);
 
     useEffect(() => {
         async function loadReadingHistory() {
@@ -145,7 +152,7 @@ export function Home() {
                 <h2 className={styles.sectionTitle}>Truyện Mới Cập Nhật</h2>
                 {error && <p className={styles.errorText}>{error}</p>}
                 <div className={styles.comicGrid}>
-                    {manga.map((comic) => (
+                    {readableManga.map((comic) => (
                         <article className={styles.comicCard} key={`${comic.title}-${comic.latestChapter.chapterNumber}`}>
                             <Link
                                 to={`/manga/${toSlug(comic.title)}`}
