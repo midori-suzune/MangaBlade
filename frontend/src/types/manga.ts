@@ -28,6 +28,8 @@ export type MangaSearchResponse = {
     latestChapterNumber: string | null,
     updatedAt: string,
     authors: string[],
+    categorySlugs?: string[],
+    categoryNames?: string[],
 }
 
 export type ReadingHistoryResponse = {
@@ -112,7 +114,6 @@ export type ChapterPageResponse = {
     previousChapterNumber?: string,
     nextChapterNumber?: string,
 }
-
 
 
 

@@ -34,6 +34,12 @@ public class MangaSearchDocument {
     @Field(type = FieldType.Text)
     private List<String> authors;
 
+    @Field(type = FieldType.Text)
+    private List<String> categorySlugs;
+
+    @Field(type = FieldType.Text)
+    private List<String> categoryNames;
+
     @Field(type = FieldType.Keyword)
     private String thumbUrl;
 

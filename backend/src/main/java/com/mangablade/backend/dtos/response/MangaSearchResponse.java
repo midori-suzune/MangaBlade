@@ -21,4 +21,6 @@ public class MangaSearchResponse {
     private String latestChapterNumber;
     private Instant updatedAt;
     private List<String> authors;
+    private List<String> categorySlugs;
+    private List<String> categoryNames;
 }

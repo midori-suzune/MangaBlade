@@ -33,6 +33,19 @@ export async function searchManga(query: string, limit = 5): Promise<ApiResponse
   return response.data;
 }
 
+export async function filterManga(params: {
+  category?: string;
+  author?: string;
+  sort?: string;
+  page?: number;
+  size?: number;
+}): Promise<ApiResponse<MangaSearchResponse[]>> {
+  const response = await axiosInstance.get<ApiResponse<MangaSearchResponse[]>>('/api/v1/manga/filter', {
+    params,
+  });
+  return response.data;
+}
+
 export async function getRecentUserComments(): Promise<ApiResponse<RecentCommentResponse[]>> {
   const response = await axiosInstance.get<ApiResponse<RecentCommentResponse[]>>('/api/v1/manga/comments/recent-users');
   return response.data;

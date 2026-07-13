@@ -62,4 +62,10 @@ public interface MangaSearchRepository extends ElasticsearchRepository<MangaSear
             }
             """)
     Page<MangaSearchDocument> searchByTitleOrAuthors(String keyword, Pageable pageable);
+
+    Page<MangaSearchDocument> findByCategorySlugs(String categorySlug, Pageable pageable);
+
+    Page<MangaSearchDocument> findByAuthorsContaining(String author, Pageable pageable);
+
+    Page<MangaSearchDocument> findByCategorySlugsAndAuthorsContaining(String categorySlug, String author, Pageable pageable);
 }

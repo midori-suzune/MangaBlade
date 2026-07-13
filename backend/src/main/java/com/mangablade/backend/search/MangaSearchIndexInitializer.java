@@ -28,13 +28,14 @@ public class MangaSearchIndexInitializer implements ApplicationRunner {
         var indexOps = elasticsearchOperations.indexOps(MangaSearchDocument.class);
 
         if (indexOps.exists()) {
+            putMangaMapping();
             return;
         }
         createMangaIndex();
     }
 
     private void createMangaIndex() {
-        var request = getRequest();
+        var request = getCreateIndexRequest();
 
         try {
             restClient.performRequest(request);
@@ -47,7 +48,17 @@ public class MangaSearchIndexInitializer implements ApplicationRunner {
         }
     }
 
-    private static @NonNull Request getRequest() {
+    private void putMangaMapping() {
+        var request = getPutMappingRequest();
+
+        try {
+            restClient.performRequest(request);
+        } catch (Exception exception) {
+            throw new IllegalStateException("Failed to update Elasticsearch manga mapping", exception);
+        }
+    }
+
+    private static @NonNull Request getCreateIndexRequest() {
         var request = new Request("PUT", "/manga");
         request.setEntity(new NStringEntity("""
                 {
@@ -56,10 +67,31 @@ public class MangaSearchIndexInitializer implements ApplicationRunner {
                       "slug": { "type": "keyword" },
                       "title": { "type": "text" },
                       "authors": { "type": "text" },
+                      "categorySlugs": { "type": "text" },
+                      "categoryNames": { "type": "text" },
                       "thumbUrl": { "type": "keyword" },
                       "latestChapterNumber": { "type": "keyword" },
                       "updatedAt": { "type": "date" }
                     }
+                  }
+                }
+                """, ContentType.APPLICATION_JSON));
+        return request;
+    }
+
+    private static @NonNull Request getPutMappingRequest() {
+        var request = new Request("PUT", "/manga/_mapping");
+        request.setEntity(new NStringEntity("""
+                {
+                  "properties": {
+                    "slug": { "type": "keyword" },
+                    "title": { "type": "text" },
+                    "authors": { "type": "text" },
+                    "categorySlugs": { "type": "text" },
+                    "categoryNames": { "type": "text" },
+                    "thumbUrl": { "type": "keyword" },
+                    "latestChapterNumber": { "type": "keyword" },
+                    "updatedAt": { "type": "date" }
                   }
                 }
                 """, ContentType.APPLICATION_JSON));

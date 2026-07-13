@@ -68,6 +68,24 @@ public class MangaController {
         );
     }
 
+    @GetMapping("/filter")
+    public ResponseEntity<ApiResponse<List<MangaSearchResponse>>> filter(
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String author,
+            @RequestParam(defaultValue = "update") String sort,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        var results = mangaSearchService.filter(category, author, sort, page, size);
+        return ResponseEntity.ok(
+                ApiResponse.<List<MangaSearchResponse>>builder()
+                        .success(true)
+                        .message("success")
+                        .payload(results)
+                        .build()
+        );
+    }
+
     @GetMapping("/comments/recent-users")
     public ResponseEntity<ApiResponse<List<RecentCommentResponse>>> getRecentUserComments() {
         var comments = commentService.findRecentDistinctUserComments();
