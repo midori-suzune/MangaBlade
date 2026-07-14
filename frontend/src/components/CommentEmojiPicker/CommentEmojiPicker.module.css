@@ -1,0 +1,118 @@
+.emojiPicker {
+    position: relative;
+    z-index: 15;
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: flex-start;
+    min-width: 0;
+}
+
+.emojiPanel {
+    position: absolute;
+    left: 0;
+    bottom: calc(100% + 8px);
+    z-index: 20;
+    display: flex;
+    width: min(360px, calc(100vw - 64px));
+    max-height: 320px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    border-radius: 0;
+    background-color: #ffffff;
+    box-shadow: 0 16px 36px rgba(15, 23, 42, 0.16);
+}
+
+.folderBar {
+    display: flex;
+    max-width: 100%;
+    gap: 4px;
+    overflow-x: auto;
+    padding: 6px;
+    border: 1px solid #dbe4f0;
+    background-color: #f1f5f9;
+}
+
+.folderButton {
+    display: flex;
+    width: 38px;
+    height: 38px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    border-radius: 0;
+    background-color: #ffffff;
+    cursor: pointer;
+}
+
+.folderButton:hover,
+.folderButtonActive {
+    background-color: #eef2ff;
+}
+
+.folderButton:hover {
+    border-color: transparent;
+}
+
+.folderButtonActive {
+    border-color: transparent;
+}
+
+.folderButton img {
+    max-width: 30px;
+    max-height: 30px;
+    object-fit: contain;
+}
+
+.emojiGridWrap {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    flex-direction: column;
+}
+
+.emojiPanelHeader {
+    padding: 10px 12px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #475569;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.emojiGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+    gap: 6px;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.emojiButton {
+    display: flex;
+    height: 50px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    border-radius: 0;
+    background-color: #ffffff;
+    cursor: pointer;
+}
+
+.emojiButton:hover {
+    border-color: #c7d2fe;
+    background-color: #f8fafc;
+}
+
+.emojiButton img {
+    max-width: 40px;
+    max-height: 40px;
+    object-fit: contain;
+}
+
+@media (max-width: 520px) {
+    .emojiPanel {
+        right: auto;
+        left: 0;
+        bottom: calc(100% + 8px);
+        width: min(300px, calc(100vw - 32px));
+    }
+}

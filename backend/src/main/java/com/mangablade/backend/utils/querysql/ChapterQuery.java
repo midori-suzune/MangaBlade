@@ -11,9 +11,14 @@ public class ChapterQuery {
 
     public static final String GET_LATEST_CHAPTER_BY_MANGA_ID = """
             SELECT chapter_number
-            FROM chapter
-            WHERE manga_id = :mangaId
-            ORDER BY CAST(chapter_number AS DECIMAL(10,2)) DESC
+            FROM chapter c
+            WHERE c.manga_id = :mangaId
+              AND EXISTS (
+                  SELECT 1
+                  FROM chapter_page cp
+                  WHERE cp.chapter_id = c.id
+              )
+            ORDER BY COALESCE(c.chapter_sort, CAST(c.chapter_number AS DECIMAL(10,2))) DESC
             LIMIT 1
             """;
 

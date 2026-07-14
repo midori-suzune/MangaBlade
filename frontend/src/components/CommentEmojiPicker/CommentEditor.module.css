@@ -1,0 +1,37 @@
+.commentEditor {
+    width: 100%;
+    min-height: 92px;
+    padding: 15px;
+    overflow-y: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 0;
+    background-color: #f8fafc;
+    color: #1e293b;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.5;
+    outline: none;
+    white-space: pre-wrap;
+    word-break: break-word;
+    transition: border-color 0.2s, background-color 0.2s;
+}
+
+.commentEditor:focus {
+    border-color: #e2e8f0;
+    background-color: #ffffff;
+}
+
+.commentEditor:empty::before {
+    color: #94a3b8;
+    content: attr(data-placeholder);
+    pointer-events: none;
+}
+
+.commentEditor img {
+    display: inline-block;
+    max-width: 92px;
+    max-height: 92px;
+    margin: 0 5px;
+    object-fit: contain;
+    vertical-align: middle;
+}

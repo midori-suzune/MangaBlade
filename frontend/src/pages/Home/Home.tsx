@@ -14,6 +14,7 @@ import {getTimeAgo} from "../../utils/time.ts";
 import {MangaSlider} from "../../components/MangaSlider/MangaSlider.tsx";
 import {toSlug} from "../../utils/slug.ts";
 import {useAuthStore} from "../../stores/authStore.ts";
+import {CommentText} from "../../components/CommentEmojiPicker/CommentText.tsx";
 
 function getRandomManga<T>(items: T[], limit: number) {
     const shuffledItems = [...items];
@@ -290,7 +291,9 @@ export function Home() {
                                             <span className={styles.commentAuthor}>{comment.username}</span>
                                             <span className={styles.commentTime}>{getTimeAgo(comment.createdAt)}</span>
                                         </div>
-                                        <p className={styles.commentText}>{comment.content}</p>
+                                        <p className={styles.commentText}>
+                                            <CommentText content={comment.content} />
+                                        </p>
                                         <Link to={commentTarget} className={styles.commentComicTitle}>{comicLabel}</Link>
                                     </div>
                                 </article>

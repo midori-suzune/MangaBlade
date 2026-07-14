@@ -6,6 +6,9 @@ import type {ChapterPageRequest, ChapterPageResponse, MangaCommentResponse} from
 import {useEffect, useMemo, useState} from "react";
 import {createChapterComment, getChapterComments, requestChapterPage} from "../../api/mangaApi.ts";
 import {useAuthStore} from "../../stores/authStore.ts";
+import {CommentEditor} from "../../components/CommentEmojiPicker/CommentEditor.tsx";
+import {CommentEmojiPicker} from "../../components/CommentEmojiPicker/CommentEmojiPicker.tsx";
+import {CommentText} from "../../components/CommentEmojiPicker/CommentText.tsx";
 
 export function ReadingMangaPage() {
 
@@ -188,13 +191,14 @@ export function ReadingMangaPage() {
                     <div className={styles.commentInputBox}>
                         <div className={styles.commentAvatar}>{getAvatarLabel(user?.username)}</div>
                         <div className={styles.commentInputWrapper}>
-                            <textarea
+                            <CommentEditor
                                 placeholder="Nhập bình luận của bạn..."
-                                rows={3}
+                                minRows={3}
                                 value={commentContent}
-                                onChange={(event) => setCommentContent(event.target.value)}
+                                onChange={setCommentContent}
                             />
                             <div className={styles.commentActions}>
+                                <CommentEmojiPicker />
                                 <button
                                     className={styles.btnSubmitComment}
                                     type="button"
@@ -220,7 +224,9 @@ export function ReadingMangaPage() {
                                             <span className={styles.commentAuthor}>{comment.user.username}</span>
                                             <span className={styles.commentBadge}>{chapterLabel}</span>
                                         </div>
-                                        <p className={styles.commentText}>{comment.content}</p>
+                                        <p className={styles.commentText}>
+                                            <CommentText content={comment.content} />
+                                        </p>
                                     </div>
                                     <div className={styles.commentFooterActions}>
                                         <span>{new Date(comment.createdAt).toLocaleDateString("vi-VN")}</span>

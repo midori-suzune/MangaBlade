@@ -6,6 +6,24 @@ public class MangaSearchQuery {
               "bool": {
                 "should": [
                   {
+                    "prefix": {
+                      "slug": {
+                        "value": "?0",
+                        "case_insensitive": true,
+                        "boost": 5
+                      }
+                    }
+                  },
+                  {
+                    "wildcard": {
+                      "slug": {
+                        "value": "*?0*",
+                        "case_insensitive": true,
+                        "boost": 4
+                      }
+                    }
+                  },
+                  {
                     "multi_match": {
                       "query": "?0",
                       "fields": ["title^3", "authors"],
