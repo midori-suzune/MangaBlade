@@ -134,11 +134,13 @@ public class MangaSearchServiceImpl implements MangaSearchService {
     }
 
     private MangaSearchResponse toResponse(MangaSearchDocument document) {
+        var latestChapterNumber = chapterService.getLastestChapterByMangaId(document.getId());
+
         return MangaSearchResponse.builder()
                 .title(document.getTitle())
                 .slug(document.getSlug())
                 .thumbUrl(document.getThumbUrl())
-                .latestChapterNumber(document.getLatestChapterNumber())
+                .latestChapterNumber(latestChapterNumber)
                 .updatedAt(document.getUpdatedAt())
                 .authors(document.getAuthors())
                 .categorySlugs(document.getCategorySlugs())
