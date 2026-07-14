@@ -12,6 +12,9 @@ import java.util.List;
 
 @Repository
 public interface ChapterPageRepository extends JpaRepository<ChapterPage, Long> {
+    boolean existsByChapterId(Long chapterId);
+
+    void deleteByChapterId(Long chapterId);
 
     @Query(value = """
       select m.title as mangaTitle,

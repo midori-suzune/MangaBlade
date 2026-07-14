@@ -37,6 +37,10 @@ public class OTruyenImportTarget {
     @Column(nullable = false, length = 550)
     private String slug;
 
+    @Size(max = 550)
+    @Column(name = "cloudinary_folder_slug", length = 550)
+    private String cloudinaryFolderSlug;
+
     @NotNull
     @Column(nullable = false)
     @Builder.Default

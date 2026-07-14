@@ -14,7 +14,6 @@ public class ChapterMapper {
     public Chapter toEntity(OTruyenChapterResponse.ChapterData chapterData , Manga manga) {
         return Chapter.builder()
                 .mangaId(manga.getId())
-                .chapterApiUrl(chapterData.getChapterApiUrl())
                 .title(chapterData.getTitle())
                 .chapterNumber(chapterData.getChapterNumber())
                 .chapterSort(toChapterSort(chapterData.getChapterNumber()))

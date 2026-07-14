@@ -84,7 +84,7 @@ public class MangaServiceImpl implements MangaService {
                 .status(manga.getStatus())
                 .thumbUrl(manga.getThumbUrl())
                 .description(manga.getDescription())
-                .sourceType(manga.getSourceType())
+                .sourceType(manga.getMetadataSource())
                 .updatedAt(manga.getUpdatedAt())
                 .followed(interaction.isFollowed())
                 .liked(interaction.isLiked())

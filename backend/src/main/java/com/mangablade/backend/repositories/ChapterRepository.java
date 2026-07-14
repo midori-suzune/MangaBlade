@@ -16,6 +16,8 @@ import java.util.Optional;
 public interface ChapterRepository extends JpaRepository<Chapter, Long> {
     List<Chapter> findAllByMangaId(Long mangaId);
 
+    Optional<Chapter> findByMangaIdAndChapterNumber(Long mangaId, String chapterNumber);
+
     @Query("""
             select c
             from Chapter c
@@ -31,8 +33,8 @@ public interface ChapterRepository extends JpaRepository<Chapter, Long> {
     @Query("""
             SELECT c
             FROM Chapter c
-            WHERE c.chapterApiUrl IS NOT NULL
-              AND NOT EXISTS (
+            JOIN FETCH c.manga
+            WHERE NOT EXISTS (
                   SELECT cp.id
                   FROM ChapterPage cp
                   WHERE cp.chapterId = c.id
@@ -56,9 +58,14 @@ public interface ChapterRepository extends JpaRepository<Chapter, Long> {
 
     @Query(value = """
       select c.chapter_number as chapterNumber,
-             c.chapter_api_url as chapterUrl
+             null as chapterUrl
       from chapter c
       where c.manga_id = :id
+        and exists (
+            select 1
+            from chapter_page cp
+            where cp.chapter_id = c.id
+        )
       order by cast(c.chapter_number as decimal(10,2)) desc
       """, nativeQuery = true)
     List<ChapterProjection> getChaptersByMangaId(@Param("id") Long id);

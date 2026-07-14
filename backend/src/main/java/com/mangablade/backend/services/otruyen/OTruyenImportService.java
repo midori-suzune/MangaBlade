@@ -2,25 +2,16 @@ package com.mangablade.backend.services.otruyen;
 
 
 import com.mangablade.backend.entities.*;
-import com.mangablade.backend.integration.otruyen.OTruyenClient;
-import com.mangablade.backend.integration.otruyen.response.OTruyenChapterResponse;
 import com.mangablade.backend.integration.otruyen.response.OTruyenMangaResponse;
 import com.mangablade.backend.integration.otruyen.response.OtruyenCategoryResponse;
 import com.mangablade.backend.mapper.AuthorMapper;
 import com.mangablade.backend.mapper.CategoryMapper;
-import com.mangablade.backend.mapper.ChapterMapper;
 import com.mangablade.backend.mapper.MangaMapper;
 import com.mangablade.backend.repositories.*;
-import com.mangablade.backend.services.mangablade.MangaSearchService;
 
-import org.springframework.data.domain.PageRequest;
-import org.springframework.lang.NonNull;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.*;
-import java.util.logging.Logger;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -33,110 +24,16 @@ public class OTruyenImportService {
 
     private final MangaRepository mangaRepository;
     private final MangaMapper mangaMapper;
-    private final ChapterMapper chapterMapper;
-    private final ChapterRepository chapterRepository;
-    private final OTruyenClient oTruyenClient;
-    private final ChapterPageRepository chapterPageRepository;
     private final AuthorRepository authorRepository;
     private final AuthorMapper authorMapper;
     private final MangaAuthorRepository mangaAuthorRepository;
     private final MangaCategoryRepository mangaCategoryRepository;
     private final CategoryMapper categoryMapper;
     private final CategoryRepository categoryRepository;
-    private final MangaSearchService mangaSearchService;
 
-
-    @Scheduled(cron = "${spring.app.otruyen.chapter-page-import-cron}", zone = "Asia/Ho_Chi_Minh")
-    public void fetchChapterPages() {
-        log.info("Starting chapter page import");
-        var chapters = chapterRepository.findChaptersWithoutPages(PageRequest.of(0, 20));
-        log.info("Found {} chapters without pages", chapters.size());
-
-        for (Chapter chapter : chapters) {
-            log.info(
-                    "Importing pages for chapterId={}, chapterApiUrl={}",
-                    chapter.getId(),
-                    chapter.getChapterApiUrl()
-            );
-            var response = oTruyenClient.fetchApiChapterByUrl(chapter.getChapterApiUrl());
-
-            String domain = response.getData().getDomainCdn();
-            String chapterPath = response.getData().getItem().getChapterPath();
-            var images = response.getData().getItem().getChapterImages();
-
-            if (images == null) {
-                log.warn(
-                        "No images found for chapterId={}, chapterApiUrl={}",
-                        chapter.getId(),
-                        chapter.getChapterApiUrl()
-                );
-            }
-
-            if (images != null) {
-                log.info(
-                        "Fetched {} images for chapterId={}, chapterApiUrl={}",
-                        images.size(),
-                        chapter.getId(),
-                        chapter.getChapterApiUrl()
-                );
-
-                List<ChapterPage> chapterPages = new ArrayList<>();
-                Instant createdAt = Instant.now();
-                boolean zeroBasedPageNumbers = images.stream()
-                        .anyMatch(image -> image.getPageNumber() != null && image.getPageNumber() == 0);
-
-                if (zeroBasedPageNumbers) {
-                    log.warn(
-                            "Zero-based image_page detected; shifting pages to one-based numbering: chapterId={}, chapterApiUrl={}",
-                            chapter.getId(),
-                            chapter.getChapterApiUrl()
-                    );
-                }
-
-                for (int index = 0; index < images.size(); index++) {
-                    var image = images.get(index);
-                    if (image.getPageNumber() == null || image.getPageNumber() < 0) {
-                        log.error(
-                                "Invalid image_page: chapterId={}, chapterApiUrl={}, pageNumber={}, imageFile={}",
-                                chapter.getId(),
-                                chapter.getChapterApiUrl(),
-                                image.getPageNumber(),
-                                image.getImageFile()
-                        );
-                    }
-
-                    String imageUrl = domain + "/" + chapterPath + "/" + image.getImageFile();
-                    int pageNumber = resolvePageNumber(image.getPageNumber(), index, zeroBasedPageNumbers);
-
-                    chapterPages.add(ChapterPage.builder()
-                            .chapterId(chapter.getId())
-                            .pageNumber(pageNumber)
-                            .imageUrl(imageUrl)
-                            .createdAt(createdAt)
-                            .build());
-                }
-
-                chapterPageRepository.saveAll(chapterPages);
-                log.info("Imported {} pages for chapterId={}", chapterPages.size(), chapter.getId());
-            }
-        }
-        log.info("Finished chapter page import");
-    }
-
-    private int resolvePageNumber(Integer sourcePageNumber, int index, boolean zeroBasedPageNumbers) {
-        if (sourcePageNumber == null) {
-            return index + 1;
-        }
-
-        if (zeroBasedPageNumbers) {
-            return sourcePageNumber + 1;
-        }
-
-        return sourcePageNumber;
-    }
 
     @Transactional
-    public Manga importManga(OTruyenMangaResponse response) {
+    public Manga importManga(OTruyenMangaResponse response, OTruyenImportTarget target) {
         log.info("Starting manga import: otruyenMangaId={}",
                 response.getData().getItem().getOtruyenMangaId());
 
@@ -144,6 +41,9 @@ public class OTruyenImportService {
         var manga = mangaRepository.findByOtruyenMangaId(response.getData().getItem().getOtruyenMangaId())
                 .orElseGet(() -> mangaRepository.save(newManga)
         );
+        if (target.getCloudinaryFolderSlug() != null && !target.getCloudinaryFolderSlug().isBlank()) {
+            manga.setCloudinaryFolderSlug(target.getCloudinaryFolderSlug());
+        }
         manga.setUpdatedAt(response.getData().getSeoOnPage().getUpdatedAt());
         var categories = getOtruyenCategoryResponses(response, manga);
 
@@ -192,52 +92,5 @@ public class OTruyenImportService {
 
         });
         return categories;
-    }
-
-    @Transactional
-    public void importChapter(OTruyenMangaResponse response, Manga manga) {
-        log.info("Starting chapter import: mangaId={}", manga.getId());
-
-        Map<String, OTruyenChapterResponse.ChapterData> remoteChapters = new LinkedHashMap<>();
-
-        // Deduplicate remote chapters by number, keeping the latest entry.
-        for (var server : response.getData().getItem().getChapters()) {
-            for (var chapterData : server.getSeverData()) {
-                String chapterNumber = chapterData.getChapterNumber();
-
-                if (chapterNumber != null) {
-                    remoteChapters.put(chapterNumber, chapterData);
-                }
-            }
-        }
-
-        Map<String, Chapter> existingChapters = new HashMap<>();
-
-        // query chapter and add it into map [ 102 | chapter entity  ]
-        for (Chapter chapter : chapterRepository.findAllByMangaId(manga.getId())) {
-            existingChapters.put(chapter.getChapterNumber(), chapter);
-        }
-
-        List<Chapter> chaptersToSave = new ArrayList<>();
-
-        // Create missing chapters and update existing chapter metadata.
-        for (var chapterData : remoteChapters.values()) {
-
-            Chapter chapter = existingChapters.get(chapterData.getChapterNumber());
-
-            if (chapter == null) {
-                chapter = chapterMapper.toEntity(chapterData, manga);
-            } else {
-                chapter.setChapterApiUrl(chapterData.getChapterApiUrl());
-                chapter.setTitle(chapterData.getTitle());
-            }
-
-            chaptersToSave.add(chapter);
-        }
-
-        chapterRepository.saveAll(chaptersToSave);
-        mangaSearchService.indexManga(manga);
-        log.info("Finished chapter import: mangaId={}, chapters={}",
-                manga.getId(), chaptersToSave.size());
     }
 }

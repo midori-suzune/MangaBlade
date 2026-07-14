@@ -33,9 +33,12 @@ spring:
   app:
     otruyen:
       manga-import-cron: "0 */4 * * * *"
-      chapter-page-import-cron: "0 */6 * * * *"
       importer:
         max-manga-per-run: 2
+    cloudinary:
+      chapter-page-sync-cron: "0 */6 * * * *"
+      importer:
+        max-chapters-per-run: 20
   elasticsearch:
     uris: ${ELASTICSEARCH_URL:http://localhost:9200}
 
@@ -45,6 +48,11 @@ jwt:
 
 google:
   client-id: ${GOOGLE_CLIENT_ID}
+
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME:}
+  api-key: ${CLOUDINARY_API_KEY:}
+  api-secret: ${CLOUDINARY_API_SECRET:}
 
 logging:
   charset:

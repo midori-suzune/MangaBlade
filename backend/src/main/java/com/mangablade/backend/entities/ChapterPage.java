@@ -2,6 +2,7 @@ package com.mangablade.backend.entities;
 
 import java.time.Instant;
 
+import com.mangablade.backend.enums.ImageProvider;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -35,6 +36,16 @@ public class ChapterPage {
     @Size(max = 1000)
     @Column(name = "image_url", nullable = false, length = 1000)
     private String imageUrl;
+
+    @Size(max = 550)
+    @Column(name = "cloudinary_public_id", length = 550)
+    private String cloudinaryPublicId;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "image_provider", nullable = false, length = 30)
+    @Builder.Default
+    private ImageProvider imageProvider = ImageProvider.CLOUDINARY;
 
     @NotNull
     @Column(name = "created_at", nullable = false, columnDefinition = "DATETIME(3)")

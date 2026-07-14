@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 public class ChapterController {
 
     private final ChapterService chapterService ;
+
     @PostMapping
     public ResponseEntity<ApiResponse<List<ChapterPageResponse>>> getChapterPageRequest(
             @RequestBody ChapterPageRequest request,

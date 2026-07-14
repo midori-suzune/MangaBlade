@@ -12,7 +12,6 @@ import lombok.*;
 
 @Entity
 @Table(name = "chapter", uniqueConstraints = {
-        @UniqueConstraint(name = "uq_chapter_api_url", columnNames = "chapter_api_url"),
         @UniqueConstraint(name = "uq_chapter_id_manga", columnNames = {"id", "manga_id"})
 })
 @Getter
@@ -24,10 +23,6 @@ public class Chapter {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Size(max = 500)
-    @Column(name = "chapter_api_url", length = 500)
-    private String chapterApiUrl;
 
     @NotNull
     @Column(name = "manga_id", nullable = false)

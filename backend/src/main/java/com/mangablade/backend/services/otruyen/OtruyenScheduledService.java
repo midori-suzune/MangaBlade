@@ -41,8 +41,7 @@ public class OtruyenScheduledService {
 
             try {
                 var response = oTruyenClient.fetchApiMangaBySlug(target.getSlug());
-                var manga = oTruyenImportService.importManga(response);
-                oTruyenImportService.importChapter(response, manga);
+                oTruyenImportService.importManga(response, target);
 
                 target.markSuccess(importedAt);
                 log.info("Imported OTruyen manga: slug={}", target.getSlug());
