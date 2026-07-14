@@ -6,42 +6,25 @@ import java.util.List;
 
 import com.mangablade.backend.enums.AuthProvider;
 import com.mangablade.backend.enums.UserRole;
-
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.*;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "users", uniqueConstraints = {
-        @UniqueConstraint(name = "uq_users_email", columnNames = "email"),
-        @UniqueConstraint(name = "uq_users_username", columnNames = "username")
-})
-@Getter
-@Setter
+@Table(name = "users")
+@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class User implements UserDetails {
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
-    @Email
-    @Size(max = 255)
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String email;
 
-    @NotBlank
-    @Size(max = 50)
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, unique = true, length = 50)
     private String username;
 
     @Size(max = 255)
@@ -62,37 +45,12 @@ public class User implements UserDetails {
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    @Builder.Default
+    @Column(nullable = false)
     private UserRole role = UserRole.USER;
 
-    @Column(name = "email_verified_at", columnDefinition = "DATETIME(3)")
-    private Instant emailVerifiedAt;
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 
-    @Column(name = "password_changed_at", columnDefinition = "DATETIME(3)")
-    private Instant passwordChangedAt;
-
-    @NotNull
-    @Column(name = "created_at", nullable = false, columnDefinition = "DATETIME(3)")
-    private Instant createdAt;
-
-    @NotNull
-    @Column(name = "updated_at", nullable = false, columnDefinition = "DATETIME(3)")
-    private Instant updatedAt;
-
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
-    }
-
-    @Override
-    public String getPassword() {
-        return passwordHash;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return UserDetails.super.isEnabled();
-    }
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
 }
