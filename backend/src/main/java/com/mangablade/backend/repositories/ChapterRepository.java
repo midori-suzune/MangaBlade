@@ -2,8 +2,8 @@ package com.mangablade.backend.repositories;
 
 import com.mangablade.backend.dtos.response.ChapterProjection;
 import com.mangablade.backend.entities.Chapter;
+import com.mangablade.backend.utils.querysql.ChapterQuery;
 
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,55 +18,19 @@ public interface ChapterRepository extends JpaRepository<Chapter, Long> {
 
     Optional<Chapter> findByMangaIdAndChapterNumber(Long mangaId, String chapterNumber);
 
-    @Query("""
-            select c
-            from Chapter c
-            join c.manga m
-            where m.slug = :slug
-              and c.chapterNumber = :chapterNumber
-            """)
+    @Query(ChapterQuery.FIND_BY_MANGA_SLUG_AND_CHAPTER_NUMBER)
     Optional<Chapter> findByMangaSlugAndChapterNumber(
             @Param("slug") String slug,
             @Param("chapterNumber") String chapterNumber
     );
 
-    @Query("""
-            SELECT c
-            FROM Chapter c
-            JOIN FETCH c.manga
-            WHERE NOT EXISTS (
-                  SELECT cp.id
-                  FROM ChapterPage cp
-                  WHERE cp.chapterId = c.id
-              )
-            ORDER BY c.id
-            """)
-    List<Chapter> findChaptersWithoutPages(Pageable pageable);
-
     @Query(
-            value = """
-              SELECT chapter_number
-              FROM chapter
-              WHERE manga_id = :mangaId
-              ORDER BY CAST(chapter_number AS DECIMAL(10,2)) DESC
-              LIMIT 1
-              """,
+            value = ChapterQuery.GET_LATEST_CHAPTER_BY_MANGA_ID,
             nativeQuery = true
     )
     String getLatestChapterByMangaId(@Param("mangaId") Long mangaId);
 
 
-    @Query(value = """
-      select c.chapter_number as chapterNumber,
-             null as chapterUrl
-      from chapter c
-      where c.manga_id = :id
-        and exists (
-            select 1
-            from chapter_page cp
-            where cp.chapter_id = c.id
-        )
-      order by cast(c.chapter_number as decimal(10,2)) desc
-      """, nativeQuery = true)
+    @Query(value = ChapterQuery.GET_CHAPTERS_BY_MANGA_ID, nativeQuery = true)
     List<ChapterProjection> getChaptersByMangaId(@Param("id") Long id);
 }

@@ -1,7 +1,8 @@
 package com.mangablade.backend.repositories;
 
-import com.mangablade.backend.dtos.response.MangaRankingResponse;
+import com.mangablade.backend.dtos.response.MangaRankingProjection;
 import com.mangablade.backend.entities.Manga;
+import com.mangablade.backend.utils.querysql.MangaQuery;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -18,61 +19,15 @@ public interface MangaRepository extends JpaRepository<Manga, Long> {
 
     Optional<Manga> findBySlug(String slug);
 
-    @Query("""
-            select new com.mangablade.backend.dtos.response.MangaRankingResponse(
-                m.slug,
-                m.title,
-                m.thumbUrl,
-                (select count(ml) from MangaLike ml where ml.mangaId = m.id),
-                (select count(f) from Favorite f where f.mangaId = m.id),
-                (select count(rh) from ReadingHistory rh where rh.mangaId = m.id)
-            )
-            from Manga m
-            where (select count(ml) from MangaLike ml where ml.mangaId = m.id) > 0
-            order by (select count(ml) from MangaLike ml where ml.mangaId = m.id) desc,
-                     m.updatedAt desc
-            limit 5
-            """)
-    List<MangaRankingResponse> findTopRankedByLikes();
+    @Query(MangaQuery.FIND_TOP_RANKED_BY_LIKES)
+    List<MangaRankingProjection> findTopRankedByLikes();
 
-    @Query("""
-            select new com.mangablade.backend.dtos.response.MangaRankingResponse(
-                m.slug,
-                m.title,
-                m.thumbUrl,
-                (select count(ml) from MangaLike ml where ml.mangaId = m.id),
-                (select count(f) from Favorite f where f.mangaId = m.id),
-                (select count(rh) from ReadingHistory rh where rh.mangaId = m.id)
-            )
-            from Manga m
-            where (select count(f) from Favorite f where f.mangaId = m.id) > 0
-            order by (select count(f) from Favorite f where f.mangaId = m.id) desc,
-                     m.updatedAt desc
-            limit 5
-            """)
-    List<MangaRankingResponse> findTopRankedByFollows();
+    @Query(MangaQuery.FIND_TOP_RANKED_BY_FOLLOWS)
+    List<MangaRankingProjection> findTopRankedByFollows();
 
-    @Query("""
-            select new com.mangablade.backend.dtos.response.MangaRankingResponse(
-                m.slug,
-                m.title,
-                m.thumbUrl,
-                (select count(ml) from MangaLike ml where ml.mangaId = m.id),
-                (select count(f) from Favorite f where f.mangaId = m.id),
-                (select count(rh) from ReadingHistory rh where rh.mangaId = m.id)
-            )
-            from Manga m
-            where (select count(rh) from ReadingHistory rh where rh.mangaId = m.id) > 0
-            order by (select count(rh) from ReadingHistory rh where rh.mangaId = m.id) desc,
-                     m.updatedAt desc
-            limit 5
-            """)
-    List<MangaRankingResponse> findTopRankedByViews();
+    @Query(MangaQuery.FIND_TOP_RANKED_BY_VIEWS)
+    List<MangaRankingProjection> findTopRankedByViews();
 
-    @Query("""
-            select m from Manga m
-            where exists (select f from Favorite f where f.mangaId = m.id and f.userId = :userId)
-            order by m.updatedAt desc
-            """)
+    @Query(MangaQuery.FIND_FOLLOWED_MANGA_BY_USER_ID)
     List<Manga> findFollowedMangaByUserId(@Param("userId") Long userId);
 }
