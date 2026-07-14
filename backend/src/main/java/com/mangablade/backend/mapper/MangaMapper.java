@@ -2,6 +2,7 @@ package com.mangablade.backend.mapper;
 
 import com.mangablade.backend.dtos.response.MangaResponse;
 import com.mangablade.backend.entities.Manga;
+import com.mangablade.backend.enums.ChapterPageSource;
 import com.mangablade.backend.enums.MangaSourceType;
 import com.mangablade.backend.integration.otruyen.response.OTruyenMangaResponse;
 
@@ -14,8 +15,10 @@ public class MangaMapper {
     public Manga toEntity(OTruyenMangaResponse response) {
         return Manga.builder()
                 .otruyenMangaId(response.getData().getItem().getOtruyenMangaId())
-                .sourceType(MangaSourceType.OTRUYEN)
+                .metadataSource(MangaSourceType.OTRUYEN)
+                .chapterPageSource(ChapterPageSource.TRUYENQQ)
                 .slug(response.getData().getItem().getSlug())
+                .cloudinaryFolderSlug(response.getData().getItem().getSlug())
                 .title(response.getData().getItem().getName())
                 .description(response.getData().getItem().getDescription())
                 .status(response.getData().getItem().getStatus())

@@ -19,12 +19,48 @@ spring:
       hibernate:
         jdbc:
           time_zone: UTC
+  mail:
+    host: ${SPRING_MAIL_HOST:smtp.gmail.com}
+    port: ${SPRING_MAIL_PORT:587}
+    username: ${SPRING_MAIL_USERNAME:}
+    password: ${SPRING_MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
   app:
     otruyen:
       manga-import-cron: "0 */4 * * * *"
-      chapter-page-import-cron: "0 */8 * * * *"
-
+      importer:
+        max-manga-per-run: 2
+    cloudinary:
+      chapter-page-sync-cron: "0 */6 * * * *"
+      importer:
+        max-chapters-per-run: 20
+  elasticsearch:
+    uris: ${ELASTICSEARCH_URL:http://localhost:9200}
 
 jwt:
   secret-key: ${JWT_SECRET_KEY}
   expiration-ms: 3600000
+
+google:
+  client-id: ${GOOGLE_CLIENT_ID}
+
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME:}
+  api-key: ${CLOUDINARY_API_KEY:}
+  api-secret: ${CLOUDINARY_API_SECRET:}
+
+logging:
+  charset:
+    console: UTF-8
+    file: UTF-8
+  pattern:
+    console: "[%d{yyyy-MM-dd HH:mm:ss}] %clr(%-5level) %blue(%-40.40logger{39}) : %msg%n"
+    file: "[%d{yyyy-MM-dd HH:mm:ss}] %-5level %-40.40logger{39} : %msg%n"
+  level:
+    com.mangablade.backend: debug
+    root: info

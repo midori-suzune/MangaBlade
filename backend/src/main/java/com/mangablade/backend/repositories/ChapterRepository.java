@@ -1,5 +1,6 @@
 package com.mangablade.backend.repositories;
 
+import com.mangablade.backend.dtos.response.ChapterProjection;
 import com.mangablade.backend.entities.Chapter;
 
 import org.springframework.data.domain.Pageable;
@@ -9,16 +10,31 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ChapterRepository extends JpaRepository<Chapter, Long> {
     List<Chapter> findAllByMangaId(Long mangaId);
 
+    Optional<Chapter> findByMangaIdAndChapterNumber(Long mangaId, String chapterNumber);
+
+    @Query("""
+            select c
+            from Chapter c
+            join c.manga m
+            where m.slug = :slug
+              and c.chapterNumber = :chapterNumber
+            """)
+    Optional<Chapter> findByMangaSlugAndChapterNumber(
+            @Param("slug") String slug,
+            @Param("chapterNumber") String chapterNumber
+    );
+
     @Query("""
             SELECT c
             FROM Chapter c
-            WHERE c.chapterApiUrl IS NOT NULL
-              AND NOT EXISTS (
+            JOIN FETCH c.manga
+            WHERE NOT EXISTS (
                   SELECT cp.id
                   FROM ChapterPage cp
                   WHERE cp.chapterId = c.id
@@ -37,5 +53,20 @@ public interface ChapterRepository extends JpaRepository<Chapter, Long> {
               """,
             nativeQuery = true
     )
-    int getLatestChapterByMangaId(@Param("mangaId") Long mangaId);
+    String getLatestChapterByMangaId(@Param("mangaId") Long mangaId);
+
+
+    @Query(value = """
+      select c.chapter_number as chapterNumber,
+             null as chapterUrl
+      from chapter c
+      where c.manga_id = :id
+        and exists (
+            select 1
+            from chapter_page cp
+            where cp.chapter_id = c.id
+        )
+      order by cast(c.chapter_number as decimal(10,2)) desc
+      """, nativeQuery = true)
+    List<ChapterProjection> getChaptersByMangaId(@Param("id") Long id);
 }

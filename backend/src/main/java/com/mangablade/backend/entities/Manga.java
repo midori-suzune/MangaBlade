@@ -3,6 +3,7 @@ package com.mangablade.backend.entities;
 import java.time.Instant;
 
 import com.mangablade.backend.enums.ApprovalStatus;
+import com.mangablade.backend.enums.ChapterPageSource;
 import com.mangablade.backend.enums.MangaSourceType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -34,8 +35,15 @@ public class Manga {
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(name = "source_type", nullable = false, length = 20)
-    private MangaSourceType sourceType;
+    @Column(name = "metadata_source", nullable = false, length = 20)
+    @Builder.Default
+    private MangaSourceType metadataSource = MangaSourceType.OTRUYEN;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "chapter_page_source", nullable = false, length = 20)
+    @Builder.Default
+    private ChapterPageSource chapterPageSource = ChapterPageSource.TRUYENQQ;
 
     @NotBlank
     @Size(max = 550)
@@ -53,6 +61,10 @@ public class Manga {
 
     @Column(columnDefinition = "TEXT")
     private String description;
+
+    @Size(max = 550)
+    @Column(name = "cloudinary_folder_slug", length = 550)
+    private String cloudinaryFolderSlug;
 
     @NotBlank
     @Size(max = 30)

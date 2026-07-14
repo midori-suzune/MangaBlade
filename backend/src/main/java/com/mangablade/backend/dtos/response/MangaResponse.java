@@ -24,6 +24,6 @@ public class MangaResponse {
     @AllArgsConstructor
     @Getter
     public static class LatestChapter {
-        private int chapterNumber;
+        private String chapterNumber;
     }
 }

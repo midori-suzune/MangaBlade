@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MangaBlade - Đọc Truyện Tranh Online</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <style>
+        /* === RESET & CƠ BẢN === */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #f4f6f8;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        /* TACTILE FEEDBACK (Taste Skill) */
+        button,
+        a,
+        .comic-card,
+        .btn-action,
+        .theme-toggle-btn {
+            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s, background-color 0.2s, color 0.2s;
+        }
+
+        button:active,
+        .btn-action:active,
+        .theme-toggle-btn:active,
+        .nav-links a:active,
+        .ranking-filters button:active {
+            transform: scale(0.96);
+        }
+
+        /* =========================================
+           HEADER & NAVIGATION (THIẾT KẾ MỚI)
+           ========================================= */
+        .top-header-wrapper {
+            background-color: #ffffff;
+        }
+
+        .bottom-header-wrapper {
+            background-color: #ffffff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .top-header {
+            max-width: 1300px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 900;
+            color: #1e293b;
+            letter-spacing: -0.5px;
+        }
+
+        .logo span {
+            color: #6366f1;
+        }
+
+        .search-box {
+            position: relative;
+            display: flex;
+            align-items: center;
+            flex: 1;
+            max-width: 500px;
+            margin: 0 20px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 15px 10px 35px;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            background-color: #f8fafc;
+            outline: none;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            border-color: #6366f1;
+            background-color: #fff;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            color: #94a3b8;
+            font-size: 14px;
+            pointer-events: none;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .auth-buttons button {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-login {
+            background-color: #f1f5f9;
+            color: #1e293b;
+        }
+
+        .btn-login:hover {
+            background-color: #e2e8f0;
+        }
+
+        .btn-signup {
+            background-color: #1e293b;
+            color: white;
+        }
+
+        .btn-signup:hover {
+            background-color: #0f172a;
+        }
+
+        .bottom-header {
+            max-width: 1300px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 15px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 24px;
+        }
+
+        .nav-links a {
+            color: #475569;
+            font-weight: 600;
+            font-size: 15px;
+            transition: color 0.2s, background-color 0.2s;
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+
+        .nav-links a:hover {
+            color: #6366f1;
+            background-color: #f1f5f9;
+        }
+
+        .nav-links a.active {
+            color: #6366f1;
+            background-color: #e0e7ff;
+        }
+
+        .menu-right-icons {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+        }
+
+        .theme-toggle-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1.5px solid #94a3b8;
+            color: #64748b;
+            transition: all 0.2s;
+            background: transparent;
+        }
+
+        .theme-toggle-btn:hover {
+            color: #6366f1;
+            border-color: #6366f1;
+            background-color: #f8fafc;
+        }
+
+        .user-avatar-circle {
+            width: 36px;
+            height: 36px;
+            background-color: #cbd5e1;
+            border-radius: 50%;
+            display: inline-block;
+            border: 2px solid #e2e8f0;
+        }
+
+        /* =========================================
+           BỐ CỤC CHÍNH (THAY ĐỔI LEFT/RIGHT)
+           ========================================= */
+        .main-container {
+            max-width: 1300px;
+            margin: 30px auto;
+            display: flex;
+            gap: 24px;
+            padding: 0 15px;
+        }
+
+        .left-main {
+            flex: 7;
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(99, 102, 241, 0.05);
+        }
+
+        .right-main {
+            flex: 3;
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(99, 102, 241, 0.05);
+            height: fit-content;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .slider-placeholder {
+            width: 100%;
+            height: 350px;
+            background-color: #cbd5e1;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #64748b;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Đổi màu tiêu đề cho hợp với giao diện mới */
+        .section-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: #1e293b;
+            text-transform: uppercase;
+            border-bottom: 2px solid #6366f1;
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+        }
+
+        /* Lưới truyện */
+        .comic-grid {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 25px 15px;
+            align-items: start;
+        }
+
+        .comic-card {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            cursor: pointer;
+        }
+
+        .comic-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .comic-card:hover .comic-cover {
+            box-shadow: 0 12px 24px rgba(99, 102, 241, 0.12);
+        }
+
+        .comic-card:active {
+            transform: translateY(-2px) scale(0.98);
+        }
+
+        .comic-cover {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 3/4;
+            background-color: #cbd5e1;
+            border-radius: 6px;
+            overflow: hidden;
+            transition: box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .comic-tag {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: #38bdf8;
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 4px;
+            z-index: 1;
+        }
+
+        .comic-tag.hot {
+            left: 90px;
+            background: #ef4444;
+        }
+
+        .comic-info {
+            padding-top: 12px;
+            text-align: center;
+        }
+
+        .comic-title {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+            color: #0f172a;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block;
+        }
+
+        .comic-title:hover {
+            color: #6366f1;
+        }
+
+        .comic-chapter {
+            font-size: 12px;
+            color: #000;
+            font-weight: 500;
+            display: block;
+        }
+
+        .comic-chapter:hover {
+            color: #6366f1;
+        }
+
+        /* Bảng xếp hạng & History */
+        .sidebar-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 12px;
+        }
+
+        .sidebar-item:last-child {
+            border-bottom: none;
+        }
+
+        .sidebar-number {
+            font-size: 22px;
+            font-weight: 900;
+            color: #cbd5e1;
+            width: 25px;
+            text-align: center;
+        }
+
+        .sidebar-item:nth-child(1) .sidebar-number {
+            color: #ef4444;
+        }
+
+        .sidebar-item:nth-child(2) .sidebar-number {
+            color: #22c55e;
+        }
+
+        .sidebar-item:nth-child(3) .sidebar-number {
+            color: #3b82f6;
+        }
+
+        .sidebar-thumb {
+            width: 55px;
+            height: 55px;
+            background: #cbd5e1;
+            border-radius: 8px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .sidebar-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1e293b;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.3;
+        }
+
+        .sidebar-desc {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .sidebar-title:hover {
+            color: #6366f1;
+        }
+
+        .ranking-header {
+            display: flex;
+            flex-direction: column;
+            border-bottom: 2px solid #6366f1;
+            padding-bottom: 14px;
+            margin-bottom: 20px;
+            gap: 12px;
+        }
+
+        .ranking-header .section-title {
+            border-bottom: none;
+            padding-bottom: 0;
+            margin-bottom: 0;
+            font-size: 18px;
+        }
+
+        .ranking-filters {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .ranking-filters button {
+            background-color: #f1f5f9;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+
+        .ranking-filters button:hover {
+            background-color: #e2e8f0;
+            color: #1e293b;
+        }
+
+        .ranking-filters button.active {
+            background-color: #6366f1;
+            color: #ffffff;
+        }
+
+        /* =========================================
+           FOOTER
+           ========================================= */
+        .site-footer {
+            background-color: #ffffff;
+            color: #475569;
+            padding: 50px 15px 30px;
+            margin-top: 50px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .footer-container {
+            max-width: 1300px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 40px;
+        }
+
+        .footer-col-main {
+            flex: 2;
+            min-width: 300px;
+        }
+
+        .footer-col-links {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .footer-col-stats {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .footer-desc {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #64748b;
+            margin-top: 15px;
+            margin-bottom: 25px;
+            max-width: 350px;
+        }
+
+        .footer-copyright {
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        .footer-title {
+            color: #1e293b;
+            font-size: 16px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            position: relative;
+            padding-bottom: 8px;
+        }
+
+        .footer-title::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 40px;
+            height: 3px;
+            background-color: #6366f1;
+            border-radius: 2px;
+        }
+
+        .footer-links {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            font-size: 14px;
+        }
+
+        .footer-links a {
+            transition: color 0.2s, padding-left 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: #6366f1;
+            padding-left: 5px;
+        }
+
+        .footer-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            background-color: #f8fafc;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            transition: border-color 0.2s, background-color 0.2s;
+        }
+
+        .stat-item:hover {
+            background-color: #fff;
+            border-color: #6366f1;
+        }
+
+        .stat-icon {
+            font-size: 16px;
+        }
+
+        .stat-value {
+            color: #6366f1;
+            font-weight: 700;
+            margin-left: auto;
+        }
+
+        /* =========================================
+           BÌNH LUẬN MỚI
+           ========================================= */
+        .comment-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .comment-item {
+            display: flex;
+            gap: 12px;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 15px;
+        }
+
+        .comment-item:last-child {
+            border-bottom: none;
+        }
+
+        .comment-avatar {
+            width: 40px;
+            height: 40px;
+            background-color: #f8fafc;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+            border: 1px solid #e2e8f0;
+        }
+
+        .comment-content {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+
+        .comment-author {
+            font-weight: 700;
+            font-size: 13px;
+            color: #1e293b;
+        }
+
+        .comment-time {
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        .comment-text {
+            font-size: 13px;
+            color: #475569;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .comment-comic-title {
+            font-size: 12px;
+            color: #6366f1;
+            font-weight: 600;
+            text-decoration: none;
+            display: block;
+            margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .comment-comic-title:hover {
+            text-decoration: underline;
+        }
+
+        /* =========================================
+           PHÂN TRANG
+           ========================================= */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 40px;
+            margin-bottom: 10px;
+        }
+
+        .page-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            font-size: 15px;
+            font-weight: 400;
+            color: #1e293b;
+            background-color: transparent;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .page-link:hover:not(.disabled) {
+            border-color: #94a3b8;
+            color: #6366f1;
+        }
+
+        .page-link.active {
+            background-color: #6366f1;
+            color: #ffffff;
+            border-color: #6366f1;
+        }
+
+        .page-link.disabled {
+            color: #cbd5e1;
+            cursor: not-allowed;
+            border-color: #f1f5f9;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="top-header-wrapper">
+        <div class="top-header">
+            <a href="#" class="logo">Manga<span>Blade</span></a>
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" placeholder="Tìm kiếm truyện...">
+            </div>
+            <div class="auth-buttons">
+                <button class="btn-signup">Sign Up</button>
+                <button class="btn-login">Login</button>
+            </div>
+        </div>
+    </div>
+
+    <header class="bottom-header-wrapper">
+        <div class="bottom-header">
+            <div class="nav-links">
+                <a href="#" class="active">Home</a>
+                <a href="#">Category</a>
+                <a href="#">New</a>
+                <a href="#">Update</a>
+            </div>
+            <div class="menu-right-icons">
+                <div class="theme-toggle-btn" title="Chế độ Sáng/Tối">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path
+                            d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1.3.5 2.6 1.5 3.5.8.8 1.3 1.5 1.5 2.5">
+                        </path>
+                        <path d="M9 18h6"></path>
+                        <path d="M10 22h4"></path>
+                    </svg>
+                </div>
+                <div class="user-avatar-circle" title="Tài Khoản"></div>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+
+        <main class="left-main">
+            <div class="slider-placeholder">
+                [Slide Động]
+            </div>
+
+            <h2 class="section-title">Truyện Mới Cập Nhật</h2>
+            <div class="comic-grid">
+
+                <!-- Hàng 1 -->
+                <div class="comic-card">
+                    <div class="comic-cover">
+                        <span class="comic-tag">42 Phút Trước</span>
+                        <div
+                            style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#94a3b8;">
+                            Ảnh Bìa</div>
+                    </div>
+                    <div class="comic-info">
+                        <a href="#" class="comic-title">Bảng Trạng Thái Bí Mật...</a>
+                        <a href="#" class="comic-chapter">Chapter 32</a>
+                    </div>
+                </div>
+                <div class="comic-card">
+                    <div class="comic-cover">
+                        <span class="comic-tag">1 Giờ Trước</span>
+                        <span class="comic-tag hot">Hot</span>
+                        <div
+                            style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#94a3b8;">
+                            Ảnh Bìa</div>
+                    </div>
+                    <div class="comic-info">
+                        <a href="#" class="comic-title">Destiny Unchain Online</a>
+                        <a href="#" class="comic-chapter">Chapter 41</a>
+                    </div>
+                </div>
+                <div class="comic-card">
+                    <div class="comic-cover">
+                        <span class="comic-tag">1 Giờ Trước</span>
+                        <span class="comic-tag hot">Hot</span>
+                        <div
+                            style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#94a3b8;">
+                            Ảnh Bìa</div>
+                    </div>
+                    <div class="comic-info">
+                        <a href="#" class="comic-title">Sự Thức Tỉnh Của Hắc M...</a>
+                        <a href="#" class="comic-chapter">Chapter 183</a>
+                    </div>
+                </div>
+                <div class="comic-card">
+                    <div class="comic-cover">
+                        <span class="comic-tag">2 Giờ Trước</span>
+                        <div
+                            style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#94a3b8;">
+                            Ảnh Bìa</div>
+                    </div>
+                    <div class="comic-info">
+                        <a href="#" class="comic-title">Lúc Đó Tôi Không Biết...</a>
+                        <a href="#" class="comic-chapter">Chapter 80</a>
+                    </div>
+                </div>
+
+                <!-- Hàng 2 -->
+                <div class="comic-card">
+                    <div class="comic-cover">
+                        <span class="comic-tag">2 Giờ Trước</span>
+                        <div
+                            style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#94a3b8;">
+                            Ảnh Bìa</div>
+                    </div>
+                    <div class="comic-info">
+                        <a href="#" class="comic-title">Shakkin 100 Oku No Ka...</a>
+                        <a href="#" class="comic-chapter">Chapter 6.5</a>
+                    </div>
+                </div>
+                <div class="comic-card">
+                    <div class="comic-cover">
+                        <span class="comic-tag">3 Giờ Trước</span>
+                        <div
+                            style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#94a3b8;">
+                            Ảnh Bìa</div>
+                    </div>
+                    <div class="comic-info">
+                        <a href="#" class="comic-title">Cao Thủ Xuống Núi</a>
+                        <a href="#" class="comic-chapter">Chapter 120</a>
+                    </div>
+                </div>
+                <div class="comic-card">
+                    <div class="comic-cover">
+                        <span class="comic-tag">3 Giờ Trước</span>
+                        <div
+                            style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#94a3b8;">
+                            Ảnh Bìa</div>
+                    </div>
+                    <div class="comic-info">
+                        <a href="#" class="comic-title">Bắt Đầu Đánh Dấu Thánh...</a>
+                        <a href="#" class="comic-chapter">Chapter 55</a>
+                    </div>
+                </div>
+                <div class="comic-card">
+                    <div class="comic-cover">
+                        <span class="comic-tag">4 Giờ Trước</span>
+                        <div
+                            style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#94a3b8;">
+                            Ảnh Bìa</div>
+                    </div>
+                    <div class="comic-info">
+                        <a href="#" class="comic-title">Trọng Sinh Trở Lại</a>
+                        <a href="#" class="comic-chapter">Chapter 90</a>
+                    </div>
+                </div>
+
+                <!-- Hàng 3 -->
+                <div class="comic-card">
+                    <div class="comic-cover">
+                        <span class="comic-tag">5 Giờ Trước</span>
+                        <span class="comic-tag hot">Hot</span>
+                        <div
+                            style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#94a3b8;">
+                            Ảnh Bìa</div>
+                    </div>
+                    <div class="comic-info">
+                        <a href="#" class="comic-title">Ma Tôn Trở Lại</a>
+                        <a href="#" class="comic-chapter">Chapter 220</a>
+                    </div>
+                </div>
+                <div class="comic-card">
+                    <div class="comic-cover">
+                        <span class="comic-tag">6 Giờ Trước</span>
+                        <div
+                            style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#94a3b8;">
+                            Ảnh Bìa</div>
+                    </div>
+                    <div class="comic-info">
+                        <a href="#" class="comic-title">Học Viện Pháp Thuật</a>
+                        <a href="#" class="comic-chapter">Chapter 34</a>
+                    </div>
+                </div>
+                <div class="comic-card">
+                    <div class="comic-cover">
+                        <span class="comic-tag">6 Giờ Trước</span>
+                        <div
+                            style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#94a3b8;">
+                            Ảnh Bìa</div>
+                    </div>
+                    <div class="comic-info">
+                        <a href="#" class="comic-title">Thiên Đạo Tu Thư Quán</a>
+                        <a href="#" class="comic-chapter">Chapter 112</a>
+                    </div>
+                </div>
+                <div class="comic-card">
+                    <div class="comic-cover">
+                        <span class="comic-tag">7 Giờ Trước</span>
+                        <div
+                            style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#94a3b8;">
+                            Ảnh Bìa</div>
+                    </div>
+                    <div class="comic-info">
+                        <a href="#" class="comic-title">Toàn Trí Độc Giả</a>
+                        <a href="#" class="comic-chapter">Chapter 98</a>
+                    </div>
+                </div>
+
+                <!-- Hàng 4 -->
+                <div class="comic-card">
+                    <div class="comic-cover">
+                        <span class="comic-tag">10 Giờ Trước</span>
+                        <div
+                            style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#94a3b8;">
+                            Ảnh Bìa</div>
+                    </div>
+                    <div class="comic-info">
+                        <a href="#" class="comic-title">Nguyên Tôn</a>
+                        <a href="#" class="comic-chapter">Chapter 500</a>
+                    </div>
+                </div>
+                <div class="comic-card">
+                    <div class="comic-cover">
+                        <span class="comic-tag">12 Giờ Trước</span>
+                        <span class="comic-tag hot">Hot</span>
+                        <div
+                            style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#94a3b8;">
+                            Ảnh Bìa</div>
+                    </div>
+                    <div class="comic-info">
+                        <a href="#" class="comic-title">Võ Thần Chúa Tể</a>
+                        <a href="#" class="comic-chapter">Chapter 3102</a>
+                    </div>
+                </div>
+                <div class="comic-card">
+                    <div class="comic-cover">
+                        <span class="comic-tag">1 Ngày Trước</span>
+                        <div
+                            style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#94a3b8;">
+                            Ảnh Bìa</div>
+                    </div>
+                    <div class="comic-info">
+                        <a href="#" class="comic-title">Thiên Kim Khảo Cổ</a>
+                        <a href="#" class="comic-chapter">Chapter 45</a>
+                    </div>
+                </div>
+                <div class="comic-card">
+                    <div class="comic-cover">
+                        <span class="comic-tag">1 Ngày Trước</span>
+                        <div
+                            style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#94a3b8;">
+                            Ảnh Bìa</div>
+                    </div>
+                    <div class="comic-info">
+                        <a href="#" class="comic-title">Hồi Sinh Thập Niên 80</a>
+                        <a href="#" class="comic-chapter">Chapter 15</a>
+                    </div>
+                </div>
+                <div class="comic-card">
+                    <div class="comic-cover">
+                        <span class="comic-tag">2 Ngày Trước</span>
+                        <div
+                            style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#94a3b8;">
+                            Ảnh Bìa</div>
+                    </div>
+                    <div class="comic-info">
+                        <a href="#" class="comic-title">Ta Bất Địch Thiên Hạ</a>
+                        <a href="#" class="comic-chapter">Chapter 19</a>
+                    </div>
+                </div>
+                <div class="comic-card">
+                    <div class="comic-cover">
+                        <span class="comic-tag">2 Ngày Trước</span>
+                        <div
+                            style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#94a3b8;">
+                            Ảnh Bìa</div>
+                    </div>
+                    <div class="comic-info">
+                        <a href="#" class="comic-title">Nghịch Thiên Tà Thần</a>
+                        <a href="#" class="comic-chapter">Chapter 2005</a>
+                    </div>
+                </div>
+                <div class="comic-card">
+                    <div class="comic-cover">
+                        <span class="comic-tag">3 Ngày Trước</span>
+                        <div
+                            style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#94a3b8;">
+                            Ảnh Bìa</div>
+                    </div>
+                    <div class="comic-info">
+                        <a href="#" class="comic-title">Yêu Thần Ký</a>
+                        <a href="#" class="comic-chapter">Chapter 310</a>
+                    </div>
+                </div>
+                <div class="comic-card">
+                    <div class="comic-cover">
+                        <span class="comic-tag">4 Ngày Trước</span>
+                        <div
+                            style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#94a3b8;">
+                            Ảnh Bìa</div>
+                    </div>
+                    <div class="comic-info">
+                        <a href="#" class="comic-title">Luyện Khí Mười Vạn Năm</a>
+                        <a href="#" class="comic-chapter">Chapter 145</a>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Phân Trang -->
+            <div class="pagination">
+                <a href="#" class="page-link">&laquo;</a>
+                <a href="#" class="page-link">&lsaquo;</a>
+                <a href="#" class="page-link">1</a>
+                <a href="#" class="page-link active">2</a>
+                <a href="#" class="page-link">3</a>
+                <a href="#" class="page-link">4</a>
+                <a href="#" class="page-link">5</a>
+                <a href="#" class="page-link">&rsaquo;</a>
+                <a href="#" class="page-link">&raquo;</a>
+            </div>
+
+        </main>
+
+        <aside class="right-main">
+            <div>
+                <div class="ranking-header">
+                    <h2 class="section-title">Bảng Xếp Hạng</h2>
+                    <div class="ranking-filters">
+                        <button class="active">Ngày</button>
+                        <button>Tuần</button>
+                        <button>Tháng</button>
+                    </div>
+                </div>
+                <div class="sidebar-list">
+                    <div class="sidebar-item">
+                        <span class="sidebar-number">1</span>
+                        <div class="sidebar-thumb"></div>
+                        <div class="sidebar-info">
+                            <a href="#" class="sidebar-title">Võ Luyện Đỉnh Phong</a>
+                            <span class="sidebar-desc">👁 15,432,000</span>
+                        </div>
+                    </div>
+                    <div class="sidebar-item">
+                        <span class="sidebar-number">2</span>
+                        <div class="sidebar-thumb"></div>
+                        <div class="sidebar-info">
+                            <a href="#" class="sidebar-title">Đại Quản Gia Là Ma Hoàng</a>
+                            <span class="sidebar-desc">👁 9,120,500</span>
+                        </div>
+                    </div>
+                    <div class="sidebar-item">
+                        <span class="sidebar-number">3</span>
+                        <div class="sidebar-thumb"></div>
+                        <div class="sidebar-info">
+                            <a href="#" class="sidebar-title">Solo Leveling</a>
+                            <span class="sidebar-desc">👁 8,050,100</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h2 class="section-title">Lịch Sử Đọc</h2>
+                <div class="sidebar-list">
+                    <div class="sidebar-item">
+                        <div class="sidebar-thumb"></div>
+                        <div class="sidebar-info">
+                            <a href="#" class="sidebar-title">Ta Là Tà Đế</a>
+                            <span class="sidebar-desc">Đọc tiếp: Chap 150</span>
+                        </div>
+                    </div>
+                    <div class="sidebar-item">
+                        <div class="sidebar-thumb"></div>
+                        <div class="sidebar-info">
+                            <a href="#" class="sidebar-title">Trọng Sinh Đô Thị Tu Tiên</a>
+                            <span class="sidebar-desc">Đọc tiếp: Chap 20</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h2 class="section-title">Bình Luận Mới</h2>
+                <div class="comment-list">
+                    <div class="comment-item">
+                        <div class="comment-avatar">👨‍💻</div>
+                        <div class="comment-content">
+                            <div class="comment-header">
+                                <span class="comment-author">DarkKnight99</span>
+                                <span class="comment-time">5 phút trước</span>
+                            </div>
+                            <div class="comment-text">Trận này main đánh ảo quá, hóng chap sau xem ông trưởng lão xử lý
+                                sao =)))</div>
+                            <a href="#" class="comment-comic-title">Võ Luyện Đỉnh Phong - Chap 3512</a>
+                        </div>
+                    </div>
+                    <div class="comment-item">
+                        <div class="comment-avatar">👧</div>
+                        <div class="comment-content">
+                            <div class="comment-header">
+                                <span class="comment-author">HoaHồngGai</span>
+                                <span class="comment-time">12 phút trước</span>
+                            </div>
+                            <div class="comment-text">Nét vẽ bộ này ngày càng đẹp lên, nội dung cũng cuốn nữa. Cảm ơn
+                                nhóm dịch nhiều lắm nha! Đọc mãi không chán luôn á.</div>
+                            <a href="#" class="comment-comic-title">Đại Quản Gia Là Ma Hoàng - Chap 450</a>
+                        </div>
+                    </div>
+                    <div class="comment-item">
+                        <div class="comment-avatar">😎</div>
+                        <div class="comment-content">
+                            <div class="comment-header">
+                                <span class="comment-author">WibuChua</span>
+                                <span class="comment-time">30 phút trước</span>
+                            </div>
+                            <div class="comment-text">Cho mình hỏi lịch ra chap mới của bộ này là thứ mấy hàng tuần vậy
+                                mọi người?</div>
+                            <a href="#" class="comment-comic-title">Solo Leveling - Chap 179</a>
+                        </div>
+                    </div>
+                    <div class="comment-item">
+                        <div class="comment-avatar">🐱</div>
+                        <div class="comment-content">
+                            <div class="comment-header">
+                                <span class="comment-author">MèoLười</span>
+                                <span class="comment-time">1 giờ trước</span>
+                            </div>
+                            <div class="comment-text">Truyện hay, ae nào biết truyện chữ cho xin cái link với ạ.</div>
+                            <a href="#" class="comment-comic-title">Ta Là Tà Đế - Chap 150</a>
+                        </div>
+                    </div>
+                    <div class="comment-item">
+                        <div class="comment-avatar">🕵️</div>
+                        <div class="comment-content">
+                            <div class="comment-header">
+                                <span class="comment-author">SherlockHomeless</span>
+                                <span class="comment-time">2 giờ trước</span>
+                            </div>
+                            <div class="comment-text">Theo như kinh nghiệm 10 năm đọc truyện của tôi thì con nhỏ này
+                                chắc chắn là trùm cuối giả dạng!</div>
+                            <a href="#" class="comment-comic-title">Toàn Trí Độc Giả - Chap 98</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+    </div>
+
+    <footer class="site-footer">
+        <div class="footer-container">
+            <div class="footer-col-main">
+                <a href="#" class="logo">Manga<span>Blade</span></a>
+                <p class="footer-desc">Nền tảng đọc truyện tranh trực tuyến miễn phí, cập nhật nhanh nhất. Đầy đủ các
+                    thể loại truyện tranh mới nhất.</p>
+                <p class="footer-copyright">© 2024 MangaBlade - Truyện Hay Online</p>
+            </div>
+
+            <div class="footer-col-links">
+                <h3 class="footer-title">Liên Kết</h3>
+                <div class="footer-links">
+                    <a href="#">Về Chúng Tôi</a>
+                    <a href="#">Chính Sách Bảo Mật</a>
+                    <a href="#">Liên Hệ</a>
+                </div>
+            </div>
+
+            <div class="footer-col-stats">
+                <h3 class="footer-title">Thông Tin</h3>
+                <div class="footer-stats">
+                    <div class="stat-item">
+                        <span class="stat-icon">👁</span>
+                        <span class="stat-label">Lượt truy cập:</span>
+                        <span class="stat-value">36,637</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-icon">👥</span>
+                        <span class="stat-label">Đang truy cập:</span>
+                        <span class="stat-value">17</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+</body>
+
+</html>

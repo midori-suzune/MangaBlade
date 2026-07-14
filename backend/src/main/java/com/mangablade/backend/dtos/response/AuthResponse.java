@@ -11,6 +11,17 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AuthResponse {
     private String accessToken;
-    private String username;
-    private String role;
+    private String tokenType;
+    private UserInfo userInfo;
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class UserInfo {
+        private Long id;
+        private String username;
+        private String email;
+        private com.mangablade.backend.enums.UserRole role;
+    }
 }

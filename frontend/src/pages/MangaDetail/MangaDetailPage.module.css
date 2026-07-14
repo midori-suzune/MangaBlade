@@ -1,0 +1,582 @@
+.mainContainer {
+    max-width: 1300px;
+    margin: 30px auto;
+    padding: 0 15px;
+}
+
+.detailContainer {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    gap: 30px;
+    padding: 30px;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 2px 10px rgba(99, 102, 241, 0.05);
+}
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: -10px;
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.breadcrumb a {
+    color: #1e293b;
+    transition: color 0.2s;
+}
+
+.breadcrumb a:hover {
+    color: #6366f1;
+}
+
+.current {
+    display: block;
+    overflow: hidden;
+    color: #475569;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mangaInfoBox {
+    display: flex;
+    gap: 30px;
+}
+
+.coverFrame {
+    width: 200px;
+    height: 275px;
+    flex-shrink: 0;
+    padding: 6px;
+    border-radius: 6px;
+    background: #ffffff;
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15);
+}
+
+.coverFrame img {
+    width: 100%;
+    height: 100%;
+    border-radius: 4px;
+    object-fit: cover;
+}
+
+.coverPlaceholder {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    background-color: #f1f5f9;
+    color: #94a3b8;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.errorText {
+    margin: 0;
+    padding: 12px 14px;
+    border: 1px solid #fecdd3;
+    border-radius: 6px;
+    background-color: #fff1f2;
+    color: #be123c;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.mangaDetails {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.mangaTitle {
+    margin: 0 0 5px;
+    color: #1e293b;
+    font-size: 26px;
+    font-weight: 800;
+    line-height: 1.3;
+}
+
+.mangaMeta {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    color: #1e293b;
+    font-size: 14px;
+}
+
+.mangaMeta li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.metaLabel {
+    width: 150px;
+    flex-shrink: 0;
+    color: #475569;
+    font-weight: 600;
+}
+
+.metaValue {
+    min-width: 0;
+    color: #1e293b;
+    font-weight: 700;
+}
+
+.mangaActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.actionButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s;
+}
+
+.actionButton:active {
+    transform: scale(0.96);
+}
+
+.readButton {
+    background-color: #84cc16;
+}
+
+.readButton:hover {
+    background-color: #65a30d;
+}
+
+.continueButton {
+    background-color: #0ea5e9;
+}
+
+.continueButton:hover {
+    background-color: #0284c7;
+}
+
+.followButton {
+    background-color: #f43f5e;
+}
+
+.followButton:hover {
+    background-color: #be123c;
+}
+
+.likeButton {
+    background-color: #a855f7;
+}
+
+.likeButton:hover {
+    background-color: #7e22ce;
+}
+
+.activeActionButton {
+    filter: saturate(0.78);
+}
+
+.actionErrorText {
+    margin: 0;
+    color: #ef4444;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.mangaSection {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.sectionTitle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 5px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f1f5f9;
+    color: #1e293b;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.description {
+    display: -webkit-box;
+    overflow: hidden;
+    color: #475569;
+    font-size: 14px;
+    line-height: 1.6;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+}
+
+.description strong {
+    color: #1e293b;
+}
+
+.chapterListContainer {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #e2e8f0;
+    border-left: 2px solid #cbd5e1;
+    border-radius: 6px;
+}
+
+.chapterList {
+    display: flex;
+    flex-direction: column;
+}
+
+.chapterList li {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 20px;
+    border-bottom: 1px solid #f1f5f9;
+    transition: background-color 0.2s;
+}
+
+.chapterList li:last-child {
+    border-bottom: none;
+}
+
+.chapterList li:hover {
+    background-color: #f8fafc;
+}
+
+.chapterName {
+    color: #475569;
+    font-size: 14px;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.visitedChapterName {
+    color: #4f46e5;
+    font-weight: 800;
+}
+
+.chapterName:hover {
+    color: #6366f1;
+}
+
+.chapterDate {
+    flex-shrink: 0;
+    color: #94a3b8;
+    font-size: 14px;
+}
+
+.emptyText {
+    margin: 0;
+    padding: 18px 20px;
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.commentInputBox {
+    display: flex;
+    gap: 15px;
+}
+
+.commentAvatar {
+    display: flex;
+    width: 45px;
+    height: 45px;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid #e2e8f0;
+    border-radius: 50%;
+    background-color: #f1f5f9;
+    color: #6366f1;
+    font-size: 16px;
+    font-weight: 900;
+}
+
+.commentInputWrapper {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.commentInputWrapper textarea {
+    width: 100%;
+    padding: 15px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background-color: #f8fafc;
+    color: #1e293b;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    resize: vertical;
+    transition: border-color 0.2s, background-color 0.2s;
+}
+
+.commentInputWrapper textarea:focus {
+    border-color: #6366f1;
+    background-color: #ffffff;
+}
+
+.commentActions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.submitCommentButton {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 6px;
+    background-color: #6366f1;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.submitCommentButton:hover {
+    background-color: #4f46e5;
+}
+
+.submitCommentButton:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.commentErrorText {
+    margin: 0;
+    color: #ef4444;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.commentList {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.commentItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.commentBody {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.commentBubble {
+    display: flex;
+    width: 100%;
+    max-width: 100%;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 12px 12px;
+    border-top: 1px solid #f97316;
+    border-radius: 8px;
+    background-color: #f5f5f5;
+}
+
+.commentAuthorRow {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.commentAuthor {
+    color: #ef4444;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.commentBadge {
+    padding: 3px 8px;
+    border-radius: 12px;
+    background-color: #e2e8f0;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.commentText {
+    margin: 0;
+    color: #1f2937;
+    font-size: 14px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+}
+
+.commentFooter {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-left: 2px;
+    color: #94a3b8;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.commentFooter button {
+    border: none;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
+}
+
+.commentFooter button:hover {
+    color: #3b82f6;
+}
+
+.replyCountButton {
+    align-self: flex-start;
+    margin-top: 2px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: #1f2937;
+    cursor: pointer;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.replyCountButton:hover {
+    color: #3b82f6;
+}
+
+.replyList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.replyItem,
+.replyInputBox {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.replyBody {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.replyAvatar {
+    display: flex;
+    width: 34px;
+    height: 34px;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid #e2e8f0;
+    border-radius: 50%;
+    background-color: #f8fafc;
+    color: #6366f1;
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.replyInputBox {
+    margin-top: 8px;
+}
+
+.replyActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.cancelReplyButton {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    background-color: #e2e8f0;
+    color: #475569;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.cancelReplyButton:hover {
+    background-color: #cbd5e1;
+}
+
+.commentMoreActions {
+    display: flex;
+    justify-content: center;
+}
+
+.loadMoreCommentsButton {
+    padding: 7px 18px;
+    border: none;
+    border-radius: 4px;
+    background-color: #f97316;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.loadMoreCommentsButton:hover {
+    background-color: #ea580c;
+}
+
+@media (max-width: 760px) {
+    .detailContainer {
+        padding: 18px;
+    }
+
+    .mangaInfoBox {
+        flex-direction: column;
+    }
+
+    .coverFrame {
+        width: min(220px, 100%);
+        height: auto;
+        aspect-ratio: 3 / 4;
+    }
+
+    .mangaMeta li {
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    .metaLabel {
+        width: auto;
+    }
+
+    .actionButton {
+        flex: 1;
+        min-width: 120px;
+    }
+}
