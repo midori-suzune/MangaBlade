@@ -283,17 +283,17 @@ export function Home() {
                                 : comment.mangaTitle;
 
                             return (
-                            <article className={styles.commentItem} key={comment.id}>
-                                <div className={styles.commentAvatar}>{comment.username.slice(0, 1).toUpperCase()}</div>
-                                <div className={styles.commentContent}>
-                                    <div className={styles.commentHeader}>
-                                        <span className={styles.commentAuthor}>{comment.username}</span>
-                                        <span className={styles.commentTime}>{getTimeAgo(comment.createdAt)}</span>
+                                <article className={styles.commentItem} key={comment.id}>
+                                    <div className={styles.commentAvatar}>{comment.username.slice(0, 1).toUpperCase()}</div>
+                                    <div className={styles.commentContent}>
+                                        <div className={styles.commentHeader}>
+                                            <span className={styles.commentAuthor}>{comment.username}</span>
+                                            <span className={styles.commentTime}>{getTimeAgo(comment.createdAt)}</span>
+                                        </div>
+                                        <p className={styles.commentText}>{comment.content}</p>
+                                        <Link to={commentTarget} className={styles.commentComicTitle}>{comicLabel}</Link>
                                     </div>
-                                    <p className={styles.commentText}>{comment.content}</p>
-                                    <Link to={commentTarget} className={styles.commentComicTitle}>{comicLabel}</Link>
-                                </div>
-                            </article>
+                                </article>
                             );
                         })}
                         {recentComments.length === 0 && (
