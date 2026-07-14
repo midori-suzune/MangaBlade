@@ -98,3 +98,25 @@ export async function createMangaComment(
   const response = await axiosInstance.post<ApiResponse<MangaCommentResponse>>(`/api/v1/manga/${slug}/comments`, body);
   return response.data;
 }
+
+export async function getChapterComments(
+  slug: string,
+  chapterNumber: string
+): Promise<ApiResponse<MangaCommentResponse[]>> {
+  const response = await axiosInstance.get<ApiResponse<MangaCommentResponse[]>>(
+    `/api/v1/manga/${slug}/chapters/${chapterNumber}/comments`
+  );
+  return response.data;
+}
+
+export async function createChapterComment(
+  slug: string,
+  chapterNumber: string,
+  body: CreateCommentRequest
+): Promise<ApiResponse<MangaCommentResponse>> {
+  const response = await axiosInstance.post<ApiResponse<MangaCommentResponse>>(
+    `/api/v1/manga/${slug}/chapters/${chapterNumber}/comments`,
+    body
+  );
+  return response.data;
+}

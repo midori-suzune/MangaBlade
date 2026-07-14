@@ -10,6 +10,7 @@ import com.mangablade.backend.enums.CommentStatus;
 import com.mangablade.backend.exceptions.AppException;
 import com.mangablade.backend.exceptions.ErrorCode;
 import com.mangablade.backend.repositories.CommentRepository;
+import com.mangablade.backend.repositories.ChapterRepository;
 import com.mangablade.backend.repositories.MangaRepository;
 
 import org.springframework.stereotype.Service;
@@ -29,6 +30,7 @@ public class CommentService {
 
     private final CommentRepository commentRepository;
     private final MangaRepository mangaRepository;
+    private final ChapterRepository chapterRepository;
 
     public List<RecentCommentResponse> findRecentDistinctUserComments() {
         return commentRepository.findRecentDistinctUserComments(CommentStatus.VISIBLE);
@@ -37,6 +39,25 @@ public class CommentService {
     public List<MangaCommentResponse> findByMangaSlug(String slug) {
         var manga = findMangaBySlugOrThrow(slug);
         var rootComments = commentRepository.findRootCommentsByMangaId(manga.getId(), CommentStatus.VISIBLE);
+        return attachReplies(rootComments);
+    }
+
+    public List<MangaCommentResponse> findByMangaSlugAndChapterNumber(String slug, String chapterNumber) {
+        var manga = findMangaBySlugOrThrow(slug);
+        var chapter = chapterRepository.findByMangaIdAndChapterNumber(manga.getId(), chapterNumber)
+                .orElseThrow(() -> {
+                    log.warn("Chapter not found: mangaId={}, chapterNumber={}", manga.getId(), chapterNumber);
+                    return new AppException(ErrorCode.CHAPTER_NOT_FOUND);
+                });
+        var rootComments = commentRepository.findRootCommentsByMangaIdAndChapterId(
+                manga.getId(),
+                chapter.getId(),
+                CommentStatus.VISIBLE
+        );
+        return attachReplies(rootComments);
+    }
+
+    private List<MangaCommentResponse> attachReplies(List<Comment> rootComments) {
         var parentIds = rootComments.stream()
                 .map(Comment::getId)
                 .toList();
@@ -60,11 +81,24 @@ public class CommentService {
     }
 
     public MangaCommentResponse create(String slug, CreateCommentRequest request, User user) {
+        return create(slug, null, request, user);
+    }
+
+    public MangaCommentResponse create(String slug, String chapterNumber, CreateCommentRequest request, User user) {
         var now = Instant.now();
         var manga = findMangaBySlugOrThrow(slug);
+        var chapterId = chapterNumber == null ? null : chapterRepository
+                .findByMangaIdAndChapterNumber(manga.getId(), chapterNumber)
+                .orElseThrow(() -> {
+                    log.warn("Chapter not found: mangaId={}, chapterNumber={}", manga.getId(), chapterNumber);
+                    return new AppException(ErrorCode.CHAPTER_NOT_FOUND);
+                })
+                .getId();
+
         var comment = Comment.builder()
                 .userId(user.getId())
                 .mangaId(manga.getId())
+                .chapterId(chapterId)
                 .parentId(request.getParentId())
                 .content(request.getContent().trim())
                 .status(CommentStatus.VISIBLE)

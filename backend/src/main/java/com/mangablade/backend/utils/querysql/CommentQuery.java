@@ -6,6 +6,18 @@ public class CommentQuery {
             from Comment c
             join fetch c.user
             where c.mangaId = :mangaId
+              and c.chapterId is null
+              and c.status = :status
+              and c.parentId is null
+            order by c.createdAt desc
+            """;
+
+    public static final String FIND_ROOT_COMMENTS_BY_MANGA_ID_AND_CHAPTER_ID = """
+            select c
+            from Comment c
+            join fetch c.user
+            where c.mangaId = :mangaId
+              and c.chapterId = :chapterId
               and c.status = :status
               and c.parentId is null
             order by c.createdAt desc

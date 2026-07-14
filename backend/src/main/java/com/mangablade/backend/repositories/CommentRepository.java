@@ -21,6 +21,13 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             @Param("status") CommentStatus status
     );
 
+    @Query(CommentQuery.FIND_ROOT_COMMENTS_BY_MANGA_ID_AND_CHAPTER_ID)
+    List<Comment> findRootCommentsByMangaIdAndChapterId(
+            @Param("mangaId") Long mangaId,
+            @Param("chapterId") Long chapterId,
+            @Param("status") CommentStatus status
+    );
+
     @Query(CommentQuery.FIND_REPLIES_BY_PARENT_IDS)
     List<Comment> findRepliesByParentIds(
             @Param("parentIds") List<Long> parentIds,

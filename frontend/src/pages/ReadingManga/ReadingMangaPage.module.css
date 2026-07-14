@@ -116,8 +116,7 @@
 }
 
 .btnNav svg,
-.sectionTitleSmall svg,
-.commentFooterActions svg {
+.sectionTitleSmall svg {
     width: 16px;
     height: 16px;
     fill: none;
@@ -218,14 +217,14 @@
     border: 1px solid #e2e8f0;
     border-radius: 50%;
     background-color: #f1f5f9;
-    color: #94a3b8;
-    font-size: 22px;
-    font-weight: 800;
+    color: #6366f1;
+    font-size: 16px;
+    font-weight: 900;
 }
 
 .sampleAvatar {
-    background-color: #bbf7d0;
-    color: #166534;
+    background-color: #f1f5f9;
+    color: #6366f1;
     font-size: 16px;
 }
 
@@ -251,7 +250,7 @@
 }
 
 .commentInputWrapper textarea:focus {
-    border-color: #5bc0de;
+    border-color: #6366f1;
     background-color: #ffffff;
 }
 
@@ -264,26 +263,45 @@
     padding: 8px 20px;
     border: none;
     border-radius: 6px;
-    background-color: #5bc0de;
+    background-color: #6366f1;
     color: #ffffff;
     cursor: pointer;
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 700;
     transition: background-color 0.2s;
 }
 
 .btnSubmitComment:hover {
-    background-color: #31b0d5;
+    background-color: #4f46e5;
+}
+
+.btnSubmitComment:disabled {
+    background-color: #cbd5e1;
+    cursor: not-allowed;
+}
+
+.commentError,
+.emptyComments {
+    margin: 0;
+    color: #ef4444;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.emptyComments {
+    color: #94a3b8;
 }
 
 .detailComments {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 18px;
 }
 
 .commentItem {
     display: flex;
-    gap: 12px;
+    align-items: flex-start;
+    gap: 10px;
 }
 
 .commentBody {
@@ -294,28 +312,28 @@
 }
 
 .commentBubble {
-    display: inline-flex;
-    max-width: fit-content;
+    display: flex;
+    width: 100%;
+    max-width: 100%;
     flex-direction: column;
-    gap: 4px;
-    padding: 12px 16px;
-    border: 1px solid #f1f5f9;
-    border-radius: 12px;
-    border-top-left-radius: 4px;
-    background-color: #f8fafc;
+    gap: 8px;
+    padding: 10px 12px 12px;
+    border-top: 1px solid #f97316;
+    border-radius: 8px;
+    background-color: #f5f5f5;
 }
 
 .commentAuthorRow {
+    align-items: center;
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
     gap: 8px;
 }
 
 .commentAuthor {
-    color: #1e293b;
+    color: #ef4444;
     font-size: 14px;
-    font-weight: 700;
+    font-weight: 500;
 }
 
 .commentBadge {
@@ -329,26 +347,24 @@
 
 .commentText {
     margin: 0;
-    color: #334155;
+    color: #1f2937;
     font-size: 14px;
     line-height: 1.5;
+    white-space: pre-wrap;
 }
 
 .commentFooterActions {
     display: flex;
     align-items: center;
-    gap: 15px;
-    margin-left: 5px;
+    gap: 14px;
+    margin-left: 2px;
     color: #94a3b8;
     font-size: 12px;
-    font-weight: 600;
+    font-weight: 500;
 }
 
 .commentFooterActions span,
 .commentFooterActions button {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
     padding: 0;
     border: none;
     background: none;
@@ -360,7 +376,7 @@
 
 .commentFooterActions span:hover,
 .commentFooterActions button:hover {
-    color: #5bc0de;
+    color: #3b82f6;
 }
 
 @media (max-width: 680px) {
