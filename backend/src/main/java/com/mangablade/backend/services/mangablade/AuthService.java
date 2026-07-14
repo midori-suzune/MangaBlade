@@ -6,7 +6,6 @@ import com.mangablade.backend.dtos.request.LoginRequest;
 import com.mangablade.backend.dtos.request.RegisterRequest;
 import com.mangablade.backend.dtos.request.ForgotPasswordRequest;
 import com.mangablade.backend.dtos.request.ResetPasswordRequest;
-import com.mangablade.backend.dtos.request.ResetPasswordRequest;
 import com.mangablade.backend.dtos.response.AuthResponse;
 import com.mangablade.backend.entities.User;
 import com.mangablade.backend.entities.PasswordResetToken;

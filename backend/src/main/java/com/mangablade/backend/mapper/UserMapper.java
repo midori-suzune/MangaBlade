@@ -1,6 +1,6 @@
 package com.mangablade.backend.mapper;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import org.springframework.stereotype.Component;
 
@@ -17,8 +17,8 @@ public class UserMapper {
         return User.builder()
                 .username(request.getUsername())
                 .email(request.getEmail())
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
+                .createdAt(Instant.now())
+                .updatedAt(Instant.now())
                 .build();
     }
 }

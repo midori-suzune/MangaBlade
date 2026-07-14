@@ -19,7 +19,7 @@ export interface UserInfo {
 export interface AuthResponse {
   accessToken: string;
   tokenType: string;
-  user: UserInfo;
+  userInfo: UserInfo;
 }
 
 export interface ApiResponse<T> {

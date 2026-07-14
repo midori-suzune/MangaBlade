@@ -12,22 +12,20 @@ import com.mangablade.backend.services.mangablade.AuthService;
 import com.mangablade.backend.entities.User;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import com.mangablade.backend.dtos.request.LoginRequest;
-import com.mangablade.backend.dtos.response.AuthResponse;
-import com.mangablade.backend.sercurity.JwtTokenProvider;
-
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/v1/auth")
 @CrossOrigin(origins = "*")
+@RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthenticationManager authenticationManager;
-    private final JwtTokenProvider tokenProvider;
+    private final AuthService authService;
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request){
@@ -52,16 +50,6 @@ public class AuthController {
                         .fieldsErrors(null)
                         .build()
         );
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String username = authentication.getName();
-        String role = authentication.getAuthorities().stream()
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Tài khoản chưa được chỉ định vai trò."))
-                .getAuthority(); // Trả về dạng "ROLE_USER", "ROLE_ADMIN",...
-
-        String jwt = tokenProvider.generateToken(username, role);
-        return ResponseEntity.ok(new AuthResponse(jwt, username, role));
     }
 
     @PostMapping("/forgot-password")
