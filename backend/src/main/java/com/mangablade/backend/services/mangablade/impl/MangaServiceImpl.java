@@ -2,6 +2,7 @@ package com.mangablade.backend.services.mangablade.impl;
 
 import com.mangablade.backend.dtos.response.MangaDetailResponse;
 import com.mangablade.backend.dtos.response.MangaInteractionResponse;
+import com.mangablade.backend.dtos.response.MangaRankingProjection;
 import com.mangablade.backend.dtos.response.MangaRankingResponse;
 import com.mangablade.backend.dtos.response.MangaResponse;
 import com.mangablade.backend.entities.Favorite;
@@ -54,13 +55,26 @@ public class MangaServiceImpl implements MangaService {
     @Override
     public List<MangaRankingResponse> fetchRanking(String sort) {
         if ("follows".equalsIgnoreCase(sort)) {
-            return mangaRepository.findTopRankedByFollows();
+            return toRankingResponses(mangaRepository.findTopRankedByFollows());
         }
         if ("views".equalsIgnoreCase(sort)) {
-            return mangaRepository.findTopRankedByViews();
+            return toRankingResponses(mangaRepository.findTopRankedByViews());
         }
 
-        return mangaRepository.findTopRankedByLikes();
+        return toRankingResponses(mangaRepository.findTopRankedByLikes());
+    }
+
+    private List<MangaRankingResponse> toRankingResponses(List<MangaRankingProjection> projections) {
+        return projections.stream()
+                .map(projection -> new MangaRankingResponse(
+                        projection.getSlug(),
+                        projection.getTitle(),
+                        projection.getThumbUrl(),
+                        projection.getLikeCount(),
+                        projection.getFollowCount(),
+                        projection.getViewCount()
+                ))
+                .toList();
     }
 
     @Override

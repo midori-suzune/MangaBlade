@@ -2,6 +2,7 @@ package com.mangablade.backend.repositories;
 
 import com.mangablade.backend.dtos.response.ReadingHistoryResponse;
 import com.mangablade.backend.entities.ReadingHistory;
+import com.mangablade.backend.utils.querysql.ReadingHistoryQuery;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,44 +18,10 @@ public interface ReadingHistoryRepository extends JpaRepository<ReadingHistory, 
 
     Optional<ReadingHistory> findByUserIdAndChapterId(Long userId, Long chapterId);
 
-    @Query("""
-            select new com.mangablade.backend.dtos.response.ReadingHistoryResponse(
-                m.slug,
-                m.title,
-                m.thumbUrl,
-                c.chapterNumber,
-                rh.lastReadAt
-            )
-            from ReadingHistory rh
-            join rh.manga m
-            join rh.chapter c
-            where rh.userId = :userId
-              and rh.lastReadAt = (
-                  select max(rh2.lastReadAt)
-                  from ReadingHistory rh2
-                  where rh2.userId = rh.userId
-                    and rh2.mangaId = rh.mangaId
-              )
-            order by rh.lastReadAt desc
-            """)
+    @Query(ReadingHistoryQuery.FIND_RECENT_BY_USER_ID)
     List<ReadingHistoryResponse> findRecentByUserId(@Param("userId") Long userId, Pageable pageable);
 
-    @Query("""
-            select new com.mangablade.backend.dtos.response.ReadingHistoryResponse(
-                m.slug,
-                m.title,
-                m.thumbUrl,
-                c.chapterNumber,
-                rh.lastReadAt
-            )
-            from ReadingHistory rh
-            join rh.manga m
-            join rh.chapter c
-            where rh.userId = :userId
-              and m.slug = :slug
-            order by rh.lastReadAt desc
-            limit 1
-            """)
+    @Query(ReadingHistoryQuery.FIND_LATEST_BY_USER_ID_AND_MANGA_SLUG)
     Optional<ReadingHistoryResponse> findLatestByUserIdAndMangaSlug(
             @Param("userId") Long userId,
             @Param("slug") String slug

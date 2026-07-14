@@ -1,7 +1,6 @@
 package com.mangablade.backend.integration.otruyen;
 
 
-import com.mangablade.backend.integration.otruyen.response.OTruyenChapterDetailResponse;
 import com.mangablade.backend.integration.otruyen.response.OTruyenMangaResponse;
 
 import org.springframework.stereotype.Component;
@@ -21,14 +20,6 @@ public class OTruyenClient {
                 .uri("/truyen-tranh/{slug}", slug)
                 .retrieve() // sent request and receive response
                 .body(OTruyenMangaResponse .class);         // convert JSON  to Object Class
-    }
-
-    public OTruyenChapterDetailResponse fetchApiChapterByUrl(String chapterApiUrl) {
-        return restClient
-                .get()
-                .uri(chapterApiUrl)
-                .retrieve()
-                .body(OTruyenChapterDetailResponse.class);
     }
 
 }

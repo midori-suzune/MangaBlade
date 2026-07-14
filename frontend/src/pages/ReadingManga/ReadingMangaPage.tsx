@@ -1,18 +1,24 @@
 import {Link, useNavigate, useParams} from "react-router-dom";
-import {ArrowLeft, ArrowRight, Clock, Flag, MessageCircle, ThumbsUp} from "lucide-react";
+import {ArrowLeft, ArrowRight, MessageCircle} from "lucide-react";
 
 import styles from "./ReadingMangaPage.module.css";
-import type {ChapterPageRequest, ChapterPageResponse} from "../../types/manga.ts";
+import type {ChapterPageRequest, ChapterPageResponse, MangaCommentResponse} from "../../types/manga.ts";
 import {useEffect, useMemo, useState} from "react";
-import {requestChapterPage} from "../../api/mangaApi.ts";
+import {createChapterComment, getChapterComments, requestChapterPage} from "../../api/mangaApi.ts";
+import {useAuthStore} from "../../stores/authStore.ts";
 
 export function ReadingMangaPage() {
 
 
     const { slug , chapterNumber} = useParams<{ slug : string ; chapterNumber : string}>();
     const navigate = useNavigate();
+    const {isAuthenticated, openAuthModal, user} = useAuthStore();
     const [error, setError] = useState<string>("");
     const [chapterPage, setChapterPage] = useState<ChapterPageResponse[] | null>();
+    const [comments, setComments] = useState<MangaCommentResponse[]>([]);
+    const [commentContent, setCommentContent] = useState("");
+    const [commentError, setCommentError] = useState("");
+    const [commentSubmitting, setCommentSubmitting] = useState(false);
     const chapterPageRequest : ChapterPageRequest = useMemo<ChapterPageRequest>( () => ({
         slugManga : slug as string ,
         chapterNumber : chapterNumber as string
@@ -33,6 +39,22 @@ export function ReadingMangaPage() {
         void request()
     }, [chapterPageRequest]);
 
+    useEffect(() => {
+        async function requestComments() {
+            if (!slug || !chapterNumber) return;
+
+            try {
+                const data = await getChapterComments(slug, chapterNumber);
+                setComments(data.payload);
+                setCommentError("");
+            } catch {
+                setCommentError("Không thể tải bình luận.");
+            }
+        }
+
+        void requestComments();
+    }, [slug, chapterNumber]);
+
     const title = chapterPage?.[0]?.mangaTitle ?? "";
     const chapterLabel = `Chương ${chapterPage?.[0]?.chapterNumber ?? chapterNumber ?? ""}`;
     const previousChapterNumber = chapterPage?.[0]?.previousChapterNumber;
@@ -49,6 +71,35 @@ export function ReadingMangaPage() {
         if (!hasPrevChapter) return;
         navigate(`/manga/${slug}/c/${previousChapterNumber}`);
     }
+
+    async function handleSubmitComment() {
+        if (!isAuthenticated) {
+            openAuthModal("login");
+            return;
+        }
+
+        const content = commentContent.trim();
+        if (!content || !slug || !chapterNumber) {
+            return;
+        }
+
+        setCommentSubmitting(true);
+        try {
+            const data = await createChapterComment(slug, chapterNumber, {content});
+            setComments((current) => [data.payload, ...current]);
+            setCommentContent("");
+            setCommentError("");
+        } catch {
+            setCommentError("Không thể gửi bình luận.");
+        } finally {
+            setCommentSubmitting(false);
+        }
+    }
+
+    function getAvatarLabel(username?: string) {
+        return (username || "U").slice(0, 1).toUpperCase();
+    }
+
     return (
         <div className={styles.readerPageBg}>
             <main className={styles.mainContainer}>
@@ -131,37 +182,58 @@ export function ReadingMangaPage() {
                 <section className={`${styles.cardBox} ${styles.commentSection}`}>
                     <h2 className={styles.sectionTitleSmall}>
                         <MessageCircle aria-hidden="true" />
-                        Bình Luận (184)
+                        Bình Luận ({comments.length})
                     </h2>
 
                     <div className={styles.commentInputBox}>
-                        <div className={styles.commentAvatar}>U</div>
+                        <div className={styles.commentAvatar}>{getAvatarLabel(user?.username)}</div>
                         <div className={styles.commentInputWrapper}>
-                            <textarea placeholder="Nhập bình luận của bạn..." rows={3}></textarea>
+                            <textarea
+                                placeholder="Nhập bình luận của bạn..."
+                                rows={3}
+                                value={commentContent}
+                                onChange={(event) => setCommentContent(event.target.value)}
+                            />
                             <div className={styles.commentActions}>
-                                <button className={styles.btnSubmitComment} type="button">Gửi bình luận</button>
+                                <button
+                                    className={styles.btnSubmitComment}
+                                    type="button"
+                                    onClick={handleSubmitComment}
+                                    disabled={commentSubmitting || !commentContent.trim()}
+                                >
+                                    {commentSubmitting ? "Đang gửi..." : "Gửi bình luận"}
+                                </button>
                             </div>
+                            {commentError && <p className={styles.commentError}>{commentError}</p>}
                         </div>
                     </div>
 
                     <div className={styles.detailComments}>
-                        <article className={styles.commentItem}>
-                            <div className={`${styles.commentAvatar} ${styles.sampleAvatar}`}>Đ</div>
-                            <div className={styles.commentBody}>
-                                <div className={styles.commentBubble}>
-                                    <div className={styles.commentAuthorRow}>
-                                        <span className={styles.commentAuthor}>Zhane</span>
-                                        <span className={styles.commentBadge}>Chương 4</span>
+                        {comments.map((comment) => (
+                            <article className={styles.commentItem} key={comment.id}>
+                                <div className={`${styles.commentAvatar} ${styles.sampleAvatar}`}>
+                                    {getAvatarLabel(comment.user.username)}
+                                </div>
+                                <div className={styles.commentBody}>
+                                    <div className={styles.commentBubble}>
+                                        <div className={styles.commentAuthorRow}>
+                                            <span className={styles.commentAuthor}>{comment.user.username}</span>
+                                            <span className={styles.commentBadge}>{chapterLabel}</span>
+                                        </div>
+                                        <p className={styles.commentText}>{comment.content}</p>
                                     </div>
-                                    <p className={styles.commentText}>Bộ này hay quá, hóng chap mới admin ơi!</p>
+                                    <div className={styles.commentFooterActions}>
+                                        <span>{new Date(comment.createdAt).toLocaleDateString("vi-VN")}</span>
+                                        <button type="button">Thích</button>
+                                        <button type="button">Trả lời</button>
+                                        <button type="button">Báo cáo</button>
+                                    </div>
                                 </div>
-                                <div className={styles.commentFooterActions}>
-                                    <span><Clock aria-hidden="true" /> 4 ngày trước</span>
-                                    <button type="button"><ThumbsUp aria-hidden="true" /> Thích 5</button>
-                                    <button type="button"><Flag aria-hidden="true" /> Báo cáo</button>
-                                </div>
-                            </div>
-                        </article>
+                            </article>
+                        ))}
+                        {comments.length === 0 && (
+                            <p className={styles.emptyComments}>Chưa có bình luận nào cho chương này.</p>
+                        )}
                     </div>
                 </section>
             </main>

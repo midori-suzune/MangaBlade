@@ -1,6 +1,7 @@
 package com.mangablade.backend.repositories;
 
 import com.mangablade.backend.search.document.MangaSearchDocument;
+import com.mangablade.backend.utils.querysql.MangaSearchQuery;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,61 +12,15 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface MangaSearchRepository extends ElasticsearchRepository<MangaSearchDocument, Long> {
 
-    @Query("""
-            {
-              "bool": {
-                "should": [
-                  {
-                    "multi_match": {
-                      "query": "?0",
-                      "fields": ["title^3", "authors"],
-                      "type": "best_fields"
-                    }
-                  },
-                  {
-                    "match_phrase_prefix": {
-                      "title": {
-                        "query": "?0",
-                        "boost": 4
-                      }
-                    }
-                  },
-                  {
-                    "match_phrase_prefix": {
-                      "authors": {
-                        "query": "?0",
-                        "boost": 2
-                      }
-                    }
-                  },
-                  {
-                    "wildcard": {
-                      "title": {
-                        "value": "*?0*",
-                        "case_insensitive": true,
-                        "boost": 1
-                      }
-                    }
-                  },
-                  {
-                    "wildcard": {
-                      "authors": {
-                        "value": "*?0*",
-                        "case_insensitive": true,
-                        "boost": 1
-                      }
-                    }
-                  }
-                ],
-                "minimum_should_match": 1
-              }
-            }
-            """)
+    @Query(MangaSearchQuery.SEARCH_BY_TITLE_OR_AUTHORS)
     Page<MangaSearchDocument> searchByTitleOrAuthors(String keyword, Pageable pageable);
 
+    @Query(MangaSearchQuery.FIND_BY_CATEGORY_SLUG)
     Page<MangaSearchDocument> findByCategorySlugs(String categorySlug, Pageable pageable);
 
+    @Query(MangaSearchQuery.FIND_BY_AUTHOR)
     Page<MangaSearchDocument> findByAuthorsContaining(String author, Pageable pageable);
 
+    @Query(MangaSearchQuery.FIND_BY_CATEGORY_SLUG_AND_AUTHOR)
     Page<MangaSearchDocument> findByCategorySlugsAndAuthorsContaining(String categorySlug, String author, Pageable pageable);
 }

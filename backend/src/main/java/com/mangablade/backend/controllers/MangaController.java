@@ -185,4 +185,36 @@ public class MangaController {
                         .build()
         );
     }
+
+    @GetMapping("/{slug}/chapters/{chapterNumber}/comments")
+    public ResponseEntity<ApiResponse<List<MangaCommentResponse>>> getChapterComments(
+            @PathVariable String slug,
+            @PathVariable String chapterNumber
+    ) {
+        var comments = commentService.findByMangaSlugAndChapterNumber(slug, chapterNumber);
+        return ResponseEntity.ok(
+                ApiResponse.<List<MangaCommentResponse>>builder()
+                        .success(true)
+                        .message("success")
+                        .payload(comments)
+                        .build()
+        );
+    }
+
+    @PostMapping("/{slug}/chapters/{chapterNumber}/comments")
+    public ResponseEntity<ApiResponse<MangaCommentResponse>> createChapterComment(
+            @PathVariable String slug,
+            @PathVariable String chapterNumber,
+            @Valid @RequestBody CreateCommentRequest request,
+            @AuthenticationPrincipal User user
+    ) {
+        var comment = commentService.create(slug, chapterNumber, request, user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                ApiResponse.<MangaCommentResponse>builder()
+                        .success(true)
+                        .message("success")
+                        .payload(comment)
+                        .build()
+        );
+    }
 }
