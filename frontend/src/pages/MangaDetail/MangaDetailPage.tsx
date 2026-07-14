@@ -4,6 +4,9 @@ import type {MangaCommentResponse, MangaDetailResponse, ReadingHistoryResponse} 
 import {getTimeAgo} from "../../utils/time.ts";
 import styles from "./MangaDetailPage.module.css";
 import {useEffect, useLayoutEffect, useMemo, useRef, useState} from "react";
+import {CommentEditor} from "../../components/CommentEmojiPicker/CommentEditor.tsx";
+import {CommentEmojiPicker} from "../../components/CommentEmojiPicker/CommentEmojiPicker.tsx";
+import {CommentText} from "../../components/CommentEmojiPicker/CommentText.tsx";
 import {
     createMangaComment,
     getLatestReadingHistory,
@@ -449,13 +452,14 @@ export function MangaDetailPage() {
                             {user?.username?.slice(0, 1).toUpperCase() ?? "U"}
                         </div>
                         <div className={styles.commentInputWrapper}>
-                            <textarea
+                            <CommentEditor
                                 placeholder="Nhập bình luận của bạn về truyện này..."
-                                rows={3}
+                                minRows={3}
                                 value={commentContent}
-                                onChange={(event) => setCommentContent(event.target.value)}
-                            ></textarea>
+                                onChange={setCommentContent}
+                            />
                             <div className={styles.commentActions}>
+                                <CommentEmojiPicker />
                                 <button
                                     className={styles.submitCommentButton}
                                     type="button"
@@ -487,7 +491,9 @@ export function MangaDetailPage() {
                                                             <span
                                                                 className={styles.commentAuthor}>{getPublicUsername(comment.user.username)}</span>
                                                         </div>
-                                                        <p className={styles.commentText}>{comment.content}</p>
+                                                        <p className={styles.commentText}>
+                                                            <CommentText content={comment.content} />
+                                                        </p>
                                                     </div>
                                                     <div className={styles.commentFooter}>
                                                         <span>{getTimeAgo(comment.createdAt)}</span>
@@ -528,7 +534,9 @@ export function MangaDetailPage() {
                                                                         {getPublicUsername(reply.user.username)}
                                                                     </span>
                                                                 </div>
-                                                                <p className={styles.commentText}>{reply.content}</p>
+                                                                <p className={styles.commentText}>
+                                                                    <CommentText content={reply.content} />
+                                                                </p>
                                                             </div>
                                                             <div className={styles.commentFooter}>
                                                                 <span>{getTimeAgo(reply.createdAt)}</span>
@@ -557,33 +565,36 @@ export function MangaDetailPage() {
                                                     {user?.username?.slice(0, 1).toUpperCase() ?? "U"}
                                                 </div>
                                                 <div className={styles.commentInputWrapper}>
-                                                    <textarea
+                                                    <CommentEditor
                                                         placeholder={`Trả lời ${replyingToUsername ?? getPublicUsername(comment.user.username)}...`}
-                                                        rows={2}
+                                                        minRows={2}
                                                         value={replyContent}
-                                                        onChange={(event) => setReplyContent(event.target.value)}
-                                                    ></textarea>
+                                                        onChange={setReplyContent}
+                                                    />
                                                     <div className={styles.replyActions}>
-                                                        <button
-                                                            className={styles.cancelReplyButton}
-                                                            type="button"
-                                                        onClick={() => {
-                                                                setReplyParentId(null);
-                                                                setReplyContent("");
-                                                                setReplyingToUsername(null);
-                                                                setReplyError(null);
-                                                            }}
-                                                        >
-                                                            Hủy
-                                                        </button>
-                                                        <button
-                                                            className={styles.submitCommentButton}
-                                                            type="button"
-                                                            onClick={() => handleSubmitReply(comment.id)}
-                                                            disabled={submittingReplyParentId === comment.id}
-                                                        >
-                                                            {submittingReplyParentId === comment.id ? "Đang gửi..." : "Gửi trả lời"}
-                                                        </button>
+                                                        <CommentEmojiPicker />
+                                                        <div className={styles.replyButtonGroup}>
+                                                            <button
+                                                                className={styles.cancelReplyButton}
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setReplyParentId(null);
+                                                                    setReplyContent("");
+                                                                    setReplyingToUsername(null);
+                                                                    setReplyError(null);
+                                                                }}
+                                                            >
+                                                                Hủy
+                                                            </button>
+                                                            <button
+                                                                className={styles.submitCommentButton}
+                                                                type="button"
+                                                                onClick={() => handleSubmitReply(comment.id)}
+                                                                disabled={submittingReplyParentId === comment.id}
+                                                            >
+                                                                {submittingReplyParentId === comment.id ? "Đang gửi..." : "Gửi trả lời"}
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                     {replyError && <p className={styles.commentErrorText}>{replyError}</p>}
                                                 </div>
