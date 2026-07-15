@@ -204,13 +204,11 @@ export function Home() {
                     ))}
                 </div>
 
-                <nav className={styles.pagination} aria-label="Phân trang truyện mới">
-                    {["«", "‹", "1", "2", "3", "4", "5", "›", "»"].map((page) => (
-                        <a href="#" className={`${styles.pageLink} ${page === "2" ? styles.active : ""}`} key={page}>
-                            {page}
-                        </a>
-                    ))}
-                </nav>
+                <div className={styles.pagination}>
+                    <Link to="/category" className={styles.viewMoreLink}>
+                        Xem thêm
+                    </Link>
+                </div>
             </section>
 
             <aside className={styles.rightMain}>
