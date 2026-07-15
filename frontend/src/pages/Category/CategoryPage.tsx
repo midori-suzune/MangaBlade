@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { filterManga } from '../../api/mangaApi';
 import type { MangaSearchResponse } from '../../types/manga';
@@ -35,25 +35,6 @@ export function CategoryPage() {
   const [manga, setManga] = useState<MangaSearchResponse[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const selectedCategoryNames = useMemo(() => {
-    if (pendingCategoryIds.length === 0) return '';
-    return CATEGORIES
-      .filter(c => pendingCategoryIds.includes(c.id))
-      .map(c => c.name)
-      .join(', ');
-  }, [pendingCategoryIds]);
-
-  const descriptionText = useMemo(() => {
-    if (pendingCategoryIds.length === 0) {
-      return 'Danh sách tổng hợp tất cả các bộ truyện tranh thuộc mọi thể loại.';
-    }
-    if (pendingCategoryIds.length === 1) {
-      const cat = CATEGORIES.find(c => c.id === pendingCategoryIds[0]);
-      return cat ? cat.description : '';
-    }
-    return `Đang lọc truyện theo sự kết hợp của các thể loại: ${selectedCategoryNames}.`;
-  }, [pendingCategoryIds, selectedCategoryNames]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -105,10 +86,6 @@ export function CategoryPage() {
     <div className={styles.mainContainer}>
       <section className={styles.leftMain}>
         <h1 className={styles.pageTitle}>Tất cả thể loại truyện tranh</h1>
-        
-        <div className={styles.descriptionBox}>
-          <p>{descriptionText}</p>
-        </div>
 
         <div className={styles.filterPanel}>
           <div className={styles.filterRow}>
