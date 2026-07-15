@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import { Pencil } from "lucide-react";
 import { useAuthStore } from "../../../stores/authStore";
 import { getUnlockedTitles, equipTitle, type TitleResponse } from "../../../api/taskApi";
@@ -22,7 +22,7 @@ export function AccountSettingsTab() {
 
     const maxExp = (40 * level * level) + (260 * level) + 200;
 
-    const fetchTitles = async () => {
+    const fetchTitles = useCallback(async () => {
         try {
             const res = await getUnlockedTitles();
             if (res.success && res.payload) {
@@ -37,11 +37,11 @@ export function AccountSettingsTab() {
         } catch (err) {
             console.error(err);
         }
-    };
+    }, []);
 
     useEffect(() => {
-        fetchTitles();
-    }, [level]);
+        Promise.resolve().then(fetchTitles);
+    }, [fetchTitles, level]);
 
     const handleUpdateSettings = async () => {
         if (!displayName.trim()) {
@@ -63,7 +63,7 @@ export function AccountSettingsTab() {
                 })));
             }
             alert("Cập nhật tài khoản thành công!");
-        } catch (err) {
+        } catch {
             alert("Lỗi khi cập nhật thông tin tài khoản!");
         }
     };

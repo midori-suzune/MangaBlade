@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { CalendarCheck, BookOpen, MessageSquare, History, RotateCw, ListChecks, Award } from "lucide-react";
 import { useAuthStore } from "../../../stores/authStore";
@@ -14,7 +14,7 @@ export function DailyTasksTab() {
   const [loading, setLoading] = useState(true);
   const [activeSubTab, setActiveSubTab] = useState<SubTab>("tasks");
 
-  const fetchStatus = async () => {
+  const fetchStatus = useCallback(async () => {
     try {
       const res = await getDailyStatus();
       if (res.success && res.payload) {
@@ -26,11 +26,11 @@ export function DailyTasksTab() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [updateLevelAndExp]);
 
   useEffect(() => {
-    fetchStatus();
-  }, []);
+    Promise.resolve().then(fetchStatus);
+  }, [fetchStatus]);
 
   const handleClaimCheckIn = async () => {
     if (!status || status.checkInClaimed) return;
@@ -41,7 +41,7 @@ export function DailyTasksTab() {
       } else {
         alert(res.message || "Điểm danh thất bại");
       }
-    } catch (err) {
+    } catch {
       alert("Lỗi kết nối đến máy chủ khi điểm danh!");
     }
   };
@@ -55,7 +55,7 @@ export function DailyTasksTab() {
       } else {
         alert(res.message || "Nhận thưởng thành tựu thất bại");
       }
-    } catch (err) {
+    } catch {
       alert("Lỗi kết nối đến máy chủ khi nhận thưởng thành tựu!");
     }
   };
