@@ -1,30 +1,71 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { Pencil } from "lucide-react";
 import { useAuthStore } from "../../../stores/authStore";
+import { getUnlockedTitles, equipTitle, type TitleResponse } from "../../../api/taskApi";
 import styles from "../UserProfile.module.css";
 
 export function AccountSettingsTab() {
-    const { user, avatarUrl, displayName: storeDisplayName, updateAvatar, updateDisplayName } = useAuthStore();
+    const { 
+        user, 
+        avatarUrl, 
+        displayName: storeDisplayName, 
+        updateAvatar, 
+        updateDisplayName, 
+        level, 
+        exp,
+        updateActiveTitle 
+    } = useAuthStore();
     const [displayName, setDisplayName] = useState(storeDisplayName || "");
+    const [unlockedTitles, setUnlockedTitles] = useState<TitleResponse[]>([]);
+    const [selectedTitleId, setSelectedTitleId] = useState<string>("");
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const [exp] = useState(() => {
-        if (user) {
-            const savedCheckIn = localStorage.getItem(`checkin_${user.id}_${new Date().toDateString()}`);
-            if (savedCheckIn === "claimed") return 440;
-        }
-        return 420;
-    });
-    const [level] = useState(5);
+    const maxExp = (40 * level * level) + (260 * level) + 200;
 
-    const handleUpdateSettings = () => {
+    const fetchTitles = async () => {
+        try {
+            const res = await getUnlockedTitles();
+            if (res.success && res.payload) {
+                setUnlockedTitles(res.payload);
+                const equipped = res.payload.find(t => t.equipped);
+                if (equipped) {
+                    setSelectedTitleId(equipped.id.toString());
+                } else {
+                    setSelectedTitleId("");
+                }
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    useEffect(() => {
+        fetchTitles();
+    }, [level]);
+
+    const handleUpdateSettings = async () => {
         if (!displayName.trim()) {
             alert("Vui lòng điền họ tên hiển thị!");
             return;
         }
 
-        updateDisplayName(displayName);
-        alert("Cập nhật tài khoản thành công!");
+        try {
+            await updateDisplayName(displayName);
+
+            const titleIdVal = selectedTitleId ? parseInt(selectedTitleId, 10) : null;
+            const res = await equipTitle(titleIdVal);
+            if (res.success) {
+                const selected = unlockedTitles.find(t => t.id === titleIdVal);
+                updateActiveTitle(selected ? selected.name : null, selected ? selected.colorCode : null);
+                setUnlockedTitles(prev => prev.map(t => ({
+                    ...t,
+                    equipped: t.id === titleIdVal
+                })));
+            }
+            alert("Cập nhật tài khoản thành công!");
+        } catch (err) {
+            alert("Lỗi khi cập nhật thông tin tài khoản!");
+        }
     };
 
     const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -43,9 +84,9 @@ export function AccountSettingsTab() {
         }
     };
 
-
-
     if (!user) return null;
+
+    const currentEquipped = unlockedTitles.find(t => t.equipped);
 
     return (
         <div>
@@ -79,7 +120,24 @@ export function AccountSettingsTab() {
                     />
                 </div>
                 <div className={styles.profileMetaInfo}>
-                    <h2 className={styles.profileMetaName}>{displayName}</h2>
+                    <h2 className={styles.profileMetaName}>
+                        {displayName}
+                        {currentEquipped && (
+                            <span 
+                                style={{ 
+                                    marginLeft: "8px", 
+                                    fontSize: "12px", 
+                                    padding: "2px 8px", 
+                                    borderRadius: "4px", 
+                                    backgroundColor: `${currentEquipped.colorCode}20`,
+                                    color: currentEquipped.colorCode,
+                                    border: `1px solid ${currentEquipped.colorCode}`
+                                }}
+                            >
+                                {currentEquipped.name}
+                            </span>
+                        )}
+                    </h2>
                     <span className={styles.profileMetaUsername}>@{user.username}</span>
                     <div className={styles.profileMetaLevelBox}>
                         <div className={styles.levelProgressContainer}>
@@ -87,10 +145,10 @@ export function AccountSettingsTab() {
                             <div className={styles.levelProgressBarOuter}>
                                 <div 
                                     className={styles.levelProgressBarInner} 
-                                    style={{ width: `${(exp / 500) * 100}%` }}
+                                    style={{ width: `${(exp / maxExp) * 100}%` }}
                                 ></div>
                             </div>
-                            <span className={styles.levelExpText}>{exp} / 500 EXP</span>
+                            <span className={styles.levelExpText}>{exp} / {maxExp} EXP</span>
                         </div>
                     </div>
                 </div>
@@ -122,21 +180,36 @@ export function AccountSettingsTab() {
                 </div>
             </div>
 
-            <div className={styles.settingsSection}>
-                <span className={styles.sectionLabel}>Thông tin hệ thống</span>
-                <div className={styles.formGrid2}>
-                    <div className={styles.infoBox}>
-                        <span className={styles.infoBoxLabel}>Username</span>
-                        <span className={styles.infoBoxValue}>{user.username}</span>
-                    </div>
-                    <div className={styles.infoBox}>
-                        <span className={styles.infoBoxLabel}>Ngày gia nhập</span>
-                        <span className={styles.infoBoxValue}>10/07/2026</span>
-                    </div>
+            <div className={styles.formGrid2} style={{ marginBottom: "20px" }}>
+                <div className={styles.settingsSection} style={{ marginBottom: 0 }}>
+                    <label htmlFor="equip-title" className={styles.sectionLabel}>Danh hiệu hiển thị</label>
+                    <select
+                        id="equip-title"
+                        className={styles.formInput}
+                        value={selectedTitleId}
+                        onChange={(e) => setSelectedTitleId(e.target.value)}
+                    >
+                        <option value="">Không sử dụng danh hiệu</option>
+                        {unlockedTitles.map(t => (
+                            <option key={t.id} value={t.id}>
+                                {t.name} (Yêu cầu cấp {t.requiredLevel})
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                <div className={styles.settingsSection} style={{ marginBottom: 0 }}>
+                    <label className={styles.sectionLabel}>Username đăng nhập</label>
+                    <input
+                        type="text"
+                        className={styles.formInput}
+                        value={user.username}
+                        readOnly
+                        disabled
+                        style={{ backgroundColor: "#f8fafc", cursor: "not-allowed", color: "#64748b" }}
+                    />
                 </div>
             </div>
-
-
 
             <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "24px", borderTop: "1px solid var(--color-border)", paddingTop: "20px" }}>
                 <button className={styles.btnSubmit} onClick={handleUpdateSettings}>

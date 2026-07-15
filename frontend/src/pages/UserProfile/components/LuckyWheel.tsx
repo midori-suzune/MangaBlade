@@ -1,5 +1,6 @@
 import { useState } from "react";
 import styles from "../UserProfile.module.css";
+import { spinWheel } from "../../../api/taskApi";
 
 const PRIZES = [
     { text: "10 EXP", value: 10 },
@@ -15,62 +16,52 @@ const PRIZES = [
 const COLORS = ["#f43f5e", "#f59e0b", "#6366f1", "#10b981", "#ec4899", "#3b82f6", "#8b5cf6", "#14b8a6"];
 
 interface LuckyWheelProps {
-    user: { id: number } | null;
-    exp: number;
-    setExp: (exp: number) => void;
-    level: number;
-    setLevel: (level: number) => void;
-    addHistoryEntry: (type: string, amount: number) => void;
     initialSpun: boolean;
     initialPrize: string | null;
+    onSpinSuccess: (expGained: number) => void;
 }
 
 export function LuckyWheel({
-    user,
-    exp,
-    setExp,
-    level,
-    setLevel,
-    addHistoryEntry,
     initialSpun,
-    initialPrize
+    initialPrize,
+    onSpinSuccess
 }: LuckyWheelProps) {
     const [rotation, setRotation] = useState(0);
     const [isSpinning, setIsSpinning] = useState(false);
     const [hasSpun, setHasSpun] = useState(initialSpun);
     const [prizeText, setPrizeText] = useState<string | null>(initialPrize);
 
-    const handleSpin = () => {
+    const handleSpin = async () => {
         if (isSpinning || hasSpun) return;
 
-        setIsSpinning(true);
-        const prizeIndex = Math.floor(Math.random() * PRIZES.length);
-        const targetAngle = 360 - (prizeIndex * 45);
-        const newRotation = rotation + (360 * 5) + targetAngle - (rotation % 360);
-        const finalRotation = newRotation + (Math.random() * 24 - 12);
-        setRotation(finalRotation);
+        try {
+            setIsSpinning(true);
+            const res = await spinWheel();
+            if (!res.success) {
+                alert(res.message || "Không thể thực hiện quay thưởng");
+                setIsSpinning(false);
+                return;
+            }
 
-        setTimeout(() => {
+            const expGained = res.payload;
+            const prizeIndex = PRIZES.findIndex(p => p.value === expGained);
+            const fallbackIndex = prizeIndex >= 0 ? prizeIndex : 0;
+            const targetAngle = 360 - (fallbackIndex * 45);
+            const newRotation = rotation + (360 * 5) + targetAngle - (rotation % 360);
+            const finalRotation = newRotation + (Math.random() * 24 - 12);
+            setRotation(finalRotation);
+
+            setTimeout(() => {
+                setIsSpinning(false);
+                setHasSpun(true);
+                const prize = PRIZES[fallbackIndex];
+                setPrizeText(`Chúc mừng! Bạn đã quay trúng ${prize.text}`);
+                onSpinSuccess(expGained);
+            }, 4000);
+        } catch (err: any) {
             setIsSpinning(false);
-            setHasSpun(true);
-            const prize = PRIZES[prizeIndex];
-            setPrizeText(`Chúc mừng! Bạn đã quay trúng ${prize.text}`);
-
-            addHistoryEntry("Vòng quay", prize.value);
-
-            const newExp = exp + prize.value;
-            if (newExp >= 500) {
-                setExp(newExp - 500);
-                setLevel(level + 1);
-            } else {
-                setExp(newExp);
-            }
-
-            if (user?.id) {
-                localStorage.setItem(`spin_${user.id}_${new Date().toDateString()}`, "spun");
-                localStorage.setItem(`spin_prize_${user.id}_${new Date().toDateString()}`, prize.text);
-            }
-        }, 4000);
+            alert("Lỗi kết nối đến máy chủ khi quay số!");
+        }
     };
 
     return (
