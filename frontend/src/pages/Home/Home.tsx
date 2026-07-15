@@ -168,7 +168,12 @@ export function Home() {
             <section className={styles.leftMain}>
                 <MangaSlider manga={featuredManga} />
 
-                <h2 className={styles.sectionTitle}>Truyện Mới Cập Nhật</h2>
+                <div className={styles.sectionHeader}>
+                    <h2 className={styles.sectionTitle}>Truyện Mới Cập Nhật</h2>
+                    <Link to="/category" className={styles.viewMoreLink}>
+                        Xem thêm →
+                    </Link>
+                </div>
                 {error && <p className={styles.errorText}>{error}</p>}
                 <div className={styles.comicGrid}>
                     {readableManga.map((comic) => (
@@ -204,11 +209,6 @@ export function Home() {
                     ))}
                 </div>
 
-                <div className={styles.pagination}>
-                    <Link to="/category" className={styles.viewMoreLink}>
-                        Xem thêm
-                    </Link>
-                </div>
             </section>
 
             <aside className={styles.rightMain}>

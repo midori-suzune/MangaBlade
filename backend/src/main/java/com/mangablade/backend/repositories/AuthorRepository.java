@@ -11,4 +11,6 @@ import java.util.Optional;
 public interface AuthorRepository extends JpaRepository<Author, Long> {
 
     Optional<Author> findByName(String name);
+
+    Optional<Author> findFirstByNameIsNull();
 }
