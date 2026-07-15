@@ -12,10 +12,11 @@ import com.mangablade.backend.exceptions.ErrorCode;
 import com.mangablade.backend.repositories.CommentRepository;
 import com.mangablade.backend.repositories.ChapterRepository;
 import com.mangablade.backend.repositories.MangaRepository;
-import com.mangablade.backend.services.mangablade.TaskService;
+import com.mangablade.backend.repositories.UserRepository;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
@@ -28,14 +29,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@org.springframework.transaction.annotation.Transactional(readOnly = true)
+@Transactional(readOnly = true)
 public class CommentService {
 
     private final CommentRepository commentRepository;
     private final MangaRepository mangaRepository;
     private final ChapterRepository chapterRepository;
     private final TaskService taskService;
-    private final com.mangablade.backend.repositories.UserRepository userRepository;
+    private final UserRepository userRepository;
 
     public List<RecentCommentResponse> findRecentDistinctUserComments() {
         return commentRepository.findRecentDistinctUserComments(CommentStatus.VISIBLE, PageRequest.of(0, 5));
@@ -85,12 +86,12 @@ public class CommentService {
                 .toList();
     }
 
-    @org.springframework.transaction.annotation.Transactional
+    @Transactional
     public MangaCommentResponse create(String slug, CreateCommentRequest request, User user) {
         return create(slug, null, request, user);
     }
 
-    @org.springframework.transaction.annotation.Transactional
+    @Transactional
     public MangaCommentResponse create(String slug, String chapterNumber, CreateCommentRequest request, User user) {
         var now = Instant.now();
         var manga = findMangaBySlugOrThrow(slug);

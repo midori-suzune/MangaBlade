@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/tasks")
-@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class TaskController {
 
