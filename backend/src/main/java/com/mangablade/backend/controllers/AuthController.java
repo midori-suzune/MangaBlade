@@ -1,5 +1,6 @@
 package com.mangablade.backend.controllers;
 
+<<<<<<< HEAD
 import com.mangablade.backend.dtos.request.LoginRequest;
 import com.mangablade.backend.dtos.request.RegisterRequest;
 import com.mangablade.backend.dtos.request.ForgotPasswordRequest;
@@ -16,17 +17,38 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+=======
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+>>>>>>> fa490662811fb42461c9bf5cbefa6b31f992facf
 
-import lombok.RequiredArgsConstructor;
+import com.mangablade.backend.dtos.request.LoginRequest;
+import com.mangablade.backend.dtos.response.AuthResponse;
+import com.mangablade.backend.sercurity.JwtTokenProvider;
 
 @RestController
-@RequestMapping("api/v1/auth")
-@RequiredArgsConstructor
+@RequestMapping("/api/auth")
+@CrossOrigin(origins = "*")
 public class AuthController {
-    private final AuthService authService;
 
+    private final AuthenticationManager authenticationManager;
+    private final JwtTokenProvider tokenProvider;
+
+    public AuthController(AuthenticationManager authenticationManager, JwtTokenProvider tokenProvider) {
+        this.authenticationManager = authenticationManager;
+        this.tokenProvider = tokenProvider;
+    }
 
     @PostMapping("/login")
+<<<<<<< HEAD
     public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request){
         return ResponseEntity.ok(
                 ApiResponse.<AuthResponse>builder()
@@ -48,8 +70,27 @@ public class AuthController {
                         .error(null)
                         .fieldsErrors(null)
                         .build()
+=======
+    public ResponseEntity<AuthResponse> authenticateUser(@RequestBody LoginRequest loginRequest) {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        loginRequest.getUsernameOrEmail(),
+                        loginRequest.getPassword()
+                )
+>>>>>>> fa490662811fb42461c9bf5cbefa6b31f992facf
         );
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String username = authentication.getName();
+        String role = authentication.getAuthorities().stream()
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Tài khoản chưa được chỉ định vai trò."))
+                .getAuthority(); // Trả về dạng "ROLE_USER", "ROLE_ADMIN",...
+
+        String jwt = tokenProvider.generateToken(username, role);
+        return ResponseEntity.ok(new AuthResponse(jwt, username, role));
     }
+<<<<<<< HEAD
 
     @PostMapping("/forgot-password")
     public ResponseEntity<ApiResponse<Void>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request){
@@ -98,3 +139,6 @@ public class AuthController {
         );
     }
 }
+=======
+}
+>>>>>>> fa490662811fb42461c9bf5cbefa6b31f992facf

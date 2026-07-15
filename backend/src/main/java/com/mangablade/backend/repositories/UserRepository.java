@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.mangablade.backend.entities.User;
+<<<<<<< HEAD
 import com.mangablade.backend.enums.UserRole;
 
 @Repository
@@ -30,3 +31,10 @@ public interface UserRepository extends JpaRepository<User,Long> {
                                      @Param("isBanned") Boolean isBanned, 
                                      Pageable pageable);
 }
+=======
+
+@Repository
+public interface UserRepository extends JpaRepository<User, Long> {
+    Optional<User> findByUsernameOrEmail(String username, String email);
+}
+>>>>>>> fa490662811fb42461c9bf5cbefa6b31f992facf

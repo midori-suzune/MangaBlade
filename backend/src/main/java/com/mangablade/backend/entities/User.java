@@ -1,5 +1,6 @@
 package com.mangablade.backend.entities;
 
+<<<<<<< HEAD
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
@@ -29,33 +30,31 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+=======
+import com.mangablade.backend.enums.UserRole;
+import jakarta.persistence.*;
+import lombok.*;
+import java.time.LocalDateTime;
+>>>>>>> fa490662811fb42461c9bf5cbefa6b31f992facf
 
 @Entity
-@Table(name = "users", uniqueConstraints = {
-        @UniqueConstraint(name = "uq_users_email", columnNames = "email"),
-        @UniqueConstraint(name = "uq_users_username", columnNames = "username")
-})
-@Getter
-@Setter
+@Table(name = "users")
+@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class User implements UserDetails {
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
-    @Email
-    @Size(max = 255)
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String email;
 
-    @NotBlank
-    @Size(max = 50)
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, unique = true, length = 50)
     private String username;
 
+<<<<<<< HEAD
     @Size(max = 255)
     @Column(name = "password_hash", nullable = true)
     private String passwordHash;
@@ -73,11 +72,16 @@ public class User implements UserDetails {
     private String avatarUrl;
 
     @NotNull
+=======
+    @Column(name = "password_hash", nullable = false)
+    private String passwordHash;
+
+>>>>>>> fa490662811fb42461c9bf5cbefa6b31f992facf
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    @Builder.Default
+    @Column(nullable = false)
     private UserRole role = UserRole.USER;
 
+<<<<<<< HEAD
     // --- THÊM TRƯỜNG NÀY ĐỂ QUẢN LÝ BAN/UNBAN ---
     @NotNull
     @Column(name = "is_banned", nullable = false)
@@ -114,4 +118,11 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return !isBanned; 
     }
+=======
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+>>>>>>> fa490662811fb42461c9bf5cbefa6b31f992facf
 }
