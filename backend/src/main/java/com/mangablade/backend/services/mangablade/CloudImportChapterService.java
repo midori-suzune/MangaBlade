@@ -39,9 +39,24 @@ public class CloudImportChapterService {
     private final MangaRepository mangaRepository;
     private final ChapterRepository chapterRepository;
     private final ChapterPageRepository chapterPageRepository;
+    private final MangaSearchService mangaSearchService;
 
     @Value("${spring.app.cloudinary.importer.max-chapters-per-run:20}")
     private int maxChaptersPerRun;
+
+    @Transactional
+    public int syncMangaChapterPages(Manga manga) {
+        if (manga.getId() == null) {
+            throw new IllegalArgumentException("Manga id is required for Cloudinary chapter page sync");
+        }
+
+        var managedManga = mangaRepository.findById(manga.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Manga not found: " + manga.getId()));
+
+        var syncedChapters = syncMangaChapterFolders(managedManga, maxChaptersPerRun);
+        indexMangaSearch(managedManga);
+        return syncedChapters;
+    }
 
     @Transactional
     @Scheduled(cron = "${spring.app.cloudinary.chapter-page-sync-cron}", zone = "Asia/Ho_Chi_Minh")
@@ -55,13 +70,18 @@ public class CloudImportChapterService {
             }
 
             try {
-                syncedChapters += syncMangaChapterFolders(manga, maxChaptersPerRun - syncedChapters);
+                var mangaSyncedChapters = syncMangaChapterFolders(manga, maxChaptersPerRun - syncedChapters);
+                if (mangaSyncedChapters > 0) {
+                    indexMangaSearch(manga);
+                }
+                syncedChapters += mangaSyncedChapters;
             } catch (Exception exception) {
                 log.warn(
                         "Cloudinary manga sync skipped: mangaId={}, slug={}, reason={}",
                         manga.getId(),
                         manga.getSlug(),
-                        exception.getMessage()
+                        exception.getMessage(),
+                        exception
                 );
             }
         }
@@ -144,6 +164,16 @@ public class CloudImportChapterService {
         }
 
         return synced;
+    }
+
+    private void indexMangaSearch(Manga manga) {
+        try {
+            mangaSearchService.indexManga(manga);
+            log.info("Indexed manga search document after Cloudinary sync: slug={}", manga.getSlug());
+        } catch (Exception exception) {
+            log.warn("Manga search indexing after Cloudinary sync skipped: slug={}, reason={}",
+                    manga.getSlug(), exception.getMessage(), exception);
+        }
     }
 
     private List<String> fetchChapterFolders(String chaptersFolder) {
