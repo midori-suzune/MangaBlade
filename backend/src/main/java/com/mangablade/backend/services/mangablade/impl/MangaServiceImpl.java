@@ -18,6 +18,7 @@ import com.mangablade.backend.repositories.MangaRepository;
 import com.mangablade.backend.services.mangablade.AuthorService;
 import com.mangablade.backend.services.mangablade.ChapterService;
 import com.mangablade.backend.services.mangablade.MangaService;
+import com.mangablade.backend.services.mangablade.TaskService;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +41,7 @@ public class MangaServiceImpl implements MangaService {
     private final CategoryRepository categoryRepository;
     private final FavoriteRepository favoriteRepository;
     private final MangaLikeRepository mangaLikeRepository;
+    private final TaskService taskService;
 
     @Override
     public List<MangaResponse> fetchAllManga() {
@@ -114,15 +116,21 @@ public class MangaServiceImpl implements MangaService {
         var manga = findMangaBySlugOrThrow(slug);
         var isFollowed = favoriteRepository.existsByUserIdAndMangaId(userId, manga.getId());
 
+        int currentFollowCount = (int) favoriteRepository.countByUserId(userId);
+
         if (isFollowed) {
             favoriteRepository.deleteByUserIdAndMangaId(userId, manga.getId());
+            currentFollowCount = Math.max(0, currentFollowCount - 1);
         } else {
             favoriteRepository.save(Favorite.builder()
                     .userId(userId)
                     .mangaId(manga.getId())
                     .createdAt(Instant.now())
                     .build());
+            currentFollowCount = currentFollowCount + 1;
         }
+
+        taskService.handleMangaFollowUpdate(userId, currentFollowCount);
 
         return MangaInteractionResponse.builder()
                 .followed(!isFollowed)

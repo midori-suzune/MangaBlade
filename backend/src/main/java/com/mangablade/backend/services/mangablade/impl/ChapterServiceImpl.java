@@ -8,6 +8,7 @@ import com.mangablade.backend.repositories.ChapterPageRepository;
 import com.mangablade.backend.repositories.ChapterRepository;
 import com.mangablade.backend.repositories.ReadingHistoryRepository;
 import com.mangablade.backend.services.mangablade.ChapterService;
+import com.mangablade.backend.services.mangablade.TaskService;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,7 @@ public class ChapterServiceImpl implements ChapterService {
     private final ChapterRepository chapterRepository;
     private  final ChapterPageRepository chapterPageRepository;
     private final ReadingHistoryRepository readingHistoryRepository;
+    private final TaskService taskService;
 
     @Override
     public String getLastestChapterByMangaId(Long mangaId) {
@@ -61,8 +63,13 @@ public class ChapterServiceImpl implements ChapterService {
                         .lastReadAt(now)
                         .build());
 
+        boolean isNewRead = history.getId() == null;
         history.setLastReadAt(now);
         readingHistoryRepository.save(history);
+
+        if (isNewRead) {
+            taskService.handleChapterRead(userId);
+        }
     }
 
     @Override
