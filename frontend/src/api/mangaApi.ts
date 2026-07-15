@@ -1,4 +1,5 @@
 import type {
+  CategoryResponse,
   ChapterPageRequest,
   ChapterPageResponse,
   CreateCommentRequest,
@@ -48,6 +49,11 @@ export async function filterManga(params: {
   const response = await axiosInstance.get<ApiResponse<MangaSearchResponse[]>>('/api/v1/manga/filter', {
     params,
   });
+  return response.data;
+}
+
+export async function getCategories(): Promise<ApiResponse<CategoryResponse[]>> {
+  const response = await axiosInstance.get<ApiResponse<CategoryResponse[]>>('/api/v1/categories');
   return response.data;
 }
 

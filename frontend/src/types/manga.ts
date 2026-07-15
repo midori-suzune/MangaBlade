@@ -64,7 +64,7 @@ interface AuthorResponse {
     name: string,
 }
 
-interface CategoryResponse {
+export interface CategoryResponse {
     id: number,
     name: string,
     slug: string,
@@ -119,7 +119,6 @@ export type ChapterPageResponse = {
     previousChapterNumber?: string,
     nextChapterNumber?: string,
 }
-
 
 
 

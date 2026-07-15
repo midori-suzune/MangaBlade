@@ -1,23 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { filterManga } from '../../api/mangaApi';
-import type { MangaSearchResponse } from '../../types/manga';
+import { filterManga, getCategories } from '../../api/mangaApi';
+import type { CategoryResponse, MangaSearchResponse } from '../../types/manga';
 import { getTimeAgo } from '../../utils/time';
 import styles from './CategoryPage.module.css';
-
-interface Category {
-  id: string;
-  name: string;
-  description: string;
-}
-
-const CATEGORIES: Category[] = [
-  { id: 'hanh-dong', name: 'Hành động', description: 'Thể loại bao gồm các cảnh chiến đấu kịch tính, võ thuật, rượt đuổi gay cấn và phô diễn sức mạnh.' },
-  { id: 'phieu-luu', name: 'Phiêu lưu', description: 'Thể loại phiêu lưu, mạo hiểm, thường là hành trình của các nhân vật khám phá thế giới mới.' },
-  { id: 'hoat-hinh', name: 'Hoạt hình', description: 'Những câu chuyện truyện tranh được vẽ theo phong cách anime sống động.' },
-  { id: 'chuyen-sinh', name: 'Chuyển sinh', description: 'Hành trình bắt đầu lại cuộc đời mới ở một thế giới khác sau khi chuyển thế.' },
-  { id: 'hai-huoc', name: 'Hài hước', description: 'Thể loại mang lại tiếng cười sảng khoái, các tình huống dí dỏm, vui nhộn đời thường.' }
-];
 
 const SORT_OPTIONS = [
   { id: 'update', label: 'Ngày cập nhật giảm dần' },
@@ -33,8 +19,13 @@ export function CategoryPage() {
   const [pendingAuthor, setPendingAuthor] = useState<string>('');
   const [debouncedAuthor, setDebouncedAuthor] = useState('');
   const [manga, setManga] = useState<MangaSearchResponse[]>([]);
+  const [categories, setCategories] = useState<CategoryResponse[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [categoryError, setCategoryError] = useState<string | null>(null);
+  const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(false);
+  const selectedCategorySlug = pendingCategoryIds[0];
+  const selectedCategoryName = categories.find(category => category.slug === selectedCategorySlug)?.name ?? 'Tất cả';
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -43,6 +34,31 @@ export function CategoryPage() {
 
     return () => window.clearTimeout(timer);
   }, [pendingAuthor]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadCategories() {
+      try {
+        setCategoryError(null);
+        const response = await getCategories();
+        if (!cancelled) {
+          setCategories(response.success ? response.payload : []);
+        }
+      } catch {
+        if (!cancelled) {
+          setCategories([]);
+          setCategoryError('Không thể tải thể loại truyện.');
+        }
+      }
+    }
+
+    void loadCategories();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -90,19 +106,45 @@ export function CategoryPage() {
         <div className={styles.filterPanel}>
           <div className={styles.filterRow}>
             <span className={styles.filterGroupLabel}>Thể loại truyện</span>
-            <select
-              className={styles.filterSelect}
-              value={pendingCategoryIds[0] ?? 'all'}
-              onChange={(event) => {
-                const nextCategoryId = event.target.value;
-                setPendingCategoryIds(nextCategoryId === 'all' ? [] : [nextCategoryId]);
-              }}
-            >
-              <option value="all">Tất cả</option>
-              {CATEGORIES.map(category => (
-                <option key={category.id} value={category.id}>{category.name}</option>
-              ))}
-            </select>
+            <div className={styles.categoryMenu}>
+              <button
+                type="button"
+                className={styles.categoryMenuButton}
+                aria-expanded={isCategoryMenuOpen}
+                onClick={() => setIsCategoryMenuOpen((current) => !current)}
+              >
+                <span>{selectedCategoryName}</span>
+                <span className={styles.categoryMenuChevron}>⌄</span>
+              </button>
+
+              {isCategoryMenuOpen && (
+                <div className={styles.categoryMenuPanel}>
+                  <button
+                    type="button"
+                    className={`${styles.categoryOption} ${!selectedCategorySlug ? styles.activeCategoryOption : ''}`}
+                    onClick={() => {
+                      setPendingCategoryIds([]);
+                      setIsCategoryMenuOpen(false);
+                    }}
+                  >
+                    Tất cả
+                  </button>
+                  {categories.map(category => (
+                    <button
+                      type="button"
+                      key={category.id}
+                      className={`${styles.categoryOption} ${selectedCategorySlug === category.slug ? styles.activeCategoryOption : ''}`}
+                      onClick={() => {
+                        setPendingCategoryIds([category.slug]);
+                        setIsCategoryMenuOpen(false);
+                      }}
+                    >
+                      {category.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className={styles.filterRow}>
@@ -133,6 +175,7 @@ export function CategoryPage() {
 
         </div>
 
+        {categoryError && <p className={styles.errorText}>{categoryError}</p>}
         {error && <p className={styles.errorText}>{error}</p>}
 
         <div className={styles.comicGrid}>
