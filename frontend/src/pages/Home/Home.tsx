@@ -31,6 +31,24 @@ function hasLatestChapter(comic: MangaResponse): comic is MangaWithLatestChapter
     return Boolean(comic.latestChapter?.chapterNumber);
 }
 
+function getPublicUsername(username: string) {
+    const atIndex = username.indexOf("@");
+    if (atIndex > 0) {
+        return username.slice(0, atIndex);
+    }
+
+    return username;
+}
+
+function getCommentAuthorName(userId: number, username: string) {
+    const currentUser = useAuthStore.getState().user;
+    if (currentUser && currentUser.id === userId) {
+        return useAuthStore.getState().displayName || getPublicUsername(username);
+    }
+    const cachedName = localStorage.getItem(`displayName_${userId}`);
+    return cachedName || getPublicUsername(username);
+}
+
 export function Home() {
 
     const [manga, setManga] = useState<MangaResponse[]>([]);
@@ -285,11 +303,26 @@ export function Home() {
 
                             return (
                                 <article className={styles.commentItem} key={comment.id}>
-                                    <div className={styles.commentAvatar}>{comment.username.slice(0, 1).toUpperCase()}</div>
+                                    <div className={styles.commentAvatar}>{getCommentAuthorName(comment.userId, comment.username).slice(0, 1).toUpperCase()}</div>
                                     <div className={styles.commentContent}>
-                                        <div className={styles.commentHeader}>
-                                            <span className={styles.commentAuthor}>{comment.username}</span>
-                                            <span className={styles.commentTime}>{getTimeAgo(comment.createdAt)}</span>
+                                        <div className={styles.commentHeader} style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
+                                            <span className={styles.commentAuthor}>{getCommentAuthorName(comment.userId, comment.username)}</span>
+                                            {comment.activeTitle && (
+                                                <span 
+                                                    style={{ 
+                                                        fontSize: "9px", 
+                                                        padding: "1px 5px", 
+                                                        borderRadius: "3px", 
+                                                        backgroundColor: `${comment.activeTitleColor || '#6b7280'}18`,
+                                                        color: comment.activeTitleColor || '#6b7280',
+                                                        border: `1px solid ${comment.activeTitleColor || '#6b7280'}`,
+                                                        fontWeight: "bold"
+                                                    }}
+                                                >
+                                                    {comment.activeTitle}
+                                                </span>
+                                            )}
+                                            <span className={styles.commentTime} style={{ marginLeft: "auto" }}>{getTimeAgo(comment.createdAt)}</span>
                                         </div>
                                         <p className={styles.commentText}>
                                             <CommentText content={comment.content} />

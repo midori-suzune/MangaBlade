@@ -4,7 +4,8 @@ public class CommentQuery {
     public static final String FIND_ROOT_COMMENTS_BY_MANGA_ID = """
             select c
             from Comment c
-            join fetch c.user
+            join fetch c.user u
+            left join fetch u.activeTitle
             where c.mangaId = :mangaId
               and c.chapterId is null
               and c.status = :status
@@ -15,7 +16,8 @@ public class CommentQuery {
     public static final String FIND_ROOT_COMMENTS_BY_MANGA_ID_AND_CHAPTER_ID = """
             select c
             from Comment c
-            join fetch c.user
+            join fetch c.user u
+            left join fetch u.activeTitle
             where c.mangaId = :mangaId
               and c.chapterId = :chapterId
               and c.status = :status
@@ -26,7 +28,8 @@ public class CommentQuery {
     public static final String FIND_REPLIES_BY_PARENT_IDS = """
             select c
             from Comment c
-            join fetch c.user
+            join fetch c.user u
+            left join fetch u.activeTitle
             where c.parentId in :parentIds
               and c.status = :status
             order by c.createdAt asc
@@ -41,10 +44,13 @@ public class CommentQuery {
                 u.username,
                 m.slug,
                 m.title,
-                ch.chapterNumber
+                ch.chapterNumber,
+                t.name,
+                t.colorCode
             )
             from Comment c
             join c.user u
+            left join u.activeTitle t
             join c.manga m
             left join c.chapter ch
             where c.status = :status

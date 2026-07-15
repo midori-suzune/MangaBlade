@@ -9,6 +9,10 @@ interface AuthState {
   authModalTab: 'login' | 'register' | 'forgot';
   avatarUrl: string | null;
   displayName: string;
+  level: number;
+  exp: number;
+  activeTitle: string | null;
+  activeTitleColor: string | null;
   login: (token: string, user: UserInfo, rememberMe: boolean) => void;
   logout: () => void;
   loadFromStorage: () => void;
@@ -16,6 +20,8 @@ interface AuthState {
   closeAuthModal: () => void;
   updateAvatar: (url: string | null) => void;
   updateDisplayName: (name: string) => void;
+  updateLevelAndExp: (level: number, exp: number) => void;
+  updateActiveTitle: (title: string | null, color: string | null) => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -26,6 +32,10 @@ export const useAuthStore = create<AuthState>((set) => ({
   authModalTab: 'login',
   avatarUrl: null,
   displayName: '',
+  level: 0,
+  exp: 0,
+  activeTitle: null,
+  activeTitleColor: null,
 
   login: (token, user, rememberMe) => {
     const storage = rememberMe ? localStorage : sessionStorage;
@@ -41,7 +51,11 @@ export const useAuthStore = create<AuthState>((set) => ({
       isAuthenticated: true, 
       isAuthModalOpen: false,
       avatarUrl: savedAvatar,
-      displayName: savedName
+      displayName: savedName,
+      level: user.level ?? 0,
+      exp: user.exp ?? 0,
+      activeTitle: user.activeTitle ?? null,
+      activeTitleColor: null
     });
   },
 
@@ -50,7 +64,17 @@ export const useAuthStore = create<AuthState>((set) => ({
     localStorage.removeItem('user');
     sessionStorage.removeItem('accessToken');
     sessionStorage.removeItem('user');
-    set({ token: null, user: null, isAuthenticated: false, avatarUrl: null, displayName: '' });
+    set({ 
+      token: null, 
+      user: null, 
+      isAuthenticated: false, 
+      avatarUrl: null, 
+      displayName: '',
+      level: 0,
+      exp: 0,
+      activeTitle: null,
+      activeTitleColor: null
+    });
   },
 
   loadFromStorage: () => {
@@ -66,10 +90,24 @@ export const useAuthStore = create<AuthState>((set) => ({
           user, 
           isAuthenticated: true,
           avatarUrl: savedAvatar,
-          displayName: savedName
+          displayName: savedName,
+          level: user.level ?? 0,
+          exp: user.exp ?? 0,
+          activeTitle: user.activeTitle ?? null,
+          activeTitleColor: null
         });
       } catch {
-        set({ token: null, user: null, isAuthenticated: false, avatarUrl: null, displayName: '' });
+        set({ 
+          token: null, 
+          user: null, 
+          isAuthenticated: false, 
+          avatarUrl: null, 
+          displayName: '',
+          level: 0,
+          exp: 0,
+          activeTitle: null,
+          activeTitleColor: null
+        });
       }
     }
   },
@@ -97,5 +135,13 @@ export const useAuthStore = create<AuthState>((set) => ({
       }
       return { displayName: name };
     });
+  },
+
+  updateLevelAndExp: (level, exp) => {
+    set({ level, exp });
+  },
+
+  updateActiveTitle: (title, color) => {
+    set({ activeTitle: title, activeTitleColor: color });
   },
 }));
