@@ -14,6 +14,7 @@ import com.mangablade.backend.repositories.ChapterRepository;
 import com.mangablade.backend.repositories.MangaRepository;
 import com.mangablade.backend.services.mangablade.TaskService;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -37,7 +38,7 @@ public class CommentService {
     private final com.mangablade.backend.repositories.UserRepository userRepository;
 
     public List<RecentCommentResponse> findRecentDistinctUserComments() {
-        return commentRepository.findRecentDistinctUserComments(CommentStatus.VISIBLE);
+        return commentRepository.findRecentDistinctUserComments(CommentStatus.VISIBLE, PageRequest.of(0, 5));
     }
 
     public List<MangaCommentResponse> findByMangaSlug(String slug) {

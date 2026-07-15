@@ -36,18 +36,17 @@ public class CommentQuery {
             """;
 
     public static final String FIND_RECENT_DISTINCT_USER_COMMENTS = """
-            select new com.mangablade.backend.dtos.response.RecentCommentResponse(
-                c.id,
-                c.content,
-                c.createdAt,
-                u.id,
-                u.username,
-                m.slug,
-                m.title,
-                ch.chapterNumber,
-                t.name,
-                t.colorCode
-            )
+            select
+                c.id as id,
+                c.content as content,
+                c.createdAt as createdAt,
+                u.id as userId,
+                u.username as username,
+                m.slug as mangaSlug,
+                m.title as mangaTitle,
+                ch.chapterNumber as chapterNumber,
+                t.name as activeTitle,
+                t.colorCode as activeTitleColor
             from Comment c
             join c.user u
             left join u.activeTitle t
@@ -61,6 +60,5 @@ public class CommentQuery {
                     and c2.status = :status
               )
             order by c.createdAt desc
-            limit 5
             """;
 }
