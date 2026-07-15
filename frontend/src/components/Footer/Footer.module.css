@@ -1,6 +1,6 @@
 .siteFooter {
-    margin-top: 50px;
-    padding: 50px 15px 30px;
+    margin-top: 35px;
+    padding: 32px 15px 22px;
     border-top: 1px solid #e2e8f0;
     background-color: #ffffff;
     color: #475569;
@@ -12,7 +12,7 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
-    gap: 40px;
+    gap: 28px;
 }
 
 .footerColMain {
@@ -39,11 +39,11 @@
 
 .footerDesc {
     max-width: 350px;
-    margin-top: 15px;
-    margin-bottom: 25px;
+    margin-top: 10px;
+    margin-bottom: 16px;
     color: #64748b;
     font-size: 14px;
-    line-height: 1.6;
+    line-height: 1.5;
 }
 
 .footerCopyright {
@@ -53,7 +53,7 @@
 
 .footerTitle {
     position: relative;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
     padding-bottom: 8px;
     color: #1e293b;
     font-size: 16px;
@@ -76,7 +76,7 @@
 .footerStats {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 14px;
     font-size: 14px;
 }
 
@@ -92,18 +92,15 @@
 .statItem {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 12px 15px;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    background-color: #f8fafc;
-    font-size: 14px;
-    transition: border-color 0.2s, background-color 0.2s;
-}
-
-.statItem:hover {
-    border-color: #6366f1;
-    background-color: #ffffff;
+    gap: 12px;
+    width: 100%;
+    max-width: 335px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: #475569;
+    font-size: 15px;
+    font-weight: 500;
 }
 
 .statIcon {

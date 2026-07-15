@@ -2,22 +2,24 @@ package com.mangablade.backend.dtos.response;
 
 import java.time.Instant;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+public interface RecentCommentResponse {
+    Long getId();
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class RecentCommentResponse {
-    private Long id;
-    private String content;
-    private Instant createdAt;
-    private Long userId;
-    private String username;
-    private String mangaSlug;
-    private String mangaTitle;
-    private String chapterNumber;
+    String getContent();
+
+    Instant getCreatedAt();
+
+    Long getUserId();
+
+    String getUsername();
+
+    String getMangaSlug();
+
+    String getMangaTitle();
+
+    String getChapterNumber();
+
+    String getActiveTitle();
+
+    String getActiveTitleColor();
 }

@@ -50,6 +50,8 @@ export type RecentCommentResponse = {
     mangaSlug: string,
     mangaTitle: string,
     chapterNumber?: string | null,
+    activeTitle?: string | null,
+    activeTitleColor?: string | null,
 }
 
 export interface ChapterResponse {
@@ -62,7 +64,7 @@ interface AuthorResponse {
     name: string,
 }
 
-interface CategoryResponse {
+export interface CategoryResponse {
     id: number,
     name: string,
     slug: string,
@@ -94,6 +96,8 @@ export type MangaCommentResponse = {
     user: {
         id: number,
         username: string,
+        activeTitle?: string | null,
+        activeTitleColor?: string | null,
     },
     replies: MangaCommentResponse[],
 }
@@ -115,7 +119,6 @@ export type ChapterPageResponse = {
     previousChapterNumber?: string,
     nextChapterNumber?: string,
 }
-
 
 
 

@@ -5,6 +5,7 @@ import com.mangablade.backend.entities.Comment;
 import com.mangablade.backend.enums.CommentStatus;
 import com.mangablade.backend.utils.querysql.CommentQuery;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -35,5 +36,8 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     );
 
     @Query(CommentQuery.FIND_RECENT_DISTINCT_USER_COMMENTS)
-    List<RecentCommentResponse> findRecentDistinctUserComments(@Param("status") CommentStatus status);
+    List<RecentCommentResponse> findRecentDistinctUserComments(
+            @Param("status") CommentStatus status,
+            Pageable pageable
+    );
 }

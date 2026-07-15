@@ -1,6 +1,8 @@
 package com.mangablade.backend.search;
 
 import com.mangablade.backend.search.document.MangaSearchDocument;
+import com.mangablade.backend.repositories.MangaRepository;
+import com.mangablade.backend.services.mangablade.MangaSearchService;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.elasticsearch.client.Request;
@@ -24,6 +26,8 @@ public class MangaSearchIndexInitializer implements ApplicationRunner {
 
     private final ElasticsearchOperations elasticsearchOperations;
     private final RestClient restClient;
+    private final MangaRepository mangaRepository;
+    private final MangaSearchService mangaSearchService;
 
     @Override
     public void run(ApplicationArguments args) {
@@ -32,12 +36,20 @@ public class MangaSearchIndexInitializer implements ApplicationRunner {
 
             if (indexOps.exists()) {
                 putMangaMapping();
+                reindexManga();
                 return;
             }
             createMangaIndex();
+            reindexManga();
         } catch (Exception exception) {
             log.warn("[Elasticsearch] Connection refused or failed: {}. Search index initialization skipped.", exception.getMessage());
         }
+    }
+
+    private void reindexManga() {
+        var manga = mangaRepository.findAll();
+        manga.forEach(mangaSearchService::indexManga);
+        log.info("[Elasticsearch] Reindexed manga documents: count={}", manga.size());
     }
 
     private void createMangaIndex() {

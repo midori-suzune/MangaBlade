@@ -33,7 +33,7 @@ public class OTruyenImportService {
 
 
     @Transactional
-    public void importManga(OTruyenMangaResponse response, OTruyenImportTarget target) {
+    public Manga importManga(OTruyenMangaResponse response, OTruyenImportTarget target) {
         log.info("Starting manga import: otruyenMangaId={}",
                 response.getData().getItem().getOtruyenMangaId());
 
@@ -66,6 +66,7 @@ public class OTruyenImportService {
         log.info("Finished manga import: mangaId={}, categories={}, authors={}",
                 manga.getId(), categories.size(), authors.size());
 
+        return manga;
     }
 
     private List<OtruyenCategoryResponse> getOtruyenCategoryResponses(OTruyenMangaResponse response, Manga manga) {

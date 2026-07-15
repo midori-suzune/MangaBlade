@@ -12,8 +12,11 @@ import com.mangablade.backend.exceptions.ErrorCode;
 import com.mangablade.backend.repositories.CommentRepository;
 import com.mangablade.backend.repositories.ChapterRepository;
 import com.mangablade.backend.repositories.MangaRepository;
+import com.mangablade.backend.repositories.UserRepository;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
@@ -26,14 +29,17 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CommentService {
 
     private final CommentRepository commentRepository;
     private final MangaRepository mangaRepository;
     private final ChapterRepository chapterRepository;
+    private final TaskService taskService;
+    private final UserRepository userRepository;
 
     public List<RecentCommentResponse> findRecentDistinctUserComments() {
-        return commentRepository.findRecentDistinctUserComments(CommentStatus.VISIBLE);
+        return commentRepository.findRecentDistinctUserComments(CommentStatus.VISIBLE, PageRequest.of(0, 5));
     }
 
     public List<MangaCommentResponse> findByMangaSlug(String slug) {
@@ -80,10 +86,12 @@ public class CommentService {
                 .toList();
     }
 
+    @Transactional
     public MangaCommentResponse create(String slug, CreateCommentRequest request, User user) {
         return create(slug, null, request, user);
     }
 
+    @Transactional
     public MangaCommentResponse create(String slug, String chapterNumber, CreateCommentRequest request, User user) {
         var now = Instant.now();
         var manga = findMangaBySlugOrThrow(slug);
@@ -95,8 +103,10 @@ public class CommentService {
                 })
                 .getId();
 
+        User dbUser = userRepository.findById(user.getId()).orElse(user);
+
         var comment = Comment.builder()
-                .userId(user.getId())
+                .userId(dbUser.getId())
                 .mangaId(manga.getId())
                 .chapterId(chapterId)
                 .parentId(request.getParentId())
@@ -107,7 +117,10 @@ public class CommentService {
                 .build();
 
         var savedComment = commentRepository.save(comment);
-        savedComment.setUser(user);
+        savedComment.setUser(dbUser);
+        
+        taskService.handleCommentPosted(dbUser.getId());
+
         return toResponse(savedComment);
     }
 
@@ -120,6 +133,9 @@ public class CommentService {
     }
 
     private MangaCommentResponse toResponse(Comment comment) {
+        String activeTitle = comment.getUser().getActiveTitle() != null ? comment.getUser().getActiveTitle().getName() : null;
+        String activeTitleColor = comment.getUser().getActiveTitle() != null ? comment.getUser().getActiveTitle().getColorCode() : null;
+
         return MangaCommentResponse.builder()
                 .id(comment.getId())
                 .content(comment.getContent())
@@ -127,6 +143,8 @@ public class CommentService {
                 .user(MangaCommentResponse.User.builder()
                         .id(comment.getUser().getId())
                         .username(toPublicUsername(comment.getUser().getUsername()))
+                        .activeTitle(activeTitle)
+                        .activeTitleColor(activeTitleColor)
                         .build())
                 .build();
     }

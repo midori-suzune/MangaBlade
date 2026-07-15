@@ -46,7 +46,8 @@ public class SecurityConfig {
             "/api/v1/manga/filter",
             "/api/v1/manga/comments/recent-users",
             "/api/v1/manga/{slug}",
-            "/api/v1/chapter"
+            "/api/v1/chapter",
+            "/api/v1/categories"
     };
 
     @Bean

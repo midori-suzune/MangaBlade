@@ -32,11 +32,11 @@ spring:
             enable: true
   app:
     otruyen:
-      manga-import-cron: "0 */4 * * * *"
+      manga-import-cron: "0 */2 * * * *"
       importer:
         max-manga-per-run: 2
     cloudinary:
-      chapter-page-sync-cron: "0 */6 * * * *"
+      chapter-page-sync-cron: "30 */10 * * * *"
       importer:
         max-chapters-per-run: 20
   elasticsearch:

@@ -103,6 +103,23 @@ export function ReadingMangaPage() {
         return (username || "U").slice(0, 1).toUpperCase();
     }
 
+    function getCommentAuthorName(userId: number, username: string) {
+        const currentUser = useAuthStore.getState().user;
+        if (currentUser && currentUser.id === userId) {
+            return useAuthStore.getState().displayName || getPublicUsername(username);
+        }
+        const cachedName = localStorage.getItem(`displayName_${userId}`);
+        return cachedName || getPublicUsername(username);
+    }
+
+    function getPublicUsername(username: string) {
+        const atIndex = username.indexOf("@");
+        if (atIndex > 0) {
+            return username.slice(0, atIndex);
+        }
+        return username;
+    }
+
     return (
         <div className={styles.readerPageBg}>
             <main className={styles.mainContainer}>
@@ -216,12 +233,29 @@ export function ReadingMangaPage() {
                         {comments.map((comment) => (
                             <article className={styles.commentItem} key={comment.id}>
                                 <div className={`${styles.commentAvatar} ${styles.sampleAvatar}`}>
-                                    {getAvatarLabel(comment.user.username)}
+                                    {getAvatarLabel(getCommentAuthorName(comment.user.id, comment.user.username))}
                                 </div>
                                 <div className={styles.commentBody}>
                                     <div className={styles.commentBubble}>
                                         <div className={styles.commentAuthorRow}>
-                                            <span className={styles.commentAuthor}>{comment.user.username}</span>
+                                            <span className={styles.commentAuthor}>{getCommentAuthorName(comment.user.id, comment.user.username)}</span>
+                                            {comment.user.activeTitle && (
+                                                <span 
+                                                    style={{ 
+                                                        marginLeft: "8px", 
+                                                        fontSize: "10px", 
+                                                        padding: "1px 6px", 
+                                                        borderRadius: "3px", 
+                                                        backgroundColor: `${comment.user.activeTitleColor || '#6b7280'}18`,
+                                                        color: comment.user.activeTitleColor || '#6b7280',
+                                                        border: `1px solid ${comment.user.activeTitleColor || '#6b7280'}`,
+                                                        fontWeight: "bold",
+                                                        verticalAlign: "middle"
+                                                    }}
+                                                >
+                                                    {comment.user.activeTitle}
+                                                </span>
+                                            )}
                                             <span className={styles.commentBadge}>{chapterLabel}</span>
                                         </div>
                                         <p className={styles.commentText}>

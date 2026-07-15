@@ -2,6 +2,8 @@ package com.mangablade.backend.services.otruyen;
 
 import com.mangablade.backend.integration.otruyen.OTruyenClient;
 import com.mangablade.backend.repositories.OTruyenImportTargetRepository;
+import com.mangablade.backend.services.mangablade.CloudImportChapterService;
+import com.mangablade.backend.services.mangablade.MangaSearchService;
 
 import java.time.Instant;
 
@@ -19,6 +21,8 @@ import lombok.extern.slf4j.Slf4j;
 public class OtruyenScheduledService {
     private final OTruyenClient oTruyenClient;
     private final OTruyenImportService oTruyenImportService;
+    private final CloudImportChapterService cloudImportChapterService;
+    private final MangaSearchService mangaSearchService;
     private final OTruyenImportTargetRepository oTruyenImportTargetRepository;
 
     @Value("${spring.app.otruyen.importer.max-manga-per-run:1}")
@@ -41,10 +45,32 @@ public class OtruyenScheduledService {
 
             try {
                 var response = oTruyenClient.fetchApiMangaBySlug(target.getSlug());
-                oTruyenImportService.importManga(response, target);
+                var manga = oTruyenImportService.importManga(response, target);
 
                 target.markSuccess(importedAt);
                 log.info("Imported OTruyen manga: slug={}", target.getSlug());
+
+                try {
+                    var syncedChapters = cloudImportChapterService.syncMangaChapterPages(manga);
+                    log.info("Synced Cloudinary chapters after OTruyen import: slug={}, syncedChapters={}",
+                            manga.getSlug(), syncedChapters);
+                } catch (Exception cloudException) {
+                    log.warn(
+                            "Cloudinary sync after OTruyen import skipped: mangaId={}, slug={}, reason={}",
+                            manga.getId(),
+                            manga.getSlug(),
+                            cloudException.getMessage(),
+                            cloudException
+                    );
+                }
+
+                try {
+                    mangaSearchService.indexManga(manga);
+                    log.info("Indexed manga search document: slug={}", manga.getSlug());
+                } catch (Exception searchException) {
+                    log.warn("Manga search indexing skipped: slug={}, reason={}",
+                            manga.getSlug(), searchException.getMessage(), searchException);
+                }
             } catch (Exception e) {
                 target.markFailure(importedAt);
                 log.error("Failed to import manga: {}", target.getSlug(), e);

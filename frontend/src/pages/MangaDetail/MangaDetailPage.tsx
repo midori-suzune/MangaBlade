@@ -49,6 +49,15 @@ function getPublicUsername(username: string) {
     return username;
 }
 
+function getCommentAuthorName(userId: number, username: string) {
+    const currentUser = useAuthStore.getState().user;
+    if (currentUser && currentUser.id === userId) {
+        return useAuthStore.getState().displayName || getPublicUsername(username);
+    }
+    const cachedName = localStorage.getItem(`displayName_${userId}`);
+    return cachedName || getPublicUsername(username);
+}
+
 const EMPTY_CHAPTERS: MangaDetailResponse["chapters"] = [];
 const EMPTY_AUTHORS: MangaDetailResponse["authors"] = [];
 const EMPTY_CATEGORIES: MangaDetailResponse["categories"] = [];
@@ -483,13 +492,30 @@ export function MangaDetailPage() {
                                         return (
                                             <>
                                                 <div className={styles.commentAvatar}>
-                                                    {getPublicUsername(comment.user.username).slice(0, 1).toUpperCase()}
+                                                    {getCommentAuthorName(comment.user.id, comment.user.username).slice(0, 1).toUpperCase()}
                                                 </div>
                                                 <div className={styles.commentBody}>
                                                     <div className={styles.commentBubble}>
                                                         <div className={styles.commentAuthorRow}>
                                                             <span
-                                                                className={styles.commentAuthor}>{getPublicUsername(comment.user.username)}</span>
+                                                                className={styles.commentAuthor}>{getCommentAuthorName(comment.user.id, comment.user.username)}</span>
+                                                            {comment.user.activeTitle && (
+                                                                <span 
+                                                                    style={{ 
+                                                                        marginLeft: "8px", 
+                                                                        fontSize: "10px", 
+                                                                        padding: "1px 6px", 
+                                                                        borderRadius: "3px", 
+                                                                        backgroundColor: `${comment.user.activeTitleColor || '#6b7280'}18`,
+                                                                        color: comment.user.activeTitleColor || '#6b7280',
+                                                                        border: `1px solid ${comment.user.activeTitleColor || '#6b7280'}`,
+                                                                        fontWeight: "bold",
+                                                                        verticalAlign: "middle"
+                                                                    }}
+                                                                >
+                                                                    {comment.user.activeTitle}
+                                                                </span>
+                                                            )}
                                                         </div>
                                                         <p className={styles.commentText}>
                                                             <CommentText content={comment.content} />
@@ -503,7 +529,7 @@ export function MangaDetailPage() {
                                                             onClick={() => {
                                                                 setReplyParentId(comment.id);
                                                                 setReplyContent("");
-                                                                setReplyingToUsername(getPublicUsername(comment.user.username));
+                                                                setReplyingToUsername(getCommentAuthorName(comment.user.id, comment.user.username));
                                                                 setReplyError(null);
                                                             }}
                                                         >
@@ -525,14 +551,31 @@ export function MangaDetailPage() {
                                                 {comment.replies.map((reply) => (
                                                     <article className={styles.replyItem} key={reply.id}>
                                                         <div className={styles.replyAvatar}>
-                                                            {getPublicUsername(reply.user.username).slice(0, 1).toUpperCase()}
+                                                            {getCommentAuthorName(reply.user.id, reply.user.username).slice(0, 1).toUpperCase()}
                                                         </div>
                                                         <div className={styles.replyBody}>
                                                             <div className={styles.commentBubble}>
                                                                 <div className={styles.commentAuthorRow}>
                                                                     <span className={styles.commentAuthor}>
-                                                                        {getPublicUsername(reply.user.username)}
+                                                                        {getCommentAuthorName(reply.user.id, reply.user.username)}
                                                                     </span>
+                                                                    {reply.user.activeTitle && (
+                                                                        <span 
+                                                                            style={{ 
+                                                                                marginLeft: "8px", 
+                                                                                fontSize: "10px", 
+                                                                                padding: "1px 6px", 
+                                                                                borderRadius: "3px", 
+                                                                                backgroundColor: `${reply.user.activeTitleColor || '#6b7280'}18`,
+                                                                                color: reply.user.activeTitleColor || '#6b7280',
+                                                                                border: `1px solid ${reply.user.activeTitleColor || '#6b7280'}`,
+                                                                                fontWeight: "bold",
+                                                                                verticalAlign: "middle"
+                                                                            }}
+                                                                        >
+                                                                            {reply.user.activeTitle}
+                                                                        </span>
+                                                                    )}
                                                                 </div>
                                                                 <p className={styles.commentText}>
                                                                     <CommentText content={reply.content} />
@@ -546,7 +589,7 @@ export function MangaDetailPage() {
                                                                     onClick={() => {
                                                                         setReplyParentId(comment.id);
                                                                         setReplyContent("");
-                                                                        setReplyingToUsername(getPublicUsername(reply.user.username));
+                                                                        setReplyingToUsername(getCommentAuthorName(reply.user.id, reply.user.username));
                                                                         setReplyError(null);
                                                                     }}
                                                                 >
@@ -566,7 +609,7 @@ export function MangaDetailPage() {
                                                 </div>
                                                 <div className={styles.commentInputWrapper}>
                                                     <CommentEditor
-                                                        placeholder={`Trả lời ${replyingToUsername ?? getPublicUsername(comment.user.username)}...`}
+                                                        placeholder={`Trả lời ${replyingToUsername ?? getCommentAuthorName(comment.user.id, comment.user.username)}...`}
                                                         minRows={2}
                                                         value={replyContent}
                                                         onChange={setReplyContent}

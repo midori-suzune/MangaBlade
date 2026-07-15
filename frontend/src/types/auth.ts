@@ -14,6 +14,10 @@ export interface UserInfo {
   username: string;
   email: string;
   role: 'USER' | 'AUTHOR' | 'ADMIN';
+  level?: number;
+  exp?: number;
+  activeTitleId?: number | null;
+  activeTitle?: string | null;
 }
 
 export interface AuthResponse {

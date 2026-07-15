@@ -64,6 +64,21 @@ public class User implements UserDetails {
     @Column(name = "password_changed_at")
     private Instant passwordChangedAt;
 
+    @Column(name = "level", nullable = false)
+    @Builder.Default
+    private Integer level = 0;
+
+    @Column(name = "exp", nullable = false)
+    @Builder.Default
+    private Integer exp = 0;
+
+    @Column(name = "active_title_id")
+    private Long activeTitleId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "active_title_id", insertable = false, updatable = false)
+    private Title activeTitle;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
