@@ -1,7 +1,7 @@
 import styles from "./Home.module.css";
 import {useEffect, useMemo, useState} from "react";
 import {Link} from "react-router-dom";
-import {Eye, Heart} from "lucide-react";
+import {Eye} from "lucide-react";
 import {getManga, getMangaRanking, getReadingHistory, getRecentUserComments} from "../../api/mangaApi.ts";
 import type {
     MangaRankingResponse,
@@ -53,8 +53,6 @@ export function Home() {
 
     const [manga, setManga] = useState<MangaResponse[]>([]);
     const [ranking, setRanking] = useState<MangaRankingResponse[]>([]);
-    const [likedRanking, setLikedRanking] = useState<MangaRankingResponse[]>([]);
-    const [rankingMode, setRankingMode] = useState<'likes' | 'views'>('likes');
     const [readingHistory, setReadingHistory] = useState<ReadingHistoryResponse[]>([]);
     const [recentComments, setRecentComments] = useState<RecentCommentResponse[]>([]);
     const [error, setError] = useState<string | null>(null);
@@ -79,7 +77,7 @@ export function Home() {
     useEffect(() => {
         async function getRanking() {
             try {
-                const response = await getMangaRanking(rankingMode);
+                const response = await getMangaRanking("views");
                 if (response.success) {
                     setRanking(response.payload);
                 }
@@ -89,21 +87,6 @@ export function Home() {
         }
 
         void getRanking();
-    }, [rankingMode]);
-
-    useEffect(() => {
-        async function getLikedRanking() {
-            try {
-                const response = await getMangaRanking("likes");
-                if (response.success) {
-                    setLikedRanking(response.payload);
-                }
-            } catch {
-                setLikedRanking([]);
-            }
-        }
-
-        void getLikedRanking();
     }, []);
 
     const featuredManga = useMemo(() => {
@@ -111,7 +94,8 @@ export function Home() {
             return [];
         }
 
-        const rankedManga = likedRanking
+        const rankedManga = ranking
+            .slice(0, 5)
             .map((rankedItem) => readableManga.find((comic) => (
                 toSlug(comic.title) === rankedItem.slug || comic.title === rankedItem.title
             )))
@@ -122,7 +106,7 @@ export function Home() {
         }
 
         return getRandomManga(readableManga, 5);
-    }, [likedRanking, readableManga]);
+    }, [ranking, readableManga]);
 
     useEffect(() => {
         async function loadReadingHistory() {
@@ -215,26 +199,6 @@ export function Home() {
                 <section>
                     <div className={styles.rankingHeader}>
                         <h2 className={styles.sectionTitle}>Bảng Xếp Hạng</h2>
-                        <div className={styles.rankingFilters}>
-                            <button
-                                className={rankingMode === "likes" ? styles.activeFilter : ""}
-                                type="button"
-                                aria-label="Xếp hạng theo lượt thích"
-                                title="Lượt thích"
-                                onClick={() => setRankingMode("likes")}
-                            >
-                                <Heart className={styles.inlineIcon} aria-hidden="true" />
-                            </button>
-                            <button
-                                className={rankingMode === "views" ? styles.activeFilter : ""}
-                                type="button"
-                                aria-label="Xếp hạng theo lượt đọc"
-                                title="Lượt đọc"
-                                onClick={() => setRankingMode("views")}
-                            >
-                                <Eye className={styles.inlineIcon} aria-hidden="true" />
-                            </button>
-                        </div>
                     </div>
                     <div className={styles.sidebarList}>
                         {ranking.map((item, index) => (
@@ -246,12 +210,8 @@ export function Home() {
                                 <span className={styles.sidebarInfo}>
                                     <span className={styles.sidebarTitle}>{item.title}</span>
                                     <span className={styles.sidebarDesc}>
-                                        {rankingMode === "likes" ? (
-                                            <Heart className={styles.inlineIcon} aria-hidden="true" />
-                                        ) : (
-                                            <Eye className={styles.inlineIcon} aria-hidden="true" />
-                                        )}
-                                        {formatRankingCount(rankingMode === "likes" ? item.likeCount : item.viewCount)}
+                                        <Eye className={styles.inlineIcon} aria-hidden="true" />
+                                        {formatRankingCount(item.viewCount)}
                                     </span>
                                 </span>
                             </Link>

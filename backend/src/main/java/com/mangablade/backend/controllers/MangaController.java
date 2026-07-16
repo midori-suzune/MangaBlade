@@ -55,7 +55,7 @@ public class MangaController {
 
     @GetMapping("/ranking")
     public ResponseEntity<ApiResponse<List<MangaRankingResponse>>> getRanking(
-            @RequestParam(defaultValue = "likes") String sort
+            @RequestParam(defaultValue = "views") String sort
     ) {
         var ranking = mangaService.fetchRanking(sort);
         return ResponseEntity.ok(

@@ -19,9 +19,6 @@ public interface MangaRepository extends JpaRepository<Manga, Long> {
 
     Optional<Manga> findBySlug(String slug);
 
-    @Query(MangaQuery.FIND_TOP_RANKED_BY_LIKES)
-    List<MangaRankingProjection> findTopRankedByLikes();
-
     @Query(MangaQuery.FIND_TOP_RANKED_BY_FOLLOWS)
     List<MangaRankingProjection> findTopRankedByFollows();
 

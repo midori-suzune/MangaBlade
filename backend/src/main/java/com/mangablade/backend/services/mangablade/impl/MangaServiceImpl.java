@@ -63,7 +63,7 @@ public class MangaServiceImpl implements MangaService {
             return toRankingResponses(mangaRepository.findTopRankedByViews());
         }
 
-        return toRankingResponses(mangaRepository.findTopRankedByLikes());
+        return toRankingResponses(mangaRepository.findTopRankedByViews());
     }
 
     private List<MangaRankingResponse> toRankingResponses(List<MangaRankingProjection> projections) {
