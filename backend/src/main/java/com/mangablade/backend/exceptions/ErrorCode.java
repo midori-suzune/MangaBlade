@@ -19,6 +19,9 @@ public enum ErrorCode {
     FORBIDDEN(403, "Forbidden", HttpStatus.FORBIDDEN),
     WRONG_PASSWORD(400, "Incorrect current password", HttpStatus.BAD_REQUEST),
     SOCIAL_USER_CANT_CHANGE_PASSWORD(400, "Google accounts do not support local password changes", HttpStatus.BAD_REQUEST),
+    EMAIL_NOT_VERIFIED(400, "Email not verified. Please verify your email first.", HttpStatus.BAD_REQUEST),
+    INVALID_OTP(400, "Invalid OTP code", HttpStatus.BAD_REQUEST),
+    EXPIRED_OTP(400, "OTP code has expired", HttpStatus.BAD_REQUEST),
     INTERNAL_ERROR(500, "Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final int code;

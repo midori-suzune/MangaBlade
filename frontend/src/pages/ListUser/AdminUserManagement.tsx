@@ -4,7 +4,7 @@ import axios from 'axios';
 import { adminUserApi } from '../../api/userApi';
 import type { UserType, UserRole } from '../../types/user';
 import { useAuthStore } from '../../stores/authStore';
-import { Users, ShieldAlert, Award, Search, Ban, CheckCircle } from 'lucide-react';
+import { Users, ShieldAlert, Award, Search } from 'lucide-react';
 import styles from '../UserProfile/UserProfile.module.css';
 
 export const AdminUserManagement: React.FC = () => {
@@ -187,12 +187,10 @@ export const AdminUserManagement: React.FC = () => {
                                   borderRadius: '4px',
                                   fontSize: '11px',
                                   fontWeight: 600,
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: '4px'
+                                  display: 'inline-block'
                                 }}
                               >
-                                <Ban size={10} /> Bị Ban
+                                Bị Ban
                               </span>
                             ) : (
                               <span
@@ -203,12 +201,10 @@ export const AdminUserManagement: React.FC = () => {
                                   borderRadius: '4px',
                                   fontSize: '11px',
                                   fontWeight: 600,
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: '4px'
+                                  display: 'inline-block'
                                 }}
                               >
-                                <CheckCircle size={10} /> Hoạt động
+                                Hoạt động
                               </span>
                             )}
                           </td>

@@ -6,6 +6,8 @@ import com.mangablade.backend.dtos.request.ForgotPasswordRequest;
 import com.mangablade.backend.dtos.request.GoogleLoginRequest;
 import com.mangablade.backend.dtos.request.ResetPasswordRequest;
 import com.mangablade.backend.dtos.request.ChangePasswordRequest;
+import com.mangablade.backend.dtos.request.VerifyOtpRequest;
+import com.mangablade.backend.dtos.request.ResendOtpRequest;
 import com.mangablade.backend.dtos.response.ApiResponse;
 import com.mangablade.backend.dtos.response.AuthResponse;
 import com.mangablade.backend.services.mangablade.AuthService;
@@ -47,6 +49,28 @@ public class AuthController {
                         .payload(null)
                         .error(null)
                         .fieldsErrors(null)
+                        .build()
+        );
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<ApiResponse<Void>> verifyOtp(@Valid @RequestBody VerifyOtpRequest request) {
+        authService.verifyOtp(request.getEmail(), request.getOtp());
+        return ResponseEntity.ok(
+                ApiResponse.<Void>builder()
+                        .success(true)
+                        .message("Email verified successfully")
+                        .build()
+        );
+    }
+
+    @PostMapping("/resend-otp")
+    public ResponseEntity<ApiResponse<Void>> resendOtp(@Valid @RequestBody ResendOtpRequest request) {
+        authService.resendOtp(request.getEmail());
+        return ResponseEntity.ok(
+                ApiResponse.<Void>builder()
+                        .success(true)
+                        .message("Verification code resent successfully")
                         .build()
         );
     }

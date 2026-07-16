@@ -5,6 +5,8 @@ import {
   login as loginApi,
   register as registerApi,
   forgotPassword as forgotPasswordApi,
+  verifyOtp as verifyOtpApi,
+  resendOtp as resendOtpApi,
 } from "../../api/authApi";
 import { useAuthStore } from "../../stores/authStore";
 import type { ApiResponse, AuthResponse } from "../../types/auth";
@@ -16,11 +18,11 @@ export function AuthModal() {
   const {
     isAuthModalOpen,
     authModalTab,
-    openAuthModal,
     closeAuthModal,
     login: authLogin,
   } = useAuthStore();
 
+  const [view, setView] = useState<'login' | 'register' | 'forgot' | 'verify'>('login');
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -30,22 +32,29 @@ export function AuthModal() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  const [verificationEmail, setVerificationEmail] = useState("");
+  const [otp, setOtp] = useState("");
+  const [resendCooldown, setResendCooldown] = useState(0);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const modalRef = useRef<HTMLDivElement>(null);
-  const justRegistered = useRef(false);
 
   useEffect(() => {
-    const resetId = window.setTimeout(() => {
+    if (authModalTab === 'login' || authModalTab === 'register' || authModalTab === 'forgot') {
+      Promise.resolve().then(() => {
+        setView(authModalTab);
+      });
+    }
+  }, [authModalTab]);
+
+  useEffect(() => {
+    Promise.resolve().then(() => {
       setError("");
-      if (!justRegistered.current) {
-        setSuccess("");
-      } else {
-        justRegistered.current = false;
-      }
+      setSuccess("");
       setFieldErrors({});
       setShowPassword(false);
       setShowConfirmPassword(false);
@@ -55,11 +64,18 @@ export function AuthModal() {
         setPassword("");
         setUsername("");
         setConfirmPassword("");
+        setOtp("");
       }
-    }, 0);
+    });
+  }, [view, isAuthModalOpen]);
 
-    return () => window.clearTimeout(resetId);
-  }, [authModalTab, isAuthModalOpen]);
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setResendCooldown((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -172,7 +188,14 @@ export function AuthModal() {
         if (data.fieldsErrors) {
           setFieldErrors(data.fieldsErrors);
         }
-        setError(data.message || "Login failed");
+        if (data.message && data.message.toLowerCase().includes("email not verified")) {
+          setVerificationEmail(email);
+          setOtp("");
+          setView("verify");
+          setSuccess("Tài khoản chưa được xác thực. Vui lòng nhập mã OTP gửi tới Email của bạn.");
+        } else {
+          setError(data.message || "Login failed");
+        }
       } else {
         setError("An error occurred. Please try again later.");
       }
@@ -192,9 +215,10 @@ export function AuthModal() {
     try {
       const result = await registerApi({ username, email, password });
       if (result.success) {
-        justRegistered.current = true;
-        setSuccess("Registration successful! Please log in.");
-        openAuthModal("login");
+        setSuccess("Mã OTP đã được gửi vào Email của bạn. Vui lòng xác thực.");
+        setVerificationEmail(email);
+        setOtp("");
+        setView("verify");
         setPassword("");
         setConfirmPassword("");
       } else {
@@ -260,6 +284,63 @@ export function AuthModal() {
     }
   }
 
+  async function handleVerifyOtpSubmit(e: FormEvent) {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+    setFieldErrors({});
+
+    if (!otp || otp.length !== 6) {
+      setFieldErrors({ otp: "Mã OTP phải có đúng 6 chữ số" });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const result = await verifyOtpApi({ email: verificationEmail, otp });
+      if (result.success) {
+        setSuccess("Xác thực Email thành công! Bạn có thể đăng nhập ngay.");
+        setView("login");
+        setOtp("");
+      } else {
+        setError(result.message || "Xác thực thất bại");
+      }
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err) && err.response?.data) {
+        const data = err.response.data as ApiResponse<void>;
+        setError(data.message || "Xác thực thất bại");
+      } else {
+        setError("Có lỗi xảy ra. Vui lòng thử lại sau.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleResendOtp() {
+    setError("");
+    setSuccess("");
+    setLoading(true);
+    try {
+      const result = await resendOtpApi({ email: verificationEmail });
+      if (result.success) {
+        setSuccess("Mã OTP mới đã được gửi thành công!");
+        setResendCooldown(30);
+      } else {
+        setError(result.message || "Gửi lại mã thất bại");
+      }
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err) && err.response?.data) {
+        const data = err.response.data as ApiResponse<void>;
+        setError(data.message || "Gửi lại mã thất bại");
+      } else {
+        setError("Có lỗi xảy ra. Vui lòng thử lại sau.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
   function handleOverlayClick(e: React.MouseEvent) {
     if (e.target === e.currentTarget) {
       closeAuthModal();
@@ -296,29 +377,31 @@ export function AuthModal() {
             Manga<span>Blade</span>
           </div>
 
-          {authModalTab !== "forgot" ? (
+          {view !== "forgot" && view !== "verify" ? (
               <div className={styles.tabs}>
                 <button
-                    className={`${styles.tab} ${authModalTab === "login" ? styles.activeTab : ""}`}
-                    onClick={() => openAuthModal("login")}
+                    className={`${styles.tab} ${view === "login" ? styles.activeTab : ""}`}
+                    onClick={() => setView("login")}
                 >
                   Đăng nhập
                 </button>
                 <button
-                    className={`${styles.tab} ${authModalTab === "register" ? styles.activeTab : ""}`}
-                    onClick={() => openAuthModal("register")}
+                    className={`${styles.tab} ${view === "register" ? styles.activeTab : ""}`}
+                    onClick={() => setView("register")}
                 >
                   Tạo tài khoản
                 </button>
               </div>
-          ) : (
+          ) : view === "forgot" ? (
               <h2 className={styles.forgotHeading}>Khôi phục mật khẩu</h2>
+          ) : (
+              <h2 className={styles.forgotHeading}>Email xác thực</h2>
           )}
 
           {success && <div className={styles.successBanner}>{success}</div>}
           {error && <div className={styles.errorBanner}>{error}</div>}
 
-          {authModalTab === "forgot" ? (
+          {view === "forgot" ? (
               <form
                   onSubmit={handleForgotPasswordSubmit}
                   className={styles.form}
@@ -354,13 +437,13 @@ export function AuthModal() {
                   <button
                       type="button"
                       className={styles.link}
-                      onClick={() => openAuthModal("login")}
+                      onClick={() => setView("login")}
                   >
                     Quay lại Đăng nhập
                   </button>
                 </p>
               </form>
-          ) : authModalTab === "login" ? (
+          ) : view === "login" ? (
               <form onSubmit={handleLoginSubmit} className={styles.form} noValidate>
                 <div className={styles.field}>
                   <label htmlFor="modal-email" className={styles.label}>
@@ -465,7 +548,7 @@ export function AuthModal() {
                   <button
                       type="button"
                       className={styles.link}
-                      onClick={() => openAuthModal("forgot")}
+                      onClick={() => setView("forgot")}
                   >
                     Quên mật khẩu?
                   </button>
@@ -514,13 +597,13 @@ export function AuthModal() {
                   <button
                       type="button"
                       className={styles.link}
-                      onClick={() => openAuthModal("register")}
+                      onClick={() => setView("register")}
                   >
                     Đăng ký ngay
                   </button>
                 </p>
               </form>
-          ) : (
+          ) : view === "register" ? (
               <form
                   onSubmit={handleRegisterSubmit}
                   className={styles.form}
@@ -701,7 +784,63 @@ export function AuthModal() {
                   <button
                       type="button"
                       className={styles.link}
-                      onClick={() => openAuthModal("login")}
+                      onClick={() => setView("login")}
+                  >
+                    Đăng nhập ngay
+                  </button>
+                </p>
+              </form>
+          ) : (
+              <form onSubmit={handleVerifyOtpSubmit} className={styles.form} noValidate>
+                <p className={styles.emailLead} style={{ fontSize: '13px', textAlign: 'center', marginBottom: '24px', color: 'var(--color-text-muted)', lineHeight: 1.5 }}>
+                  Hãy cho chúng tôi biết rằng địa chỉ email này thuộc về bạn. Nhập mã OTP 6 số đã được gửi tới <strong>{verificationEmail}</strong>
+                </p>
+
+                <div className={styles.field}>
+                  <label htmlFor="modal-otp" className={styles.label}>
+                    Mã xác nhận (OTP)
+                  </label>
+                  <input
+                      id="modal-otp"
+                      type="text"
+                      maxLength={6}
+                      className={`${styles.input} ${fieldErrors.otp ? styles.inputError : ""}`}
+                      placeholder="Nhập mã xác nhận"
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+                      autoComplete="one-time-code"
+                  />
+                  {fieldErrors.otp && (
+                      <span className={styles.fieldError}>{fieldErrors.otp}</span>
+                  )}
+                </div>
+
+                <button
+                    type="submit"
+                    className={styles.submitBtn}
+                    disabled={loading}
+                >
+                  {loading ? "Đang xác thực..." : "Tiếp tục"}
+                </button>
+
+                <div style={{ textAlign: 'center', marginTop: '16px' }}>
+                  <button
+                      type="button"
+                      className={styles.link}
+                      disabled={resendCooldown > 0 || loading}
+                      onClick={handleResendOtp}
+                      style={{ opacity: resendCooldown > 0 ? 0.6 : 1 }}
+                  >
+                    {resendCooldown > 0 ? `Gửi lại thư sau ${resendCooldown}s` : "Gửi lại thư"}
+                  </button>
+                </div>
+
+                <p className={styles.footer}>
+                  Muốn quay lại?{" "}
+                  <button
+                      type="button"
+                      className={styles.link}
+                      onClick={() => setView("login")}
                   >
                     Đăng nhập ngay
                   </button>
