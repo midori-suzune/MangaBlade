@@ -17,19 +17,16 @@ const COLORS = ["#f43f5e", "#f59e0b", "#6366f1", "#10b981", "#ec4899", "#3b82f6"
 
 interface LuckyWheelProps {
     initialSpun: boolean;
-    initialPrize: string | null;
     onSpinSuccess: (expGained: number) => void;
 }
 
 export function LuckyWheel({
     initialSpun,
-    initialPrize,
     onSpinSuccess
 }: LuckyWheelProps) {
     const [rotation, setRotation] = useState(0);
     const [isSpinning, setIsSpinning] = useState(false);
     const [hasSpun, setHasSpun] = useState(initialSpun);
-    const [prizeText, setPrizeText] = useState<string | null>(initialPrize);
 
     const handleSpin = async () => {
         if (isSpinning || hasSpun) return;
@@ -46,7 +43,7 @@ export function LuckyWheel({
             const expGained = res.payload;
             const prizeIndex = PRIZES.findIndex(p => p.value === expGained);
             const fallbackIndex = prizeIndex >= 0 ? prizeIndex : 0;
-            const targetAngle = 360 - (fallbackIndex * 45);
+            const targetAngle = 360 - (fallbackIndex * 45 + 22.5);
             const newRotation = rotation + (360 * 5) + targetAngle - (rotation % 360);
             const finalRotation = newRotation + (Math.random() * 24 - 12);
             setRotation(finalRotation);
@@ -55,7 +52,7 @@ export function LuckyWheel({
                 setIsSpinning(false);
                 setHasSpun(true);
                 const prize = PRIZES[fallbackIndex];
-                setPrizeText(`Chúc mừng! Bạn đã quay trúng ${prize.text}`);
+                alert(`Chúc mừng! Bạn đã quay trúng ${prize.text}`);
                 onSpinSuccess(expGained);
             }, 4000);
         } catch {
@@ -132,12 +129,6 @@ export function LuckyWheel({
                     {isSpinning ? "..." : "QUAY"}
                 </button>
             </div>
-
-            {prizeText && (
-                <div className={styles.wheelPrizeBanner}>
-                    {prizeText}
-                </div>
-            )}
             
             <p className={styles.wheelInstruction}>
                 {hasSpun ? "Bạn đã sử dụng lượt quay của hôm nay. Hãy quay lại vào ngày mai!" : "Mỗi ngày bạn có 1 lượt quay miễn phí để nhận thêm EXP tích lũy."}
