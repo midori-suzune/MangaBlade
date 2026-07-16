@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import axios from 'axios';
 import { adminUserApi } from '../../api/userApi';
 import type { UserType, UserRole } from '../../types/user';
 
@@ -23,10 +24,19 @@ export const AdminUserManagement: React.FC = () => {
   // ID tài khoản Admin của bạn lấy từ context bảo mật (ở đây mock tạm thời là 1)
   const currentAdminId = 1;
 
-  const fetchUsers = async () => {
+  const getErrorMessage = (error: unknown) => {
+    if (axios.isAxiosError(error)) {
+      const responseData = error.response?.data;
+      return typeof responseData === 'string' ? responseData : 'Có lỗi xảy ra';
+    }
+
+    return 'Có lỗi xảy ra';
+  };
+
+  const fetchUsers = async (nextPage = page) => {
     try {
       const isBannedParam = filterBan === 'all' ? undefined : filterBan === 'banned';
-      const response = await adminUserApi.getUsers(targetRole, search || undefined, isBannedParam, page, 10);
+      const response = await adminUserApi.getUsers(targetRole, search || undefined, isBannedParam, nextPage, 10);
 
       setUsers(response.data.content);
       setTotalPages(response.data.totalPages);
@@ -36,13 +46,16 @@ export const AdminUserManagement: React.FC = () => {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchUsers();
+    // Search is intentionally submitted manually instead of refetching on every keystroke.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roleType, filterBan, page]);
 
   const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setPage(0);
-    fetchUsers();
+    fetchUsers(0);
   };
 
   const handleToggleBan = async (user: UserType) => {
@@ -55,8 +68,8 @@ export const AdminUserManagement: React.FC = () => {
       try {
         await adminUserApi.toggleBan(user.id);
         fetchUsers();
-      } catch (err: any) {
-        alert(err.response?.data || "Có lỗi xảy ra");
+      } catch (err: unknown) {
+        alert(getErrorMessage(err));
       }
     }
   };
@@ -70,8 +83,8 @@ export const AdminUserManagement: React.FC = () => {
       try {
         await adminUserApi.deleteUser(user.id);
         fetchUsers();
-      } catch (err: any) {
-        alert(err.response?.data || "Có lỗi xảy ra");
+      } catch (err: unknown) {
+        alert(getErrorMessage(err));
       }
     }
   };
