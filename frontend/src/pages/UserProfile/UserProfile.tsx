@@ -9,30 +9,59 @@ import { DailyTasksTab } from "./components/DailyTasksTab";
 import { AuthorRegistrationTab } from "./components/AuthorRegistrationTab";
 import styles from "./UserProfile.module.css";
 
+function UnauthorizedProfileView({ onLoginClick }: { onLoginClick: () => void }) {
+    return (
+        <div className={styles.profilePage}>
+            <div className={styles.pageContainer}>
+                <div className={styles.profileCard}>
+                    <div className={styles.unauthorizedContainer}>
+                        <LogIn size={48} className={styles.unauthorizedIcon} style={{ color: "var(--color-accent)" }} />
+                        <h2 className={styles.unauthorizedTitle}>Yêu cầu đăng nhập</h2>
+                        <p className={styles.unauthorizedDesc}>
+                            Vui lòng đăng nhập tài khoản của bạn để truy cập và cài đặt hồ sơ cá nhân.
+                        </p>
+                        <button className={styles.btnLogin} onClick={onLoginClick}>
+                            Đăng nhập ngay
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+interface TabContentProps {
+    activeTab: string;
+    showAuthorTab: boolean;
+    userRole: string;
+}
+
+function TabContent({ activeTab, showAuthorTab, userRole }: TabContentProps) {
+    switch (activeTab) {
+        case "settings":
+            return <AccountSettingsTab />;
+        case "password":
+            return <ChangePasswordTab />;
+        case "manga":
+            return <MangaMarkTag />;
+        case "history":
+            return <HistoryTab />;
+        case "tasks":
+            return <DailyTasksTab />;
+        case "author":
+            return showAuthorTab ? <AuthorRegistrationTab userRole={userRole} /> : null;
+        default:
+            return null;
+    }
+}
+
 export function UserProfile() {
     const { isAuthenticated, user, openAuthModal, logout, displayName } = useAuthStore();
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = searchParams.get("tab") || "settings";
 
     if (!isAuthenticated || !user) {
-        return (
-            <div className={styles.profilePage}>
-                <div className={styles.pageContainer}>
-                    <div className={styles.profileCard}>
-                        <div className={styles.unauthorizedContainer}>
-                            <LogIn size={48} className={styles.unauthorizedIcon} style={{ color: "var(--color-accent)" }} />
-                            <h2 className={styles.unauthorizedTitle}>Yêu cầu đăng nhập</h2>
-                            <p className={styles.unauthorizedDesc}>
-                                Vui lòng đăng nhập tài khoản của bạn để truy cập và cài đặt hồ sơ cá nhân.
-                            </p>
-                            <button className={styles.btnLogin} onClick={() => openAuthModal("login")}>
-                                Đăng nhập ngay
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
+        return <UnauthorizedProfileView onLoginClick={() => openAuthModal("login")} />;
     }
 
     const handleTabChange = (tabName: string) => {
@@ -102,15 +131,8 @@ export function UserProfile() {
                     </aside>
 
                     <main className={styles.profileMainContent}>
-
-
                         <div className={styles.profileCard}>
-                            {activeTab === "settings" && <AccountSettingsTab />}
-                            {activeTab === "password" && <ChangePasswordTab />}
-                            {activeTab === "manga" && <MangaMarkTag />}
-                            {activeTab === "history" && <HistoryTab />}
-                            {activeTab === "tasks" && <DailyTasksTab />}
-                            {activeTab === "author" && showAuthorTab && <AuthorRegistrationTab userRole={user.role} />}
+                            <TabContent activeTab={activeTab} showAuthorTab={showAuthorTab} userRole={user.role} />
                         </div>
                     </main>
                 </div>
