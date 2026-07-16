@@ -1,4 +1,5 @@
 export type MangaResponse = {
+    slug: string,
     title: string,
     thumbUrl: string,
     updatedAt: string,
@@ -119,7 +120,6 @@ export type ChapterPageResponse = {
     previousChapterNumber?: string,
     nextChapterNumber?: string,
 }
-
 
 
 

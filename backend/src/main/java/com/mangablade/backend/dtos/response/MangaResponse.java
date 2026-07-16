@@ -14,6 +14,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MangaResponse {
+    private String slug;
     private String title;
     private String thumbUrl;
     private Instant updatedAt;

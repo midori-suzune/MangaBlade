@@ -12,7 +12,6 @@ import type {
 } from "../../types/manga.ts";
 import {getTimeAgo} from "../../utils/time.ts";
 import {MangaSlider} from "../../components/MangaSlider/MangaSlider.tsx";
-import {toSlug} from "../../utils/slug.ts";
 import {useAuthStore} from "../../stores/authStore.ts";
 import {CommentText} from "../../components/CommentEmojiPicker/CommentText.tsx";
 
@@ -97,7 +96,7 @@ export function Home() {
         const rankedManga = ranking
             .slice(0, 5)
             .map((rankedItem) => readableManga.find((comic) => (
-                toSlug(comic.title) === rankedItem.slug || comic.title === rankedItem.title
+                comic.slug === rankedItem.slug || comic.title === rankedItem.title
             )))
             .filter((comic): comic is MangaWithLatestChapter => Boolean(comic));
 
@@ -163,7 +162,7 @@ export function Home() {
                     {readableManga.map((comic) => (
                         <article className={styles.comicCard} key={`${comic.title}-${comic.latestChapter.chapterNumber}`}>
                             <Link
-                                to={`/manga/${toSlug(comic.title)}`}
+                                to={`/manga/${comic.slug}`}
                                 state={{manga: comic}}
                                 className={styles.comicCover}
                                 aria-label={comic.title}
@@ -176,14 +175,14 @@ export function Home() {
                             </Link>
                             <div className={styles.comicInfo}>
                                 <Link
-                                    to={`/manga/${toSlug(comic.title)}`}
+                                    to={`/manga/${comic.slug}`}
                                     state={{manga: comic}}
                                     className={styles.comicTitle}
                                 >
                                     {comic.title}
                                 </Link>
                                 <Link
-                                    to={`/manga/${toSlug(comic.title)}/c/${comic.latestChapter.chapterNumber}`}
+                                    to={`/manga/${comic.slug}/c/${comic.latestChapter.chapterNumber}`}
                                     className={styles.comicChapter}
                                 >
                                     {`Chapter ${comic.latestChapter.chapterNumber}`}

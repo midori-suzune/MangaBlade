@@ -30,6 +30,7 @@ public class MangaMapper {
 
     public MangaResponse toResponse(Manga manga) {
         return MangaResponse.builder()
+                .slug(manga.getSlug())
                 .title(manga.getTitle())
                 .updatedAt(manga.getUpdatedAt())
                 .latestChapter(new MangaResponse.LatestChapter())

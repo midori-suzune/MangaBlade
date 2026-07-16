@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getFollowedManga } from "../../../api/mangaApi";
 import type { MangaResponse } from "../../../types/manga";
-import { toSlug } from "../../../utils/slug";
 import styles from "../UserProfile.module.css";
 
 export function MangaMarkTag() {
@@ -38,7 +37,7 @@ export function MangaMarkTag() {
             ) : followedManga.length > 0 ? (
                 <div className={styles.bookmarksGrid}>
                     {followedManga.map((manga) => (
-                        <Link to={`/manga/${toSlug(manga.title)}`} key={manga.title} className={styles.mangaCard}>
+                        <Link to={`/manga/${manga.slug}`} key={manga.slug} className={styles.mangaCard}>
                             <div className={styles.mangaCover}>
                                 {manga.thumbUrl ? (
                                     <img src={manga.thumbUrl} alt={manga.title} />
