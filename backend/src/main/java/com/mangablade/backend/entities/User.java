@@ -12,13 +12,19 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
 @Entity
-@Table(name = "users")
-@Data
+@Table(name = "users", uniqueConstraints = {
+        @UniqueConstraint(name = "uq_users_email", columnNames = "email"),
+        @UniqueConstraint(name = "uq_users_username", columnNames = "username")
+})
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -27,10 +33,15 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @NotBlank
+    @Email
+    @Size(max = 255)
+    @Column(nullable = false)
     private String email;
 
-    @Column(nullable = false, unique = true, length = 50)
+    @NotBlank
+    @Size(max = 50)
+    @Column(nullable = false, length = 50)
     private String username;
 
     @Size(max = 255)
@@ -51,24 +62,15 @@ public class User implements UserDetails {
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 20)
     @Builder.Default
     private UserRole role = UserRole.USER;
 
-    @Column(name = "created_at", nullable = false)
-    private Instant createdAt;
-
-    @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt;
-
-    @Column(name = "password_changed_at")
-    private Instant passwordChangedAt;
-
-    @Column(name = "level", nullable = false)
+    @Column(nullable = false)
     @Builder.Default
     private Integer level = 0;
 
-    @Column(name = "exp", nullable = false)
+    @Column(nullable = false)
     @Builder.Default
     private Integer exp = 0;
 
@@ -78,6 +80,25 @@ public class User implements UserDetails {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "active_title_id", insertable = false, updatable = false)
     private Title activeTitle;
+
+    @NotNull
+    @Column(name = "is_banned", nullable = false)
+    @Builder.Default
+    private boolean isBanned = false;
+
+    @Column(name = "email_verified_at", columnDefinition = "DATETIME(3)")
+    private Instant emailVerifiedAt;
+
+    @Column(name = "password_changed_at", columnDefinition = "DATETIME(3)")
+    private Instant passwordChangedAt;
+
+    @NotNull
+    @Column(name = "created_at", nullable = false, columnDefinition = "DATETIME(3)")
+    private Instant createdAt;
+
+    @NotNull
+    @Column(name = "updated_at", nullable = false, columnDefinition = "DATETIME(3)")
+    private Instant updatedAt;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -89,6 +110,7 @@ public class User implements UserDetails {
         return passwordHash;
     }
 
+    // --- SỬA LẠI ĐỂ SPRING SECURITY TỰ ĐỘNG CHẶN KHI TÀI KHOẢN BỊ BAN ---
     @Override
     public boolean isEnabled() {
         return UserDetails.super.isEnabled();

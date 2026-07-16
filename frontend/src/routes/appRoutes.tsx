@@ -8,6 +8,7 @@ import {CategoryPage} from "../pages/Category/CategoryPage.tsx";
 import {MangaDetailPage} from "../pages/MangaDetail/MangaDetailPage.tsx";
 import {ReadingMangaPage} from "../pages/ReadingManga/ReadingMangaPage.tsx";
 import {UserProfile} from "../pages/UserProfile/UserProfile.tsx";
+import {AdminUserManagement} from "../pages/ListUser/AdminUserManagement.tsx";
 import {RouteError} from "./RouteError.tsx";
 
 export const appRoutes: RouteObject[] = [
@@ -39,6 +40,14 @@ export const appRoutes: RouteObject[] = [
             {
                 path: "profile/:tab",
                 element: <UserProfile />
+            },
+            {
+                path: "admin/users",
+                element: <AdminUserManagement />
+            },
+            {
+                path: "admin/users/:roleType",
+                element: <AdminUserManagement />
             }
         ]
     },
