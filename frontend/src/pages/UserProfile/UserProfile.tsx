@@ -1,11 +1,12 @@
 import { useSearchParams } from "react-router-dom";
-import { LogIn, User, BookOpen, CalendarCheck, Clock, Key, LogOut } from "lucide-react";
+import { LogIn, User, BookOpen, CalendarCheck, Clock, Key, LogOut, Feather } from "lucide-react";
 import { useAuthStore } from "../../stores/authStore";
 import { AccountSettingsTab } from "./components/AccountSettingsTab";
 import { ChangePasswordTab } from "./components/ChangePasswordTab";
 import { MangaMarkTag } from "./components/MangaMarkTag";
 import { HistoryTab } from "./components/HistoryTab";
 import { DailyTasksTab } from "./components/DailyTasksTab";
+import { AuthorRegistrationTab } from "./components/AuthorRegistrationTab";
 import styles from "./UserProfile.module.css";
 
 export function UserProfile() {
@@ -37,6 +38,8 @@ export function UserProfile() {
     const handleTabChange = (tabName: string) => {
         setSearchParams({ tab: tabName });
     };
+
+    const showAuthorTab = user.role !== 'ADMIN';
 
     return (
         <div className={styles.profilePage}>
@@ -81,6 +84,14 @@ export function UserProfile() {
                             >
                                 <Key size={16} /> Đổi mật khẩu
                             </button>
+                            {showAuthorTab && (
+                                <button 
+                                    className={`${styles.sidebarNavItem} ${activeTab === "author" ? styles.sidebarActiveItem : ""}`}
+                                    onClick={() => handleTabChange("author")}
+                                >
+                                    <Feather size={16} /> {user.role === 'AUTHOR' ? 'Tác giả' : 'Đăng ký Tác giả'}
+                                </button>
+                            )}
                             <button 
                                 className={`${styles.sidebarNavItem} ${styles.sidebarLogoutItem}`}
                                 onClick={() => logout()}
@@ -99,6 +110,7 @@ export function UserProfile() {
                             {activeTab === "manga" && <MangaMarkTag />}
                             {activeTab === "history" && <HistoryTab />}
                             {activeTab === "tasks" && <DailyTasksTab />}
+                            {activeTab === "author" && showAuthorTab && <AuthorRegistrationTab userRole={user.role} />}
                         </div>
                     </main>
                 </div>
