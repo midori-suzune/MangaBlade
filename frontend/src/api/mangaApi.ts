@@ -25,7 +25,7 @@ export async function getFollowedManga(): Promise<ApiResponse<MangaResponse[]>> 
   return response.data;
 }
 
-export async function getMangaRanking(sort: 'likes' | 'views'): Promise<ApiResponse<MangaRankingResponse[]>> {
+export async function getMangaRanking(sort: 'views' | 'follows'): Promise<ApiResponse<MangaRankingResponse[]>> {
   const response = await axiosInstance.get<ApiResponse<MangaRankingResponse[]>>('/api/v1/manga/ranking', {
     params: { sort },
   });

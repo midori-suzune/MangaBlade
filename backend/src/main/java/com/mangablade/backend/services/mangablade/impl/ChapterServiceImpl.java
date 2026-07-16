@@ -3,7 +3,6 @@ package com.mangablade.backend.services.mangablade.impl;
 import com.mangablade.backend.dtos.response.ChapterPageResponse;
 import com.mangablade.backend.dtos.response.ChapterProjection;
 import com.mangablade.backend.dtos.response.ReadingHistoryResponse;
-import com.mangablade.backend.entities.ReadingHistory;
 import com.mangablade.backend.repositories.ChapterPageRepository;
 import com.mangablade.backend.repositories.ChapterRepository;
 import com.mangablade.backend.repositories.ReadingHistoryRepository;
@@ -54,20 +53,14 @@ public class ChapterServiceImpl implements ChapterService {
         }
 
         var now = Instant.now();
-        var history = readingHistoryRepository.findByUserIdAndChapterId(userId, chapter.get().getId())
-                .orElseGet(() -> ReadingHistory.builder()
-                        .userId(userId)
-                        .mangaId(chapter.get().getMangaId())
-                        .chapterId(chapter.get().getId())
-                        .pageIndex(0)
-                        .lastReadAt(now)
-                        .build());
+        var affectedRows = readingHistoryRepository.upsertReadingHistory(
+                userId,
+                chapter.get().getMangaId(),
+                chapter.get().getId(),
+                now
+        );
 
-        boolean isNewRead = history.getId() == null;
-        history.setLastReadAt(now);
-        readingHistoryRepository.save(history);
-
-        if (isNewRead) {
+        if (affectedRows == 1) {
             taskService.handleChapterRead(userId);
         }
     }

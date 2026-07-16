@@ -9,6 +9,7 @@ import {MangaDetailPage} from "../pages/MangaDetail/MangaDetailPage.tsx";
 import {ReadingMangaPage} from "../pages/ReadingManga/ReadingMangaPage.tsx";
 import {UserProfile} from "../pages/UserProfile/UserProfile.tsx";
 import {AdminUserManagement} from "../pages/ListUser/AdminUserManagement.tsx";
+import {ReadingHistoryPrototype} from "../pages/ReadingHistoryPrototype/ReadingHistoryPrototype.tsx";
 import {RouteError} from "./RouteError.tsx";
 
 export const appRoutes: RouteObject[] = [
@@ -40,6 +41,10 @@ export const appRoutes: RouteObject[] = [
             {
                 path: "profile/:tab",
                 element: <UserProfile />
+            },
+            {
+                path: "reading-history-prototype",
+                element: <ReadingHistoryPrototype />
             },
             {
                 path: "admin/users",

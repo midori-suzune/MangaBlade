@@ -1,0 +1,240 @@
+.historyPage {
+    max-width: 1320px;
+    margin: 24px auto 70px;
+    padding: 0 18px;
+    color: #1f2937;
+}
+
+.pageTitleBlock {
+    margin-bottom: 22px;
+    padding-bottom: 18px;
+    border-bottom: 2px solid #111827;
+}
+
+.pageTitleBlock span {
+    display: block;
+    margin-bottom: 6px;
+    color: #6d4df2;
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.pageTitleBlock h1 {
+    margin: 0;
+    color: #1f2937;
+    font-size: 30px;
+    line-height: 1.15;
+    font-weight: 900;
+}
+
+.pageTitleBlock p {
+    max-width: 560px;
+    margin: 8px 0 0;
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.dashboardGrid {
+    display: block;
+}
+
+.recentHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 12px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.historyTabs {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.historyTabs button {
+    border: 0;
+    background: transparent;
+    color: #7b8496;
+    cursor: pointer;
+    font: inherit;
+    font-size: 17px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.historyTabs .activeHistoryTab {
+    color: #1f2937;
+}
+
+.readButton,
+.moreButton {
+    border: 0;
+    border-radius: 7px;
+    font: inherit;
+    font-size: 17px;
+    font-weight: 900;
+}
+
+.recentPanel {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #ffffff;
+    padding: 22px 26px;
+}
+
+.historySearch {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 250px;
+    padding: 10px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 7px;
+    background: #f8fafc;
+    color: #64748b;
+}
+
+.historySearch input {
+    width: 100%;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: #1f2937;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.historySearch input::placeholder {
+    color: #94a3b8;
+}
+
+.recentList {
+    display: flex;
+    flex-direction: column;
+    max-height: 650px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+.recentList::-webkit-scrollbar {
+    width: 8px;
+}
+
+.recentList::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 999px;
+}
+
+.recentList::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 999px;
+}
+
+.recentList::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+.recentItem {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 116px 38px;
+    gap: 14px;
+    align-items: center;
+    padding: 18px 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.recentItem:last-child {
+    border-bottom: 0;
+}
+
+.recentMain {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: 24px;
+    align-items: center;
+    min-width: 0;
+}
+
+.recentMain img {
+    width: 96px;
+    aspect-ratio: 1 / 1;
+    border-radius: 8px;
+    object-fit: cover;
+    background: #cbd5e1;
+}
+
+.recentInfo {
+    min-width: 0;
+}
+
+.recentInfo span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #7b8496;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.recentInfo h3 {
+    overflow: hidden;
+    margin: 8px 0 5px;
+    color: #1f2937;
+    font-size: 17px;
+    font-weight: 900;
+    line-height: 1.3;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.recentInfo p {
+    margin: 0;
+    color: #7b8496;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.readButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+}
+
+.moreButton {
+    display: grid;
+    width: 38px;
+    height: 38px;
+    place-items: center;
+    border: 1px solid #e5e7eb;
+    border-radius: 50%;
+    background: #ffffff;
+    color: #94a3b8;
+    cursor: pointer;
+}
+
+@media (max-width: 640px) {
+    .historyPage {
+        padding: 0 12px;
+    }
+
+    .recentItem,
+    .recentMain {
+        grid-template-columns: 1fr;
+    }
+
+    .recentItem {
+        align-items: start;
+    }
+
+    .readButton,
+    .moreButton {
+        justify-self: start;
+    }
+}

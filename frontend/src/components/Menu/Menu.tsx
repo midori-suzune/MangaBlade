@@ -8,8 +8,10 @@ export function Menu() {
             <nav className={styles.navLinks} aria-label="Main navigation">
                 <NavLink to="/" className={({ isActive }) => isActive ? styles.active : ''} end>Trang chủ</NavLink>
                 <NavLink to="/category" className={({ isActive }) => isActive ? styles.active : ''}>Thể loại</NavLink>
-                <NavLink to="/manga/reading" className={({ isActive }) => isActive ? styles.active : ''}>Mới</NavLink>
+                <NavLink to="/reading-history-prototype" className={({ isActive }) => isActive ? styles.active : ''}>Lịch sử đọc</NavLink>
+                <NavLink to="/discussion" className={({ isActive }) => isActive ? styles.active : ''}>Thảo luận</NavLink>
                 <NavLink to="/update" className={({ isActive }) => isActive ? styles.active : ''}>Cập nhật</NavLink>
+
             </nav>
             <div className={styles.menuRightIcons}>
                 <button className={styles.themeToggleBtn} title="Chế độ Sáng/Tối" type="button">

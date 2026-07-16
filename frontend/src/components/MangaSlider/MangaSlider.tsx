@@ -3,7 +3,6 @@ import {Link} from "react-router-dom";
 
 import type {MangaWithLatestChapter} from "../../types/manga.ts";
 import {getTimeAgo} from "../../utils/time.ts";
-import {toSlug} from "../../utils/slug.ts";
 import styles from "./MangaSlider.module.css";
 
 type MangaSliderProps = {
@@ -49,7 +48,7 @@ export function MangaSlider({manga}: MangaSliderProps) {
                         Chapter {activeManga.latestChapter.chapterNumber}
                     </p>
                     <Link
-                        to={`/manga/${toSlug(activeManga.title)}`}
+                        to={`/manga/${activeManga.slug}`}
                         state={{manga: activeManga}}
                         className={styles.heroButton}
                     >
