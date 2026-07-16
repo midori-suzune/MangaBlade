@@ -66,7 +66,21 @@ public class User implements UserDetails {
     @Builder.Default
     private UserRole role = UserRole.USER;
 
-    // --- THÊM TRƯỜNG NÀY ĐỂ QUẢN LÝ BAN/UNBAN ---
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer level = 0;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer exp = 0;
+
+    @Column(name = "active_title_id")
+    private Long activeTitleId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "active_title_id", insertable = false, updatable = false)
+    private Title activeTitle;
+
     @NotNull
     @Column(name = "is_banned", nullable = false)
     @Builder.Default
@@ -99,6 +113,6 @@ public class User implements UserDetails {
     // --- SỬA LẠI ĐỂ SPRING SECURITY TỰ ĐỘNG CHẶN KHI TÀI KHOẢN BỊ BAN ---
     @Override
     public boolean isEnabled() {
-        return !isBanned;
+        return UserDetails.super.isEnabled();
     }
 }
