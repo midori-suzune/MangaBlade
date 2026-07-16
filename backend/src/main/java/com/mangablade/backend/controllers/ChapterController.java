@@ -14,9 +14,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
+
 @RequestMapping("api/v1/chapter")
 public class ChapterController {
 
@@ -27,6 +30,13 @@ public class ChapterController {
             @RequestBody ChapterPageRequest request,
             @AuthenticationPrincipal User user
     ){
+        log.info(
+                "Chapter request: slugManga={}, userId={}, username={}, role={}",
+                request.getSlugManga(),
+                user != null ? user.getId() : null,
+                user != null ? user.getUsername() : null,
+                user != null ? user.getRole() : null
+        );
         var chapterPage = chapterService.fetchChapterPage(request.getSlugManga(), request.getChapterNumber());
         if (user != null) {
             chapterService.recordReadingHistory(user.getId(), request.getSlugManga(), request.getChapterNumber());
