@@ -100,11 +100,13 @@ public class MangaSearchServiceImpl implements MangaSearchService {
     }
 
     private Sort resolveSort(String sort) {
+        var stableTieBreaker = Sort.by(Sort.Direction.ASC, "slug");
+
         if ("chapters".equalsIgnoreCase(sort)) {
-            return Sort.by(Sort.Direction.DESC, "latestChapterNumber");
+            return Sort.by(Sort.Direction.DESC, "latestChapterNumber").and(stableTieBreaker);
         }
 
-        return Sort.by(Sort.Direction.DESC, "updatedAt");
+        return Sort.by(Sort.Direction.DESC, "updatedAt").and(stableTieBreaker);
     }
 
     private MangaSearchDocument toDocument(Manga manga) {
@@ -134,13 +136,11 @@ public class MangaSearchServiceImpl implements MangaSearchService {
     }
 
     private MangaSearchResponse toResponse(MangaSearchDocument document) {
-        var latestChapterNumber = chapterService.getLastestChapterByMangaId(document.getId());
-
         return MangaSearchResponse.builder()
                 .title(document.getTitle())
                 .slug(document.getSlug())
                 .thumbUrl(document.getThumbUrl())
-                .latestChapterNumber(latestChapterNumber)
+                .latestChapterNumber(document.getLatestChapterNumber())
                 .updatedAt(document.getUpdatedAt())
                 .authors(document.getAuthors())
                 .categorySlugs(document.getCategorySlugs())
