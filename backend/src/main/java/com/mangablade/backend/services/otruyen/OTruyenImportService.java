@@ -47,10 +47,17 @@ public class OTruyenImportService {
         manga.setUpdatedAt(response.getData().getSeoOnPage().getUpdatedAt());
         var categories = getOtruyenCategoryResponses(response, manga);
 
-        var authors = response.getData().getItem().getAuthors();
+        var authors = Optional.ofNullable(response.getData().getItem().getAuthors())
+                .orElseGet(List::of)
+                .stream()
+                .map(name -> name == null || name.isBlank() ? null : name.trim())
+                .distinct()
+                .toList();
 
         authors.forEach(name -> {
-            var author =  authorRepository.findByName(name).orElseGet(() -> authorMapper.toEntity(name));
+            var author = name == null
+                    ? authorRepository.findFirstByNameIsNull().orElseGet(() -> authorMapper.toEntity(null))
+                    : authorRepository.findByName(name).orElseGet(() -> authorMapper.toEntity(name));
             author.setName(name);
 
             var getAuthor =  authorRepository.save(author);
