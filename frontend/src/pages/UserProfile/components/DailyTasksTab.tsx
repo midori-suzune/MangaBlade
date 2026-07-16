@@ -364,7 +364,6 @@ export function DailyTasksTab() {
       {activeSubTab === "wheel" && (
         <LuckyWheel
           initialSpun={status.luckyWheelSpun}
-          initialPrize={null}
           onSpinSuccess={handleSpinSuccess}
         />
       )}
