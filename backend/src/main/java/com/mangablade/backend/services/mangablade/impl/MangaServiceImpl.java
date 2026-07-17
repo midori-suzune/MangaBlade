@@ -7,13 +7,11 @@ import com.mangablade.backend.dtos.response.MangaRankingResponse;
 import com.mangablade.backend.dtos.response.MangaResponse;
 import com.mangablade.backend.entities.Favorite;
 import com.mangablade.backend.entities.Manga;
-import com.mangablade.backend.entities.MangaLike;
 import com.mangablade.backend.exceptions.AppException;
 import com.mangablade.backend.exceptions.ErrorCode;
 import com.mangablade.backend.mapper.MangaMapper;
 import com.mangablade.backend.repositories.CategoryRepository;
 import com.mangablade.backend.repositories.FavoriteRepository;
-import com.mangablade.backend.repositories.MangaLikeRepository;
 import com.mangablade.backend.repositories.MangaRepository;
 import com.mangablade.backend.services.mangablade.AuthorService;
 import com.mangablade.backend.services.mangablade.ChapterService;
@@ -40,7 +38,6 @@ public class MangaServiceImpl implements MangaService {
     private final AuthorService authorService;
     private final CategoryRepository categoryRepository;
     private final FavoriteRepository favoriteRepository;
-    private final MangaLikeRepository mangaLikeRepository;
     private final TaskService taskService;
 
     @Override
@@ -72,7 +69,6 @@ public class MangaServiceImpl implements MangaService {
                         projection.getSlug(),
                         projection.getTitle(),
                         projection.getThumbUrl(),
-                        projection.getLikeCount(),
                         projection.getFollowCount(),
                         projection.getViewCount()
                 ))
@@ -103,7 +99,6 @@ public class MangaServiceImpl implements MangaService {
                 .sourceType(manga.getMetadataSource())
                 .updatedAt(manga.getUpdatedAt())
                 .followed(interaction.isFollowed())
-                .liked(interaction.isLiked())
                 .authors(authors)
                 .categories(categories)
                 .chapters(list)
@@ -134,29 +129,6 @@ public class MangaServiceImpl implements MangaService {
 
         return MangaInteractionResponse.builder()
                 .followed(!isFollowed)
-                .liked(mangaLikeRepository.existsByUserIdAndMangaId(userId, manga.getId()))
-                .build();
-    }
-
-    @Override
-    @Transactional
-    public MangaInteractionResponse toggleLike(String slug, Long userId) {
-        var manga = findMangaBySlugOrThrow(slug);
-        var isLiked = mangaLikeRepository.existsByUserIdAndMangaId(userId, manga.getId());
-
-        if (isLiked) {
-            mangaLikeRepository.deleteByUserIdAndMangaId(userId, manga.getId());
-        } else {
-            mangaLikeRepository.save(MangaLike.builder()
-                    .userId(userId)
-                    .mangaId(manga.getId())
-                    .createdAt(Instant.now())
-                    .build());
-        }
-
-        return MangaInteractionResponse.builder()
-                .followed(favoriteRepository.existsByUserIdAndMangaId(userId, manga.getId()))
-                .liked(!isLiked)
                 .build();
     }
 
@@ -164,13 +136,11 @@ public class MangaServiceImpl implements MangaService {
         if (userId == null) {
             return MangaInteractionResponse.builder()
                     .followed(false)
-                    .liked(false)
                     .build();
         }
 
         return MangaInteractionResponse.builder()
                 .followed(favoriteRepository.existsByUserIdAndMangaId(userId, mangaId))
-                .liked(mangaLikeRepository.existsByUserIdAndMangaId(userId, mangaId))
                 .build();
     }
 

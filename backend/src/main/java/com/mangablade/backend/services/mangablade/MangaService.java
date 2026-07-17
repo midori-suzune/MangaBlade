@@ -17,7 +17,6 @@ public interface MangaService {
 
     MangaInteractionResponse toggleFollow(String slug, Long userId);
 
-    MangaInteractionResponse toggleLike(String slug, Long userId);
 
     List<MangaResponse> fetchFollowedManga(Long userId);
 }

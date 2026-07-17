@@ -18,7 +18,6 @@ export type MangaRankingResponse = {
     slug: string,
     title: string,
     thumbUrl: string,
-    likeCount: number,
     followCount: number,
     viewCount: number,
 }
@@ -79,7 +78,6 @@ export type MangaDetailResponse = {
     thumbUrl: string,
     updatedAt: string,
     followed: boolean,
-    liked: boolean,
     authors: AuthorResponse[],
     categories: CategoryResponse[],
     chapters : ChapterResponse[]
@@ -87,7 +85,6 @@ export type MangaDetailResponse = {
 
 export type MangaInteractionResponse = {
     followed: boolean,
-    liked: boolean,
 }
 
 export type MangaCommentResponse = {
@@ -120,7 +117,6 @@ export type ChapterPageResponse = {
     previousChapterNumber?: string,
     nextChapterNumber?: string,
 }
-
 
 
 

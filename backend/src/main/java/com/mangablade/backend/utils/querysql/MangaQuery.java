@@ -6,7 +6,6 @@ public class MangaQuery {
                 m.slug as slug,
                 m.title as title,
                 m.thumbUrl as thumbUrl,
-                (select count(ml) from MangaLike ml where ml.mangaId = m.id) as likeCount,
                 (select count(f) from Favorite f where f.mangaId = m.id) as followCount,
                 (select count(distinct rh.userId) from ReadingHistory rh where rh.mangaId = m.id) as viewCount
             from Manga m
@@ -21,7 +20,6 @@ public class MangaQuery {
                 m.slug as slug,
                 m.title as title,
                 m.thumbUrl as thumbUrl,
-                (select count(ml) from MangaLike ml where ml.mangaId = m.id) as likeCount,
                 (select count(f) from Favorite f where f.mangaId = m.id) as followCount,
                 (select count(distinct rh.userId) from ReadingHistory rh where rh.mangaId = m.id) as viewCount
             from Manga m

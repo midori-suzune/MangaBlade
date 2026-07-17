@@ -177,14 +177,6 @@
     background-color: #be123c;
 }
 
-.likeButton {
-    background-color: #a855f7;
-}
-
-.likeButton:hover {
-    background-color: #7e22ce;
-}
-
 .activeActionButton {
     filter: saturate(0.78);
 }

@@ -143,21 +143,6 @@ public class MangaController {
         );
     }
 
-    @PostMapping("/{slug}/like")
-    public ResponseEntity<ApiResponse<MangaInteractionResponse>> toggleLike(
-            @PathVariable String slug,
-            @AuthenticationPrincipal User user
-    ) {
-        var interaction = mangaService.toggleLike(slug, user.getId());
-        return ResponseEntity.ok(
-                ApiResponse.<MangaInteractionResponse>builder()
-                        .success(true)
-                        .message("success")
-                        .payload(interaction)
-                        .build()
-        );
-    }
-
     @GetMapping("/{slug}/comments")
     public ResponseEntity<ApiResponse<List<MangaCommentResponse>>> getComments(@PathVariable String slug) {
         var comments = commentService.findByMangaSlug(slug);

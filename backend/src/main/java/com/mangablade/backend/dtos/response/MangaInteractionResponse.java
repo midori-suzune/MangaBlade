@@ -13,5 +13,4 @@ import lombok.Setter;
 @Builder
 public class MangaInteractionResponse {
     private boolean followed;
-    private boolean liked;
 }
