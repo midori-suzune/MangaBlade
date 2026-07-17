@@ -4,6 +4,7 @@ import com.mangablade.backend.dtos.response.MangaDetailResponse;
 import com.mangablade.backend.dtos.response.MangaInteractionResponse;
 import com.mangablade.backend.dtos.response.MangaRankingResponse;
 import com.mangablade.backend.dtos.response.MangaResponse;
+import com.mangablade.backend.dtos.response.MangaSearchResponse;
 
 import java.util.List;
 
@@ -17,6 +18,7 @@ public interface MangaService {
 
     MangaInteractionResponse toggleFollow(String slug, Long userId);
 
-
     List<MangaResponse> fetchFollowedManga(Long userId);
+
+    List<MangaSearchResponse> filterManga(String category, String author, String sort, int page, int size);
 }

@@ -5,6 +5,8 @@ import com.mangablade.backend.dtos.response.MangaInteractionResponse;
 import com.mangablade.backend.dtos.response.MangaRankingProjection;
 import com.mangablade.backend.dtos.response.MangaRankingResponse;
 import com.mangablade.backend.dtos.response.MangaResponse;
+import com.mangablade.backend.dtos.response.MangaSearchResponse;
+import com.mangablade.backend.entities.Category;
 import com.mangablade.backend.entities.Favorite;
 import com.mangablade.backend.entities.Manga;
 import com.mangablade.backend.exceptions.AppException;
@@ -18,6 +20,7 @@ import com.mangablade.backend.services.mangablade.ChapterService;
 import com.mangablade.backend.services.mangablade.MangaService;
 import com.mangablade.backend.services.mangablade.TaskService;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +34,9 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 public class MangaServiceImpl implements MangaService {
+
+    private static final int DEFAULT_FILTER_SIZE = 20;
+    private static final int MAX_FILTER_SIZE = 50;
 
     private final MangaRepository mangaRepository;
     private final ChapterService chapterService;
@@ -161,5 +167,75 @@ public class MangaServiceImpl implements MangaService {
             response.getLatestChapter().setChapterNumber(latestChapter);
             return response;
         }).toList();
+    }
+
+    @Override
+    public List<MangaSearchResponse> filterManga(String category, String author, String sort, int page, int size) {
+        var categorySlug = normalizeFilter(category);
+        var authorKeyword = normalizeFilter(author);
+        var pageable = PageRequest.of(Math.max(page, 0), normalizeFilterSize(size));
+
+        return findFilteredManga(categorySlug, authorKeyword, sort, pageable)
+                .stream()
+                .map(this::toSearchResponse)
+                .toList();
+    }
+
+    private List<Manga> findFilteredManga(
+            String categorySlug,
+            String authorKeyword,
+            String sort,
+            org.springframework.data.domain.Pageable pageable
+    ) {
+        if ("chapters".equalsIgnoreCase(sort)) {
+            return mangaRepository.findFilteredOrderByChapters(categorySlug, authorKeyword, pageable);
+        }
+
+        if ("follow".equalsIgnoreCase(sort) || "follows".equalsIgnoreCase(sort)) {
+            return mangaRepository.findFilteredOrderByFollows(categorySlug, authorKeyword, pageable);
+        }
+
+        if ("comment".equalsIgnoreCase(sort) || "comments".equalsIgnoreCase(sort)) {
+            return mangaRepository.findFilteredOrderByComments(categorySlug, authorKeyword, pageable);
+        }
+
+        return mangaRepository.findFilteredOrderByUpdatedAt(categorySlug, authorKeyword, pageable);
+    }
+
+    private MangaSearchResponse toSearchResponse(Manga manga) {
+        var categories = categoryRepository.findByMangaId(manga.getId());
+
+        return MangaSearchResponse.builder()
+                .title(manga.getTitle())
+                .slug(manga.getSlug())
+                .thumbUrl(manga.getThumbUrl())
+                .latestChapterNumber(chapterService.getLastestChapterByMangaId(manga.getId()))
+                .updatedAt(manga.getUpdatedAt())
+                .authors(authorService.findByMangaId(manga.getId()).stream()
+                        .map(author -> author.getAuthorName())
+                        .toList())
+                .categorySlugs(categories.stream()
+                        .map(Category::getSlug)
+                        .toList())
+                .categoryNames(categories.stream()
+                        .map(Category::getName)
+                        .toList())
+                .build();
+    }
+
+    private String normalizeFilter(String value) {
+        if (value == null || value.isBlank() || "all".equalsIgnoreCase(value.trim())) {
+            return null;
+        }
+
+        return value.trim();
+    }
+
+    private int normalizeFilterSize(int size) {
+        if (size <= 0) {
+            return DEFAULT_FILTER_SIZE;
+        }
+
+        return Math.min(size, MAX_FILTER_SIZE);
     }
 }

@@ -90,7 +90,7 @@ public class MangaController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
-        var results = mangaSearchService.filter(category, author, sort, page, size);
+        var results = mangaService.filterManga(category, author, sort, page, size);
         return ResponseEntity.ok(
                 ApiResponse.<List<MangaSearchResponse>>builder()
                         .success(true)
