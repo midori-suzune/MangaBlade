@@ -6,6 +6,248 @@ import { useAuthStore } from '../../stores/authStore';
 import { Users, ShieldAlert, Award, FileText } from 'lucide-react';
 import styles from '../UserProfile/UserProfile.module.css';
 
+interface DetailModalProps {
+  request: AuthorRequestResponse;
+  showRejectForm: boolean;
+  rejectReasonText: string;
+  setRejectReasonText: (v: string) => void;
+  onApprove: (id: number) => void;
+  onReject: (id: number, reason: string) => void;
+  onClose: () => void;
+  onShowRejectForm: (v: boolean) => void;
+}
+
+function AuthorRequestDetailModal({
+  request,
+  showRejectForm,
+  rejectReasonText,
+  setRejectReasonText,
+  onApprove,
+  onReject,
+  onClose,
+  onShowRejectForm
+}: DetailModalProps) {
+  return (
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      backgroundColor: 'rgba(15, 23, 42, 0.6)',
+      backdropFilter: 'blur(4px)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000
+    }}>
+      <div style={{
+        backgroundColor: 'var(--color-surface)',
+        borderRadius: 'var(--border-radius-md)',
+        width: '100%',
+        maxWidth: '520px',
+        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+        overflow: 'hidden'
+      }}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '16px 20px',
+          borderBottom: 'none',
+          background: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
+          borderTopLeftRadius: 'var(--border-radius-md)',
+          borderTopRightRadius: 'var(--border-radius-md)'
+        }}>
+          <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'white', margin: 0 }}>
+            Chi tiết Đơn đăng ký Tác giả
+          </h3>
+          <button
+            onClick={onClose}
+            style={{
+              background: 'none',
+              border: 'none',
+              fontSize: '20px',
+              cursor: 'pointer',
+              color: '#e0e7ff',
+              lineHeight: 1
+            }}
+          >
+            &times;
+          </button>
+        </div>
+
+        <div style={{ padding: '20px', display: 'grid', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: '8px', fontSize: '14px' }}>
+            <span style={{ color: 'var(--color-text-muted)' }}>Tài khoản:</span>
+            <span style={{ fontWeight: 600, color: 'var(--color-text-main)' }}>{request.username}</span>
+
+            <span style={{ color: 'var(--color-text-muted)' }}>Email:</span>
+            <span style={{ fontWeight: 500, color: 'var(--color-text-main)' }}>{request.email}</span>
+
+            <span style={{ color: 'var(--color-text-muted)' }}>Bút danh:</span>
+            <span style={{ fontWeight: 600, color: 'var(--color-accent)' }}>{request.penName}</span>
+
+            <span style={{ color: 'var(--color-text-muted)' }}>Số điện thoại:</span>
+            <span style={{ fontWeight: 500, color: 'var(--color-text-main)' }}>{request.phone}</span>
+
+            <span style={{ color: 'var(--color-text-muted)' }}>Link MXH:</span>
+            <a href={request.socialLink} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-accent)', fontWeight: 500 }}>
+              {request.socialLink}
+            </a>
+
+            <span style={{ color: 'var(--color-text-muted)' }}>Ngày gửi:</span>
+            <span style={{ color: 'var(--color-text-main)' }}>
+              {new Date(request.createdAt).toLocaleString('vi-VN')}
+            </span>
+
+            <span style={{ color: 'var(--color-text-muted)' }}>Trạng thái:</span>
+            <div>
+              {request.status === 'PENDING' && (
+                <span style={{
+                  color: '#4f46e5',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  display: 'inline-block'
+                }}>
+                  Chờ duyệt
+                </span>
+              )}
+              {request.status === 'APPROVED' && (
+                <span style={{
+                  backgroundColor: 'var(--color-green-bg)',
+                  color: 'var(--color-green)',
+                  padding: '2px 8px',
+                  borderRadius: '4px',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  display: 'inline-block'
+                }}>
+                  Đã duyệt
+                </span>
+              )}
+              {request.status === 'REJECTED' && (
+                <span style={{
+                  backgroundColor: 'var(--color-red-bg)',
+                  color: 'var(--color-red)',
+                  padding: '2px 8px',
+                  borderRadius: '4px',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  display: 'inline-block'
+                }}>
+                  Từ chối
+                </span>
+              )}
+            </div>
+          </div>
+
+          {request.status === 'REJECTED' && (
+            <div style={{
+              padding: '12px 16px',
+              backgroundColor: 'var(--color-red-bg)',
+              borderRadius: 'var(--border-radius-sm)',
+              color: 'var(--color-red)',
+              fontSize: '13.5px',
+              lineHeight: 1.5,
+              border: '1px solid rgba(239, 68, 68, 0.15)'
+            }}>
+              <div style={{ fontWeight: 600, marginBottom: '2px' }}>Lý do từ chối:</div>
+              <div>{request.rejectReason || "Không có lý do chi tiết."}</div>
+            </div>
+          )}
+
+          {request.status === 'PENDING' && (
+            <div style={{
+              borderTop: '1px solid var(--color-border)',
+              paddingTop: '16px',
+              marginTop: '8px'
+            }}>
+              {!showRejectForm ? (
+                <div style={{ display: 'flex', gap: '12px', justifyContent: 'end' }}>
+                  <button
+                    onClick={() => {
+                      if (window.confirm("Xác nhận duyệt đơn đăng ký tác giả này và nâng cấp quyền người dùng?")) {
+                        onApprove(request.id);
+                        onClose();
+                      }
+                    }}
+                    className={styles.adminBtnUnban}
+                    style={{ padding: '8px 20px', fontSize: '13px' }}
+                  >
+                    Duyệt đơn
+                  </button>
+                  <button
+                    onClick={() => onShowRejectForm(true)}
+                    className={styles.adminBtnBan}
+                    style={{ padding: '8px 20px', fontSize: '13px' }}
+                  >
+                    Từ chối duyệt
+                  </button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <label style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--color-text-main)' }}>
+                    Nhập lý do từ chối:
+                  </label>
+                  <textarea
+                    value={rejectReasonText}
+                    onChange={(e) => setRejectReasonText(e.target.value)}
+                    placeholder="Nêu rõ lý do từ chối để người dùng biết cách điều chỉnh..."
+                    rows={3}
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      border: '1px solid var(--color-border)',
+                      borderRadius: 'var(--border-radius-sm)',
+                      fontSize: '13.5px',
+                      outline: 'none',
+                      resize: 'vertical',
+                      backgroundColor: 'var(--color-surface-hover)',
+                      color: 'var(--color-text-main)'
+                    }}
+                  />
+                  <div style={{ display: 'flex', gap: '10px', justifyContent: 'end' }}>
+                    <button
+                      onClick={() => onShowRejectForm(false)}
+                      style={{
+                        padding: '6px 14px',
+                        fontSize: '12.5px',
+                        border: '1px solid var(--color-border)',
+                        backgroundColor: 'transparent',
+                        color: 'var(--color-text-muted)',
+                        borderRadius: 'var(--border-radius-sm)',
+                        cursor: 'pointer',
+                        fontWeight: 600
+                      }}
+                    >
+                      Hủy
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (!rejectReasonText.trim()) {
+                          alert("Lý do từ chối không được để trống!");
+                          return;
+                        }
+                        onReject(request.id, rejectReasonText);
+                        onClose();
+                      }}
+                      className={styles.adminBtnBan}
+                      style={{ padding: '6px 14px', fontSize: '12.5px' }}
+                    >
+                      Xác nhận từ chối
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export const AdminAuthorRequests: React.FC = () => {
   const navigate = useNavigate();
   const { displayName } = useAuthStore();
@@ -45,18 +287,16 @@ export const AdminAuthorRequests: React.FC = () => {
   }, [fetchRequests]);
 
   const handleApprove = async (id: number) => {
-    if (window.confirm("Xác nhận duyệt đơn đăng ký tác giả này và nâng cấp quyền người dùng?")) {
-      try {
-        const res = await authorRequestApi.review(id, { action: 'APPROVE' });
-        if (res.success) {
-          alert("Duyệt đơn đăng ký thành công!");
-          fetchRequests();
-        } else {
-          alert(res.message);
-        }
-      } catch (err: unknown) {
-        alert(getErrorMessage(err));
+    try {
+      const res = await authorRequestApi.review(id, { action: 'APPROVE' });
+      if (res.success) {
+        alert("Duyệt đơn đăng ký thành công!");
+        fetchRequests();
+      } else {
+        alert(res.message);
       }
+    } catch (err: unknown) {
+      alert(getErrorMessage(err));
     }
   };
 
@@ -175,7 +415,7 @@ export const AdminAuthorRequests: React.FC = () => {
                           <td>
                             {req.status === 'PENDING' && (
                               <span style={{
-                                color: '#d97706',
+                                color: '#4f46e5',
                                 fontSize: '14px',
                                 fontWeight: 600,
                                 display: 'inline-block'
@@ -283,223 +523,16 @@ export const AdminAuthorRequests: React.FC = () => {
       </div>
 
       {selectedRequest && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          backgroundColor: 'rgba(15, 23, 42, 0.6)',
-          backdropFilter: 'blur(4px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
-        }}>
-          <div style={{
-            backgroundColor: 'var(--color-surface)',
-            borderRadius: 'var(--border-radius-md)',
-            width: '100%',
-            maxWidth: '520px',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-            overflow: 'hidden'
-          }}>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              padding: '16px 20px',
-              borderBottom: 'none',
-              background: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
-              borderTopLeftRadius: 'var(--border-radius-md)',
-              borderTopRightRadius: 'var(--border-radius-md)'
-            }}>
-              <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'white', margin: 0 }}>
-                Chi tiết Đơn đăng ký Tác giả
-              </h3>
-              <button
-                onClick={() => setSelectedRequest(null)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  fontSize: '20px',
-                  cursor: 'pointer',
-                  color: '#e0e7ff',
-                  lineHeight: 1
-                }}
-              >
-                &times;
-              </button>
-            </div>
-
-            <div style={{ padding: '20px', display: 'grid', gap: '16px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: '8px', fontSize: '14px' }}>
-                <span style={{ color: 'var(--color-text-muted)' }}>Tài khoản:</span>
-                <span style={{ fontWeight: 600, color: 'var(--color-text-main)' }}>{selectedRequest.username}</span>
-
-                <span style={{ color: 'var(--color-text-muted)' }}>Email:</span>
-                <span style={{ fontWeight: 500, color: 'var(--color-text-main)' }}>{selectedRequest.email}</span>
-
-                <span style={{ color: 'var(--color-text-muted)' }}>Bút danh:</span>
-                <span style={{ fontWeight: 600, color: 'var(--color-accent)' }}>{selectedRequest.penName}</span>
-
-                <span style={{ color: 'var(--color-text-muted)' }}>Số điện thoại:</span>
-                <span style={{ fontWeight: 500, color: 'var(--color-text-main)' }}>{selectedRequest.phone}</span>
-
-                <span style={{ color: 'var(--color-text-muted)' }}>Link MXH:</span>
-                <a href={selectedRequest.socialLink} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-accent)', fontWeight: 500 }}>
-                  {selectedRequest.socialLink}
-                </a>
-
-                <span style={{ color: 'var(--color-text-muted)' }}>Ngày gửi:</span>
-                <span style={{ color: 'var(--color-text-main)' }}>
-                  {new Date(selectedRequest.createdAt).toLocaleString('vi-VN')}
-                </span>
-
-                <span style={{ color: 'var(--color-text-muted)' }}>Trạng thái:</span>
-                <div>
-                  {selectedRequest.status === 'PENDING' && (
-                    <span style={{
-                      color: '#d97706',
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      display: 'inline-block'
-                    }}>
-                      Chờ duyệt
-                    </span>
-                  )}
-                  {selectedRequest.status === 'APPROVED' && (
-                    <span style={{
-                      backgroundColor: 'var(--color-green-bg)',
-                      color: 'var(--color-green)',
-                      padding: '2px 8px',
-                      borderRadius: '4px',
-                      fontSize: '11px',
-                      fontWeight: 600,
-                      display: 'inline-block'
-                    }}>
-                      Đã duyệt
-                    </span>
-                  )}
-                  {selectedRequest.status === 'REJECTED' && (
-                    <span style={{
-                      backgroundColor: 'var(--color-red-bg)',
-                      color: 'var(--color-red)',
-                      padding: '2px 8px',
-                      borderRadius: '4px',
-                      fontSize: '11px',
-                      fontWeight: 600,
-                      display: 'inline-block'
-                    }}>
-                      Từ chối
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {selectedRequest.status === 'REJECTED' && (
-                <div style={{
-                  padding: '12px 16px',
-                  backgroundColor: 'var(--color-red-bg)',
-                  borderRadius: 'var(--border-radius-sm)',
-                  color: 'var(--color-red)',
-                  fontSize: '13.5px',
-                  lineHeight: 1.5,
-                  border: '1px solid rgba(239, 68, 68, 0.15)'
-                }}>
-                  <div style={{ fontWeight: 600, marginBottom: '2px' }}>Lý do từ chối:</div>
-                  <div>{selectedRequest.rejectReason || "Không có lý do chi tiết."}</div>
-                </div>
-              )}
-
-              {selectedRequest.status === 'PENDING' && (
-                <div style={{
-                  borderTop: '1px solid var(--color-border)',
-                  paddingTop: '16px',
-                  marginTop: '8px'
-                }}>
-                  {!showRejectForm ? (
-                    <div style={{ display: 'flex', gap: '12px', justifyContent: 'end' }}>
-                      <button
-                        onClick={() => {
-                          if (window.confirm("Xác nhận duyệt đơn đăng ký tác giả này và nâng cấp quyền người dùng?")) {
-                            handleApprove(selectedRequest.id);
-                            setSelectedRequest(null);
-                          }
-                        }}
-                        className={styles.adminBtnUnban}
-                        style={{ padding: '8px 20px', fontSize: '13px' }}
-                      >
-                        Duyệt đơn
-                      </button>
-                      <button
-                        onClick={() => setShowRejectForm(true)}
-                        className={styles.adminBtnBan}
-                        style={{ padding: '8px 20px', fontSize: '13px' }}
-                      >
-                        Từ chối duyệt
-                      </button>
-                    </div>
-                  ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      <label style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--color-text-main)' }}>
-                        Nhập lý do từ chối:
-                      </label>
-                      <textarea
-                        value={rejectReasonText}
-                        onChange={(e) => setRejectReasonText(e.target.value)}
-                        placeholder="Nêu rõ lý do từ chối để người dùng biết cách điều chỉnh..."
-                        rows={3}
-                        style={{
-                          width: '100%',
-                          padding: '10px',
-                          border: '1px solid var(--color-border)',
-                          borderRadius: 'var(--border-radius-sm)',
-                          fontSize: '13.5px',
-                          outline: 'none',
-                          resize: 'vertical',
-                          backgroundColor: 'var(--color-surface-hover)',
-                          color: 'var(--color-text-main)'
-                        }}
-                      />
-                      <div style={{ display: 'flex', gap: '10px', justifyContent: 'end' }}>
-                        <button
-                          onClick={() => setShowRejectForm(false)}
-                          style={{
-                            padding: '6px 14px',
-                            fontSize: '12.5px',
-                            border: '1px solid var(--color-border)',
-                            backgroundColor: 'transparent',
-                            color: 'var(--color-text-muted)',
-                            borderRadius: 'var(--border-radius-sm)',
-                            cursor: 'pointer',
-                            fontWeight: 600
-                          }}
-                        >
-                          Hủy
-                        </button>
-                        <button
-                          onClick={() => {
-                            if (!rejectReasonText.trim()) {
-                              alert("Lý do từ chối không được để trống!");
-                              return;
-                            }
-                            handleReject(selectedRequest.id, rejectReasonText);
-                            setSelectedRequest(null);
-                          }}
-                          className={styles.adminBtnBan}
-                          style={{ padding: '6px 14px', fontSize: '12.5px' }}
-                        >
-                          Xác nhận từ chối
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+        <AuthorRequestDetailModal
+          request={selectedRequest}
+          showRejectForm={showRejectForm}
+          rejectReasonText={rejectReasonText}
+          setRejectReasonText={setRejectReasonText}
+          onApprove={handleApprove}
+          onReject={handleReject}
+          onClose={() => setSelectedRequest(null)}
+          onShowRejectForm={setShowRejectForm}
+        />
       )}
     </div>
   );
