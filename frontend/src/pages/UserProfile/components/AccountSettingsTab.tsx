@@ -167,7 +167,9 @@ export function AccountSettingsTab() {
                 </div>
 
                 <div className={styles.settingsSection} style={{ marginBottom: 0 }}>
-                    <label htmlFor="email-update" className={styles.sectionLabel}>Email tài khoản</label>
+                    <label htmlFor="email-update" className={styles.sectionLabel}>
+                        Email tài khoản {user.emailVerifiedAt && <span style={{ marginLeft: '6px', fontWeight: 600 }}>(Đã verify)</span>}
+                    </label>
                     <input
                         type="email"
                         id="email-update"
