@@ -1,0 +1,292 @@
+.followPage {
+    max-width: 1320px;
+    margin: 24px auto 70px;
+    padding: 0 18px;
+    color: #1f2937;
+}
+
+.pageTitleBlock {
+    margin-bottom: 22px;
+    padding-bottom: 18px;
+    border-bottom: 2px solid #111827;
+}
+
+.pageTitleBlock h1 {
+    margin: 0;
+    color: #1f2937;
+    font-size: 30px;
+    line-height: 1.15;
+    font-weight: 900;
+}
+
+.pageTitleBlock p {
+    max-width: 560px;
+    margin: 8px 0 0;
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.followPanel {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #ffffff;
+    padding: 18px 24px;
+}
+
+.followHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 12px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.headerTitle h2 {
+    margin: 0;
+    color: #1f2937;
+    font-size: 17px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.headerTitle span {
+    display: block;
+    margin-top: 5px;
+    color: #7b8496;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.headerActions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.followSearch {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 250px;
+    padding: 7px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 5px;
+    background: #f8fafc;
+    color: #64748b;
+}
+
+.followSearch input {
+    width: 100%;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: #1f2937;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.followSearch input::placeholder {
+    color: #94a3b8;
+}
+
+.editToolbar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.editButton,
+.deleteSelectedButton {
+    display: inline-flex;
+    min-height: 36px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 0 14px;
+    border: 0;
+    border-radius: 5px;
+    cursor: pointer;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.editButton {
+    background: #111827;
+    color: #ffffff;
+}
+
+.deleteSelectedButton {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.deleteSelectedButton:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.followList {
+    display: flex;
+    flex-direction: column;
+    max-height: 720px;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+    padding-right: 8px;
+}
+
+.followList::-webkit-scrollbar {
+    width: 8px;
+}
+
+.followList::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 999px;
+}
+
+.followList::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 999px;
+}
+
+.followList::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+.listMessage {
+    margin: 24px 0;
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 800;
+    text-align: center;
+}
+
+.followItem {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 14px;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.editingFollowItem {
+    grid-template-columns: 34px minmax(0, 1fr);
+}
+
+.followItem:last-child {
+    border-bottom: 0;
+}
+
+.followMain {
+    display: grid;
+    grid-template-columns: 84px minmax(0, 1fr);
+    gap: 20px;
+    align-items: center;
+    min-width: 0;
+}
+
+.followMain img {
+    width: 84px;
+    aspect-ratio: 1 / 1;
+    border-radius: 8px;
+    object-fit: cover;
+    background: #cbd5e1;
+}
+
+.followInfo {
+    min-width: 0;
+}
+
+.followInfo h3 {
+    overflow: hidden;
+    margin: 0;
+    color: #1f2937;
+    font-size: 17px;
+    font-weight: 900;
+    line-height: 1.3;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.followInfo p {
+    margin: 0;
+    color: #7b8496;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.readNewButton {
+    align-self: center;
+    border: 0;
+    border-radius: 5px;
+    background: transparent;
+    color: #dc2626;
+    cursor: pointer;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 900;
+    padding: 7px 12px;
+    white-space: nowrap;
+}
+
+.readNewButton:hover {
+    background: transparent;
+    color: #b91c1c;
+}
+
+.selectButton {
+    display: grid;
+    width: 26px;
+    height: 26px;
+    place-items: center;
+    border: 2px solid #cbd5e1;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #ffffff;
+    cursor: pointer;
+}
+
+.selectedButton {
+    border-color: #111827;
+    background: #111827;
+}
+
+@media (max-width: 700px) {
+    .followPage {
+        padding: 0 12px;
+    }
+
+    .followHeader,
+    .headerActions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .followSearch {
+        min-width: 0;
+    }
+
+    .followItem,
+    .followMain {
+        grid-template-columns: 1fr;
+    }
+
+    .readNewButton {
+        justify-self: flex-start;
+    }
+
+    .editingFollowItem {
+        grid-template-columns: 34px 1fr;
+    }
+
+    .followItem {
+        align-items: start;
+    }
+
+}

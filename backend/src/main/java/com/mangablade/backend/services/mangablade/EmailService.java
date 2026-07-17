@@ -40,4 +40,26 @@ public class EmailService {
             throw new RuntimeException("Failed to send email: " + e.getMessage(), e);
         }
     }
+
+    public void sendVerificationOtpMail(String toEmail, String username, String otp) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail, "MangaBlade");
+            helper.setReplyTo(fromEmail);
+            helper.setTo(toEmail);
+            helper.setSubject("Xác thực địa chỉ email MangaBlade");
+
+            Context context = new Context();
+            context.setVariable("username", username);
+            context.setVariable("otp", otp);
+            String htmlContent = templateEngine.process("verification-otp-email", context);
+
+            helper.setText(htmlContent, true);
+            mailSender.send(message);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to send email: " + e.getMessage(), e);
+        }
+    }
 }

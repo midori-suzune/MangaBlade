@@ -50,33 +50,34 @@
     border-bottom: 1px solid #e5e7eb;
 }
 
-.historyTabs {
+.headerActions {
     display: flex;
     align-items: center;
-    gap: 18px;
+    gap: 10px;
 }
 
-.historyTabs button {
-    border: 0;
-    background: transparent;
-    color: #7b8496;
-    cursor: pointer;
-    font: inherit;
+.headerTitle h2 {
+    margin: 0;
+    color: #1f2937;
     font-size: 17px;
     font-weight: 900;
     text-transform: uppercase;
 }
 
-.historyTabs .activeHistoryTab {
-    color: #1f2937;
+.headerTitle span {
+    display: block;
+    margin-top: 5px;
+    color: #7b8496;
+    font-size: 13px;
+    font-weight: 800;
 }
 
 .readButton,
-.moreButton {
+.editButton,
+.deleteSelectedButton {
     border: 0;
-    border-radius: 7px;
+    border-radius: 5px;
     font: inherit;
-    font-size: 17px;
     font-weight: 900;
 }
 
@@ -84,7 +85,7 @@
     border: 1px solid #e5e7eb;
     border-radius: 8px;
     background: #ffffff;
-    padding: 22px 26px;
+    padding: 18px 24px;
 }
 
 .historySearch {
@@ -92,9 +93,9 @@
     align-items: center;
     gap: 8px;
     min-width: 250px;
-    padding: 10px 12px;
+    padding: 7px 12px;
     border: 1px solid #e5e7eb;
-    border-radius: 7px;
+    border-radius: 5px;
     background: #f8fafc;
     color: #64748b;
 }
@@ -114,11 +115,46 @@
     color: #94a3b8;
 }
 
+.editToolbar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.editButton,
+.deleteSelectedButton {
+    display: inline-flex;
+    min-height: 36px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 0 14px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.editButton {
+    background: #111827;
+    color: #ffffff;
+}
+
+.deleteSelectedButton {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.deleteSelectedButton:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
 .recentList {
     display: flex;
     flex-direction: column;
-    max-height: 650px;
+    max-height: 720px;
     overflow-y: auto;
+    scrollbar-gutter: stable;
     padding-right: 8px;
 }
 
@@ -140,13 +176,25 @@
     background: #94a3b8;
 }
 
+.listMessage {
+    margin: 24px 0;
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 800;
+    text-align: center;
+}
+
 .recentItem {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 116px 38px;
+    grid-template-columns: minmax(0, 1fr) 116px;
     gap: 14px;
     align-items: center;
-    padding: 18px 0;
+    padding: 12px 0;
     border-bottom: 1px solid #e5e7eb;
+}
+
+.editingRecentItem {
+    grid-template-columns: 34px minmax(0, 1fr) 116px;
 }
 
 .recentItem:last-child {
@@ -155,14 +203,20 @@
 
 .recentMain {
     display: grid;
-    grid-template-columns: 96px minmax(0, 1fr);
-    gap: 24px;
+    grid-template-columns: 84px minmax(0, 1fr);
+    gap: 20px;
     align-items: center;
     min-width: 0;
 }
 
-.recentMain img {
-    width: 96px;
+.recentThumb {
+    display: block;
+    width: 84px;
+}
+
+.recentThumb img {
+    display: block;
+    width: 84px;
     aspect-ratio: 1 / 1;
     border-radius: 8px;
     object-fit: cover;
@@ -182,7 +236,8 @@
     font-weight: 800;
 }
 
-.recentInfo h3 {
+.recentTitle {
+    display: block;
     overflow: hidden;
     margin: 8px 0 5px;
     color: #1f2937;
@@ -204,19 +259,25 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 44px;
+    font-size: 15px;
+    min-height: 40px;
 }
 
-.moreButton {
+.selectButton {
     display: grid;
-    width: 38px;
-    height: 38px;
+    width: 26px;
+    height: 26px;
     place-items: center;
-    border: 1px solid #e5e7eb;
-    border-radius: 50%;
+    border: 2px solid #cbd5e1;
+    border-radius: 6px;
     background: #ffffff;
-    color: #94a3b8;
+    color: #ffffff;
     cursor: pointer;
+}
+
+.selectedButton {
+    border-color: #111827;
+    background: #111827;
 }
 
 @media (max-width: 640px) {
@@ -229,12 +290,15 @@
         grid-template-columns: 1fr;
     }
 
+    .editingRecentItem {
+        grid-template-columns: 34px 1fr;
+    }
+
     .recentItem {
         align-items: start;
     }
 
-    .readButton,
-    .moreButton {
+    .readButton {
         justify-self: start;
     }
 }

@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Xac thuc email MangaBlade</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f6f7fb;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            overflow: hidden;
+            border: 1px solid #eaeaea;
+            border-radius: 8px;
+            background-color: #ffffff;
+            font-family: Arial, sans-serif;
+        }
+
+        .email-header {
+            padding: 24px;
+            color: #ffffff;
+            text-align: center;
+            background-color: #6366f1;
+        }
+
+        .brand-title {
+            margin: 0;
+            font-size: 28px;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-subtitle {
+            margin: 4px 0 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .email-body {
+            padding: 32px;
+            color: #2f3437;
+            line-height: 1.6;
+        }
+
+        .email-title {
+            margin: 0 0 16px;
+            color: #111111;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .email-lead {
+            margin-bottom: 24px;
+            color: #787774;
+        }
+
+        .otp-container {
+            margin: 32px 0;
+            text-align: center;
+        }
+
+        .otp-code {
+            display: inline-block;
+            padding: 14px 28px;
+            letter-spacing: 6px;
+            font-size: 32px;
+            font-weight: bold;
+            color: #6366f1;
+            background-color: #f3f4f6;
+            border: 1px dashed #6366f1;
+            border-radius: 6px;
+        }
+
+        .security-note {
+            margin-top: 32px;
+            padding: 16px;
+            border: 1px solid #f5ebc6;
+            border-radius: 6px;
+            background-color: #fbf3db;
+        }
+
+        .security-title {
+            margin: 0 0 8px;
+            color: #b37d00;
+            font-size: 14px;
+        }
+
+        .security-list {
+            margin: 0;
+            padding-left: 20px;
+            color: #664d03;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+    </style>
+</head>
+<body>
+<div class="email-container">
+    <div class="email-header">
+        <h1 class="brand-title">MangaBlade</h1>
+        <p class="brand-subtitle">NEN TANG DOC TRUYEN TRANH TRUC TUYEN</p>
+    </div>
+    <div class="email-body">
+        <h2 class="email-title">Xac Thuc Email</h2>
+        <p class="email-lead">Cam on ban da dang ky tai khoan tai MangaBlade. Vui long su dung ma OTP duoi day de xac thuc tai khoan.</p>
+
+        <p>Xin chao <strong th:text="${username}">username</strong>,</p>
+        <p>Ma xac nhan OTP cua ban la:</p>
+
+        <div class="otp-container">
+            <span class="otp-code" th:text="${otp}">000000</span>
+        </div>
+
+        <div class="security-note">
+            <h4 class="security-title">Luu y bao mat</h4>
+            <ul class="security-list">
+                <li>Ma xac thuc nay co hieu luc trong <strong>5 phut</strong></li>
+                <li>Khong chia se ma xac thuc nay voi bat ky ai</li>
+                <li>Neu khong phai ban thuc hien dang ky, hay bo qua email nay</li>
+            </ul>
+        </div>
+    </div>
+</div>
+</body>
+</html>

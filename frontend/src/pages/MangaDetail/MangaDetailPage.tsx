@@ -12,8 +12,7 @@ import {
     getLatestReadingHistory,
     getMangaBySlug,
     getMangaComments,
-    toggleMangaFollow,
-    toggleMangaLike
+    toggleMangaFollow
 } from "../../api/mangaApi.ts";
 import {useAuthStore} from "../../stores/authStore.ts";
 
@@ -166,6 +165,9 @@ export function MangaDetailPage() {
     const categories = manga?.categories ?? EMPTY_CATEGORIES
     const firstChapter = chapters[chapters.length - 1]
     const descriptionText = useMemo(() => getPlainTextFromHtml(description), [description]);
+    const authorNames = authors
+        .map((author) => author.name?.trim())
+        .filter((name): name is string => Boolean(name));
     const visibleComments = comments.slice(0, visibleCommentCount);
     const hasMoreComments = visibleCommentCount < comments.length;
 
@@ -217,32 +219,10 @@ export function MangaDetailPage() {
                 setManga((currentManga) => currentManga ? {
                     ...currentManga,
                     followed: response.payload.followed,
-                    liked: response.payload.liked,
                 } : currentManga);
             }
         } catch {
             setActionError("Không thể cập nhật theo dõi");
-        }
-    }
-
-    async function handleToggleLike() {
-        if (!isAuthenticated) {
-            openAuthModal("login");
-            return;
-        }
-
-        try {
-            setActionError(null);
-            const response = await toggleMangaLike(slug);
-            if (response.success && response.payload) {
-                setManga((currentManga) => currentManga ? {
-                    ...currentManga,
-                    followed: response.payload.followed,
-                    liked: response.payload.liked,
-                } : currentManga);
-            }
-        } catch {
-            setActionError("Không thể cập nhật lượt thích");
         }
     }
 
@@ -352,7 +332,7 @@ export function MangaDetailPage() {
                             <li>
                                 <span className={styles.metaLabel}>Tác giả</span>
                                 <span className={styles.metaValue}>
-                                    {authors.length > 0 ? authors.map((author) => author.name).join(", ") : "Đang cập nhật"}
+                                    {authorNames.length > 0 ? authorNames.join(", ") : "Đang cập nhật"}
                                 </span>
                             </li>
                             <li>
@@ -399,13 +379,6 @@ export function MangaDetailPage() {
                                 onClick={handleToggleFollow}
                             >
                                 {manga?.followed ? "Đã theo dõi" : "Theo dõi"}
-                            </button>
-                            <button
-                                className={`${styles.actionButton} ${styles.likeButton} ${manga?.liked ? styles.activeActionButton : ""}`}
-                                type="button"
-                                onClick={handleToggleLike}
-                            >
-                                {manga?.liked ? "Đã thích" : "Thích"}
                             </button>
                         </div>
                         {actionError && <p className={styles.actionErrorText}>{actionError}</p>}

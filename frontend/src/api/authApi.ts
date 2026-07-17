@@ -30,3 +30,13 @@ export async function changePassword(data: ChangePasswordRequest): Promise<ApiRe
   const response = await axiosInstance.post<ApiResponse<void>>('/api/v1/auth/change-password', data);
   return response.data;
 }
+
+export async function verifyOtp(data: { email: string; otp: string }): Promise<ApiResponse<void>> {
+  const response = await axiosInstance.post<ApiResponse<void>>('/api/v1/auth/verify-otp', data);
+  return response.data;
+}
+
+export async function resendOtp(data: { email: string }): Promise<ApiResponse<void>> {
+  const response = await axiosInstance.post<ApiResponse<void>>('/api/v1/auth/resend-otp', data);
+  return response.data;
+}

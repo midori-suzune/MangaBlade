@@ -62,8 +62,14 @@ export async function getRecentUserComments(): Promise<ApiResponse<RecentComment
   return response.data;
 }
 
-export async function getReadingHistory(): Promise<ApiResponse<ReadingHistoryResponse[]>> {
-  const response = await axiosInstance.get<ApiResponse<ReadingHistoryResponse[]>>('/api/v1/reading-history');
+export async function getReadingHistory(params?: {
+  query?: string;
+  page?: number;
+  size?: number;
+}): Promise<ApiResponse<ReadingHistoryResponse[]>> {
+  const response = await axiosInstance.get<ApiResponse<ReadingHistoryResponse[]>>('/api/v1/reading-history', {
+    params,
+  });
   return response.data;
 }
 
@@ -87,8 +93,8 @@ export async function toggleMangaFollow(slug: string): Promise<ApiResponse<Manga
   return response.data;
 }
 
-export async function toggleMangaLike(slug: string): Promise<ApiResponse<MangaInteractionResponse>> {
-  const response = await axiosInstance.post<ApiResponse<MangaInteractionResponse>>(`/api/v1/manga/${slug}/like`);
+export async function markFollowedMangaLatestChapterSeen(slug: string): Promise<ApiResponse<void>> {
+  const response = await axiosInstance.post<ApiResponse<void>>(`/api/v1/manga/${slug}/follow/seen-latest`);
   return response.data;
 }
 

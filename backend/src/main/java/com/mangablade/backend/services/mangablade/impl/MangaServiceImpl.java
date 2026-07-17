@@ -5,21 +5,22 @@ import com.mangablade.backend.dtos.response.MangaInteractionResponse;
 import com.mangablade.backend.dtos.response.MangaRankingProjection;
 import com.mangablade.backend.dtos.response.MangaRankingResponse;
 import com.mangablade.backend.dtos.response.MangaResponse;
+import com.mangablade.backend.dtos.response.MangaSearchResponse;
+import com.mangablade.backend.entities.Category;
 import com.mangablade.backend.entities.Favorite;
 import com.mangablade.backend.entities.Manga;
-import com.mangablade.backend.entities.MangaLike;
 import com.mangablade.backend.exceptions.AppException;
 import com.mangablade.backend.exceptions.ErrorCode;
 import com.mangablade.backend.mapper.MangaMapper;
 import com.mangablade.backend.repositories.CategoryRepository;
 import com.mangablade.backend.repositories.FavoriteRepository;
-import com.mangablade.backend.repositories.MangaLikeRepository;
 import com.mangablade.backend.repositories.MangaRepository;
 import com.mangablade.backend.services.mangablade.AuthorService;
 import com.mangablade.backend.services.mangablade.ChapterService;
 import com.mangablade.backend.services.mangablade.MangaService;
 import com.mangablade.backend.services.mangablade.TaskService;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,13 +35,15 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class MangaServiceImpl implements MangaService {
 
+    private static final int DEFAULT_FILTER_SIZE = 20;
+    private static final int MAX_FILTER_SIZE = 50;
+
     private final MangaRepository mangaRepository;
     private final ChapterService chapterService;
     private final MangaMapper mangaMapper;
     private final AuthorService authorService;
     private final CategoryRepository categoryRepository;
     private final FavoriteRepository favoriteRepository;
-    private final MangaLikeRepository mangaLikeRepository;
     private final TaskService taskService;
 
     @Override
@@ -72,7 +75,6 @@ public class MangaServiceImpl implements MangaService {
                         projection.getSlug(),
                         projection.getTitle(),
                         projection.getThumbUrl(),
-                        projection.getLikeCount(),
                         projection.getFollowCount(),
                         projection.getViewCount()
                 ))
@@ -103,7 +105,6 @@ public class MangaServiceImpl implements MangaService {
                 .sourceType(manga.getMetadataSource())
                 .updatedAt(manga.getUpdatedAt())
                 .followed(interaction.isFollowed())
-                .liked(interaction.isLiked())
                 .authors(authors)
                 .categories(categories)
                 .chapters(list)
@@ -122,10 +123,12 @@ public class MangaServiceImpl implements MangaService {
             favoriteRepository.deleteByUserIdAndMangaId(userId, manga.getId());
             currentFollowCount = Math.max(0, currentFollowCount - 1);
         } else {
+            var latestChapterNumber = chapterService.getLastestChapterByMangaId(manga.getId());
             favoriteRepository.save(Favorite.builder()
                     .userId(userId)
                     .mangaId(manga.getId())
                     .createdAt(Instant.now())
+                    .lastSeenChapterNumber(latestChapterNumber)
                     .build());
             currentFollowCount = currentFollowCount + 1;
         }
@@ -134,29 +137,6 @@ public class MangaServiceImpl implements MangaService {
 
         return MangaInteractionResponse.builder()
                 .followed(!isFollowed)
-                .liked(mangaLikeRepository.existsByUserIdAndMangaId(userId, manga.getId()))
-                .build();
-    }
-
-    @Override
-    @Transactional
-    public MangaInteractionResponse toggleLike(String slug, Long userId) {
-        var manga = findMangaBySlugOrThrow(slug);
-        var isLiked = mangaLikeRepository.existsByUserIdAndMangaId(userId, manga.getId());
-
-        if (isLiked) {
-            mangaLikeRepository.deleteByUserIdAndMangaId(userId, manga.getId());
-        } else {
-            mangaLikeRepository.save(MangaLike.builder()
-                    .userId(userId)
-                    .mangaId(manga.getId())
-                    .createdAt(Instant.now())
-                    .build());
-        }
-
-        return MangaInteractionResponse.builder()
-                .followed(favoriteRepository.existsByUserIdAndMangaId(userId, manga.getId()))
-                .liked(!isLiked)
                 .build();
     }
 
@@ -164,14 +144,25 @@ public class MangaServiceImpl implements MangaService {
         if (userId == null) {
             return MangaInteractionResponse.builder()
                     .followed(false)
-                    .liked(false)
                     .build();
         }
 
         return MangaInteractionResponse.builder()
                 .followed(favoriteRepository.existsByUserIdAndMangaId(userId, mangaId))
-                .liked(mangaLikeRepository.existsByUserIdAndMangaId(userId, mangaId))
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public void markFollowedMangaLatestChapterSeen(String slug, Long userId) {
+        var manga = findMangaBySlugOrThrow(slug);
+        var latestChapterNumber = chapterService.getLastestChapterByMangaId(manga.getId());
+
+        if (latestChapterNumber == null) {
+            return;
+        }
+
+        favoriteRepository.updateLastSeenChapterNumber(userId, manga.getId(), latestChapterNumber);
     }
 
     private Manga findMangaBySlugOrThrow(String slug) {
@@ -184,12 +175,88 @@ public class MangaServiceImpl implements MangaService {
 
     @Override
     public List<MangaResponse> fetchFollowedManga(Long userId) {
-        var entity = mangaRepository.findFollowedMangaByUserId(userId);
-        return entity.stream().map(e -> {
-            var latestChapter = chapterService.getLastestChapterByMangaId(e.getId());
-            var response = mangaMapper.toResponse(e);
+        return favoriteRepository.findByUserIdWithManga(userId).stream().map(favorite -> {
+            var manga = favorite.getManga();
+            var latestChapter = chapterService.getLastestChapterByMangaId(manga.getId());
+            var response = mangaMapper.toResponse(manga);
             response.getLatestChapter().setChapterNumber(latestChapter);
+            response.setLastSeenChapterNumber(favorite.getLastSeenChapterNumber());
+            response.setHasNewChapter(hasNewChapter(latestChapter, favorite.getLastSeenChapterNumber()));
             return response;
         }).toList();
+    }
+
+    private boolean hasNewChapter(String latestChapterNumber, String lastSeenChapterNumber) {
+        return latestChapterNumber != null && !latestChapterNumber.equals(lastSeenChapterNumber);
+    }
+
+    @Override
+    public List<MangaSearchResponse> filterManga(String category, String author, String sort, int page, int size) {
+        var categorySlug = normalizeFilter(category);
+        var authorKeyword = normalizeFilter(author);
+        var pageable = PageRequest.of(Math.max(page, 0), normalizeFilterSize(size));
+
+        return findFilteredManga(categorySlug, authorKeyword, sort, pageable)
+                .stream()
+                .map(this::toSearchResponse)
+                .toList();
+    }
+
+    private List<Manga> findFilteredManga(
+            String categorySlug,
+            String authorKeyword,
+            String sort,
+            org.springframework.data.domain.Pageable pageable
+    ) {
+        if ("chapters".equalsIgnoreCase(sort)) {
+            return mangaRepository.findFilteredOrderByChapters(categorySlug, authorKeyword, pageable);
+        }
+
+        if ("follow".equalsIgnoreCase(sort) || "follows".equalsIgnoreCase(sort)) {
+            return mangaRepository.findFilteredOrderByFollows(categorySlug, authorKeyword, pageable);
+        }
+
+        if ("comment".equalsIgnoreCase(sort) || "comments".equalsIgnoreCase(sort)) {
+            return mangaRepository.findFilteredOrderByComments(categorySlug, authorKeyword, pageable);
+        }
+
+        return mangaRepository.findFilteredOrderByUpdatedAt(categorySlug, authorKeyword, pageable);
+    }
+
+    private MangaSearchResponse toSearchResponse(Manga manga) {
+        var categories = categoryRepository.findByMangaId(manga.getId());
+
+        return MangaSearchResponse.builder()
+                .title(manga.getTitle())
+                .slug(manga.getSlug())
+                .thumbUrl(manga.getThumbUrl())
+                .latestChapterNumber(chapterService.getLastestChapterByMangaId(manga.getId()))
+                .updatedAt(manga.getUpdatedAt())
+                .authors(authorService.findByMangaId(manga.getId()).stream()
+                        .map(author -> author.getAuthorName())
+                        .toList())
+                .categorySlugs(categories.stream()
+                        .map(Category::getSlug)
+                        .toList())
+                .categoryNames(categories.stream()
+                        .map(Category::getName)
+                        .toList())
+                .build();
+    }
+
+    private String normalizeFilter(String value) {
+        if (value == null || value.isBlank() || "all".equalsIgnoreCase(value.trim())) {
+            return null;
+        }
+
+        return value.trim();
+    }
+
+    private int normalizeFilterSize(int size) {
+        if (size <= 0) {
+            return DEFAULT_FILTER_SIZE;
+        }
+
+        return Math.min(size, MAX_FILTER_SIZE);
     }
 }

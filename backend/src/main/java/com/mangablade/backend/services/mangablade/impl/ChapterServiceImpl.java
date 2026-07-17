@@ -23,6 +23,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ChapterServiceImpl implements ChapterService {
 
+    private static final int DEFAULT_READING_HISTORY_SIZE = 20;
+    private static final int MAX_READING_HISTORY_SIZE = 50;
+
     private final ChapterRepository chapterRepository;
     private  final ChapterPageRepository chapterPageRepository;
     private final ReadingHistoryRepository readingHistoryRepository;
@@ -67,11 +70,36 @@ public class ChapterServiceImpl implements ChapterService {
 
     @Override
     public List<ReadingHistoryResponse> fetchReadingHistory(Long userId) {
-        return readingHistoryRepository.findRecentByUserId(userId, PageRequest.of(0, 5));
+        return fetchReadingHistory(userId, null, 0, 5);
+    }
+
+    @Override
+    public List<ReadingHistoryResponse> fetchReadingHistory(Long userId, String query, int page, int size) {
+        return readingHistoryRepository.findRecentByUserId(
+                userId,
+                normalizeSearchQuery(query),
+                PageRequest.of(Math.max(page, 0), normalizeReadingHistorySize(size))
+        );
     }
 
     @Override
     public Optional<ReadingHistoryResponse> fetchLatestReadingHistory(Long userId, String slug) {
         return readingHistoryRepository.findLatestByUserIdAndMangaSlug(userId, slug);
+    }
+
+    private String normalizeSearchQuery(String query) {
+        if (query == null || query.isBlank()) {
+            return null;
+        }
+
+        return query.trim();
+    }
+
+    private int normalizeReadingHistorySize(int size) {
+        if (size <= 0) {
+            return DEFAULT_READING_HISTORY_SIZE;
+        }
+
+        return Math.min(size, MAX_READING_HISTORY_SIZE);
     }
 }

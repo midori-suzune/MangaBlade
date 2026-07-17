@@ -1,5 +1,7 @@
 package com.mangablade.backend.dtos.response;
 
+import com.mangablade.backend.enums.UserRole;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,6 +24,7 @@ public class AuthResponse {
         private Long id;
         private String username;
         private String email;
-        private com.mangablade.backend.enums.UserRole role;
+        private UserRole role;
+        private Instant emailVerifiedAt;
     }
 }

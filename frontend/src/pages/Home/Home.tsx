@@ -115,7 +115,7 @@ export function Home() {
             }
 
             try {
-                const response = await getReadingHistory();
+                const response = await getReadingHistory({ page: 0, size: 5 });
                 if (response.success) {
                     setReadingHistory(response.payload);
                 }
@@ -219,7 +219,7 @@ export function Home() {
                 </section>
 
                 <section>
-                    <h2 className={styles.sectionTitle}>Lịch Sử Đọc</h2>
+                    <h2 className={styles.sectionTitle}>Gần Đây</h2>
                     {!isAuthenticated ? (
                         <p className={styles.loginRequiredText}>Vui lòng đăng nhập</p>
                     ) : readingHistory.length > 0 ? (

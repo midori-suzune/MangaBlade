@@ -7,8 +7,6 @@ public interface MangaRankingProjection {
 
     String getThumbUrl();
 
-    Long getLikeCount();
-
     Long getFollowCount();
 
     Long getViewCount();

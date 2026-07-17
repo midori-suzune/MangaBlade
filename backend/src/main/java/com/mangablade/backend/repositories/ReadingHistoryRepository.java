@@ -35,7 +35,11 @@ public interface ReadingHistoryRepository extends JpaRepository<ReadingHistory, 
     );
 
     @Query(ReadingHistoryQuery.FIND_RECENT_BY_USER_ID)
-    List<ReadingHistoryResponse> findRecentByUserId(@Param("userId") Long userId, Pageable pageable);
+    List<ReadingHistoryResponse> findRecentByUserId(
+            @Param("userId") Long userId,
+            @Param("query") String query,
+            Pageable pageable
+    );
 
     @Query(ReadingHistoryQuery.FIND_LATEST_BY_USER_ID_AND_MANGA_SLUG)
     Optional<ReadingHistoryResponse> findLatestByUserIdAndMangaSlug(

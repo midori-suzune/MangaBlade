@@ -14,6 +14,7 @@ export interface UserInfo {
   username: string;
   email: string;
   role: 'USER' | 'AUTHOR' | 'ADMIN';
+  emailVerifiedAt?: string | null;
   level?: number;
   exp?: number;
   activeTitleId?: number | null;

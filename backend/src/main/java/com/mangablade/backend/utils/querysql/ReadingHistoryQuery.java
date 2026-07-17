@@ -13,6 +13,9 @@ public class ReadingHistoryQuery {
             join rh.manga m
             join rh.chapter c
             where rh.userId = :userId
+              and (:query is null
+                   or lower(m.title) like lower(concat('%', :query, '%'))
+                   or lower(m.slug) like lower(concat('%', :query, '%')))
               and rh.lastReadAt = (
                   select max(rh2.lastReadAt)
                   from ReadingHistory rh2
