@@ -22,6 +22,9 @@ public enum ErrorCode {
     EMAIL_NOT_VERIFIED(400, "Email not verified. Please verify your email first.", HttpStatus.BAD_REQUEST),
     INVALID_OTP(400, "Invalid OTP code", HttpStatus.BAD_REQUEST),
     EXPIRED_OTP(400, "OTP code has expired", HttpStatus.BAD_REQUEST),
+    AUTHOR_REQUEST_ALREADY_PENDING(400, "Bạn đã có đơn đăng ký đang chờ duyệt", HttpStatus.BAD_REQUEST),
+    ALREADY_AUTHOR(400, "Bạn đã là tác giả", HttpStatus.BAD_REQUEST),
+    AUTHOR_REQUEST_NOT_FOUND(404, "Không tìm thấy đơn đăng ký", HttpStatus.NOT_FOUND),
     INTERNAL_ERROR(500, "Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final int code;
