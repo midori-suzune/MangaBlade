@@ -20,7 +20,13 @@ export function Menu() {
             <nav className={styles.navLinks} aria-label="Main navigation">
                 <NavLink to="/" className={({ isActive }) => isActive ? styles.active : ''} end>Trang chủ</NavLink>
                 <NavLink to="/category" className={({ isActive }) => isActive ? styles.active : ''}>Thể loại</NavLink>
-                <NavLink to="/followed-manga-prototype" className={({ isActive }) => isActive ? styles.active : ''}>Theo dõi</NavLink>
+                <NavLink
+                    to="/followed-manga"
+                    className={({ isActive }) => isActive ? styles.active : ''}
+                    onClick={requireLogin}
+                >
+                    Theo dõi
+                </NavLink>
                 <NavLink
                     to="/reading-history"
                     className={({ isActive }) => isActive ? styles.active : ''}
@@ -28,9 +34,6 @@ export function Menu() {
                 >
                     Lịch sử đọc
                 </NavLink>
-                <NavLink to="/discussion" className={({ isActive }) => isActive ? styles.active : ''}>Thảo luận</NavLink>
-                <NavLink to="/update" className={({ isActive }) => isActive ? styles.active : ''}>Cập nhật</NavLink>
-
             </nav>
             <div className={styles.menuRightIcons}>
                 <button className={styles.themeToggleBtn} title="Chế độ Sáng/Tối" type="button">

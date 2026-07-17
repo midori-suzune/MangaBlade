@@ -143,6 +143,20 @@ public class MangaController {
         );
     }
 
+    @PostMapping("/{slug}/follow/seen-latest")
+    public ResponseEntity<ApiResponse<Void>> markFollowedMangaLatestChapterSeen(
+            @PathVariable String slug,
+            @AuthenticationPrincipal User user
+    ) {
+        mangaService.markFollowedMangaLatestChapterSeen(slug, user.getId());
+        return ResponseEntity.ok(
+                ApiResponse.<Void>builder()
+                        .success(true)
+                        .message("success")
+                        .build()
+        );
+    }
+
     @GetMapping("/{slug}/comments")
     public ResponseEntity<ApiResponse<List<MangaCommentResponse>>> getComments(@PathVariable String slug) {
         var comments = commentService.findByMangaSlug(slug);

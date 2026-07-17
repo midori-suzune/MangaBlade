@@ -93,6 +93,11 @@ export async function toggleMangaFollow(slug: string): Promise<ApiResponse<Manga
   return response.data;
 }
 
+export async function markFollowedMangaLatestChapterSeen(slug: string): Promise<ApiResponse<void>> {
+  const response = await axiosInstance.post<ApiResponse<void>>(`/api/v1/manga/${slug}/follow/seen-latest`);
+  return response.data;
+}
+
 export async function getMangaComments(slug: string): Promise<ApiResponse<MangaCommentResponse[]>> {
   const response = await axiosInstance.get<ApiResponse<MangaCommentResponse[]>>(`/api/v1/manga/${slug}/comments`);
   return response.data;

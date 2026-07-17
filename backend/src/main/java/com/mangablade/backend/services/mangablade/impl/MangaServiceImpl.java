@@ -123,10 +123,12 @@ public class MangaServiceImpl implements MangaService {
             favoriteRepository.deleteByUserIdAndMangaId(userId, manga.getId());
             currentFollowCount = Math.max(0, currentFollowCount - 1);
         } else {
+            var latestChapterNumber = chapterService.getLastestChapterByMangaId(manga.getId());
             favoriteRepository.save(Favorite.builder()
                     .userId(userId)
                     .mangaId(manga.getId())
                     .createdAt(Instant.now())
+                    .lastSeenChapterNumber(latestChapterNumber)
                     .build());
             currentFollowCount = currentFollowCount + 1;
         }
@@ -150,6 +152,19 @@ public class MangaServiceImpl implements MangaService {
                 .build();
     }
 
+    @Override
+    @Transactional
+    public void markFollowedMangaLatestChapterSeen(String slug, Long userId) {
+        var manga = findMangaBySlugOrThrow(slug);
+        var latestChapterNumber = chapterService.getLastestChapterByMangaId(manga.getId());
+
+        if (latestChapterNumber == null) {
+            return;
+        }
+
+        favoriteRepository.updateLastSeenChapterNumber(userId, manga.getId(), latestChapterNumber);
+    }
+
     private Manga findMangaBySlugOrThrow(String slug) {
         return mangaRepository.findBySlug(slug)
                 .orElseThrow(() -> {
@@ -160,13 +175,19 @@ public class MangaServiceImpl implements MangaService {
 
     @Override
     public List<MangaResponse> fetchFollowedManga(Long userId) {
-        var entity = mangaRepository.findFollowedMangaByUserId(userId);
-        return entity.stream().map(e -> {
-            var latestChapter = chapterService.getLastestChapterByMangaId(e.getId());
-            var response = mangaMapper.toResponse(e);
+        return favoriteRepository.findByUserIdWithManga(userId).stream().map(favorite -> {
+            var manga = favorite.getManga();
+            var latestChapter = chapterService.getLastestChapterByMangaId(manga.getId());
+            var response = mangaMapper.toResponse(manga);
             response.getLatestChapter().setChapterNumber(latestChapter);
+            response.setLastSeenChapterNumber(favorite.getLastSeenChapterNumber());
+            response.setHasNewChapter(hasNewChapter(latestChapter, favorite.getLastSeenChapterNumber()));
             return response;
         }).toList();
+    }
+
+    private boolean hasNewChapter(String latestChapterNumber, String lastSeenChapterNumber) {
+        return latestChapterNumber != null && !latestChapterNumber.equals(lastSeenChapterNumber);
     }
 
     @Override

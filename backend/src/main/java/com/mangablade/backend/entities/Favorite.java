@@ -29,6 +29,9 @@ public class Favorite {
     @Column(name = "created_at", nullable = false, columnDefinition = "DATETIME(3)")
     private Instant createdAt;
 
+    @Column(name = "last_seen_chapter_number", length = 30)
+    private String lastSeenChapterNumber;
+
     @JoinColumn(name = "user_id", insertable = false, updatable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;

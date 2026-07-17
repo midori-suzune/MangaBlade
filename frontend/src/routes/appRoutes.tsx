@@ -10,7 +10,7 @@ import {ReadingMangaPage} from "../pages/ReadingManga/ReadingMangaPage.tsx";
 import {UserProfile} from "../pages/UserProfile/UserProfile.tsx";
 import {AdminUserManagement} from "../pages/ListUser/AdminUserManagement.tsx";
 import {ReadingHistory} from "../pages/ReadingHistory/ReadingHistory.tsx";
-import {FollowedMangaPrototype} from "../pages/FollowedMangaPrototype/FollowedMangaPrototype.tsx";
+import {FollowedManga} from "../pages/FollowedManga/FollowedManga.tsx";
 import {RouteError} from "./RouteError.tsx";
 
 export const appRoutes: RouteObject[] = [
@@ -48,8 +48,8 @@ export const appRoutes: RouteObject[] = [
                 element: <ReadingHistory />
             },
             {
-                path: "followed-manga-prototype",
-                element: <FollowedMangaPrototype />
+                path: "followed-manga",
+                element: <FollowedManga />
             },
             {
                 path: "admin/users",

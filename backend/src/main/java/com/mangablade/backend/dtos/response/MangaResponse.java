@@ -19,6 +19,8 @@ public class MangaResponse {
     private String thumbUrl;
     private Instant updatedAt;
     private LatestChapter latestChapter;
+    private String lastSeenChapterNumber;
+    private boolean hasNewChapter;
 
     @Setter
     @NoArgsConstructor

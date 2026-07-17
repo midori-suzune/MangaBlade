@@ -3,6 +3,8 @@ export type MangaResponse = {
     title: string,
     thumbUrl: string,
     updatedAt: string,
+    lastSeenChapterNumber?: string | null,
+    hasNewChapter?: boolean,
     latestChapter?: {
         chapterNumber?: string | null
     } | null
@@ -117,6 +119,5 @@ export type ChapterPageResponse = {
     previousChapterNumber?: string,
     nextChapterNumber?: string,
 }
-
 
 

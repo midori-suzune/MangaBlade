@@ -11,15 +11,6 @@
     border-bottom: 2px solid #111827;
 }
 
-.pageTitleBlock span {
-    display: block;
-    margin-bottom: 6px;
-    color: #6d4df2;
-    font-size: 12px;
-    font-weight: 900;
-    text-transform: uppercase;
-}
-
 .pageTitleBlock h1 {
     margin: 0;
     color: #1f2937;
@@ -110,8 +101,7 @@
 }
 
 .editButton,
-.deleteSelectedButton,
-.chapterButton {
+.deleteSelectedButton {
     border: 0;
     border-radius: 5px;
     font: inherit;
@@ -148,7 +138,7 @@
 .followList {
     display: flex;
     flex-direction: column;
-    max-height: 520px;
+    max-height: 720px;
     overflow-y: auto;
     scrollbar-gutter: stable;
     padding-right: 8px;
@@ -172,9 +162,17 @@
     background: #94a3b8;
 }
 
+.listMessage {
+    margin: 24px 0;
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 800;
+    text-align: center;
+}
+
 .followItem {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 150px;
+    grid-template-columns: minmax(0, 1fr) auto;
     gap: 14px;
     align-items: center;
     padding: 12px 0;
@@ -182,7 +180,7 @@
 }
 
 .editingFollowItem {
-    grid-template-columns: 34px minmax(0, 1fr) 150px;
+    grid-template-columns: 34px minmax(0, 1fr);
 }
 
 .followItem:last-child {
@@ -209,18 +207,9 @@
     min-width: 0;
 }
 
-.followInfo span {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: #7b8496;
-    font-size: 12px;
-    font-weight: 800;
-}
-
 .followInfo h3 {
     overflow: hidden;
-    margin: 8px 0 5px;
+    margin: 0;
     color: #1f2937;
     font-size: 17px;
     font-weight: 900;
@@ -236,31 +225,23 @@
     font-weight: 800;
 }
 
-.followMeta {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 8px;
-}
-
-.newBadge {
-    display: inline-flex;
-    min-height: 26px;
-    align-items: center;
-    padding: 0 9px;
+.readNewButton {
+    align-self: center;
+    border: 0;
+    border-radius: 5px;
+    background: transparent;
     color: #dc2626;
-    font-size: 12px;
+    cursor: pointer;
+    font: inherit;
+    font-size: 13px;
     font-weight: 900;
+    padding: 7px 12px;
+    white-space: nowrap;
 }
 
-.chapterButton {
-    display: inline-flex;
-    min-height: 40px;
-    align-items: center;
-    justify-content: center;
-    padding: 0 12px;
-    color: #1f2937;
-    font-size: 14px;
+.readNewButton:hover {
+    background: transparent;
+    color: #b91c1c;
 }
 
 .selectButton {
@@ -300,6 +281,10 @@
         grid-template-columns: 1fr;
     }
 
+    .readNewButton {
+        justify-self: flex-start;
+    }
+
     .editingFollowItem {
         grid-template-columns: 34px 1fr;
     }
@@ -308,7 +293,4 @@
         align-items: start;
     }
 
-    .followMeta {
-        justify-content: flex-start;
-    }
 }

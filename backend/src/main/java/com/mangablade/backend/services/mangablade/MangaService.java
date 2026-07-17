@@ -18,6 +18,8 @@ public interface MangaService {
 
     MangaInteractionResponse toggleFollow(String slug, Long userId);
 
+    void markFollowedMangaLatestChapterSeen(String slug, Long userId);
+
     List<MangaResponse> fetchFollowedManga(Long userId);
 
     List<MangaSearchResponse> filterManga(String category, String author, String sort, int page, int size);
