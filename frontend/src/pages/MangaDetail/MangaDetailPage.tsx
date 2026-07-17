@@ -165,6 +165,9 @@ export function MangaDetailPage() {
     const categories = manga?.categories ?? EMPTY_CATEGORIES
     const firstChapter = chapters[chapters.length - 1]
     const descriptionText = useMemo(() => getPlainTextFromHtml(description), [description]);
+    const authorNames = authors
+        .map((author) => author.name?.trim())
+        .filter((name): name is string => Boolean(name));
     const visibleComments = comments.slice(0, visibleCommentCount);
     const hasMoreComments = visibleCommentCount < comments.length;
 
@@ -329,7 +332,7 @@ export function MangaDetailPage() {
                             <li>
                                 <span className={styles.metaLabel}>Tác giả</span>
                                 <span className={styles.metaValue}>
-                                    {authors.length > 0 ? authors.map((author) => author.name).join(", ") : "Đang cập nhật"}
+                                    {authorNames.length > 0 ? authorNames.join(", ") : "Đang cập nhật"}
                                 </span>
                             </li>
                             <li>
