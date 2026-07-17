@@ -54,7 +54,7 @@ export function LuckyWheel({
                 const prize = PRIZES[fallbackIndex];
                 alert(`Chúc mừng! Bạn đã quay trúng ${prize.text}`);
                 onSpinSuccess(expGained);
-            }, 4000);
+            }, 5100);
         } catch {
             setIsSpinning(false);
             alert("Lỗi kết nối đến máy chủ khi quay số!");
