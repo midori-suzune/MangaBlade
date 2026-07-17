@@ -17,5 +17,7 @@ public interface ChapterService {
 
     List<ReadingHistoryResponse> fetchReadingHistory(Long userId);
 
+    List<ReadingHistoryResponse> fetchReadingHistory(Long userId, String query, int page, int size);
+
     Optional<ReadingHistoryResponse> fetchLatestReadingHistory(Long userId, String slug);
 }

@@ -1,14 +1,32 @@
 import { NavLink } from "react-router-dom";
+import { useAuthStore } from "../../stores/authStore";
 import styles from "./Menu.module.css";
 
 export function Menu() {
+    const { isAuthenticated, openAuthModal } = useAuthStore();
+
+    function requireLogin(event: React.MouseEvent<HTMLAnchorElement>) {
+        if (isAuthenticated) {
+            return;
+        }
+
+        event.preventDefault();
+        openAuthModal("login");
+    }
+
     return (
         <header className={styles.bottomHeaderWrapper}>
             <div className={styles.bottomHeader}>
             <nav className={styles.navLinks} aria-label="Main navigation">
                 <NavLink to="/" className={({ isActive }) => isActive ? styles.active : ''} end>Trang chủ</NavLink>
                 <NavLink to="/category" className={({ isActive }) => isActive ? styles.active : ''}>Thể loại</NavLink>
-                <NavLink to="/reading-history-prototype" className={({ isActive }) => isActive ? styles.active : ''}>Lịch sử đọc</NavLink>
+                <NavLink
+                    to="/reading-history"
+                    className={({ isActive }) => isActive ? styles.active : ''}
+                    onClick={requireLogin}
+                >
+                    Lịch sử đọc
+                </NavLink>
                 <NavLink to="/discussion" className={({ isActive }) => isActive ? styles.active : ''}>Thảo luận</NavLink>
                 <NavLink to="/update" className={({ isActive }) => isActive ? styles.active : ''}>Cập nhật</NavLink>
 
