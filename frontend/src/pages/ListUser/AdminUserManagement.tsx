@@ -4,7 +4,7 @@ import axios from 'axios';
 import { adminUserApi } from '../../api/userApi';
 import type { UserType, UserRole } from '../../types/user';
 import { useAuthStore } from '../../stores/authStore';
-import { Users, ShieldAlert, Award, Search } from 'lucide-react';
+import { Users, ShieldAlert, Award, Search, FileText } from 'lucide-react';
 import styles from '../UserProfile/UserProfile.module.css';
 
 export const AdminUserManagement: React.FC = () => {
@@ -101,6 +101,12 @@ export const AdminUserManagement: React.FC = () => {
                 <Award size={16} /> Quản lý Tác giả
               </button>
               <button
+                className={`${styles.sidebarNavItem} ${activeTab === "author-requests" ? styles.sidebarActiveItem : ""}`}
+                onClick={() => navigate('/admin/users/author-requests')}
+              >
+                <FileText size={16} /> Đơn đăng ký Tác giả
+              </button>
+              <button
                 className={`${styles.sidebarNavItem} ${activeTab === "admins" ? styles.sidebarActiveItem : ""}`}
                 onClick={() => navigate('/admin/users/admins')}
               >
@@ -158,8 +164,7 @@ export const AdminUserManagement: React.FC = () => {
                   <thead>
                     <tr>
                       <th style={{ width: '60px' }}>ID</th>
-                      <th>Username</th>
-                      <th>Email</th>
+                      <th>Người dùng</th>
                       <th style={{ width: '130px' }}>Trạng thái</th>
                       <th style={{ width: '180px', textAlign: 'center' }}>Hành động</th>
                     </tr>
@@ -167,7 +172,7 @@ export const AdminUserManagement: React.FC = () => {
                   <tbody>
                     {users.length === 0 ? (
                       <tr>
-                        <td colSpan={5} style={{ padding: '32px', textAlign: 'center', color: 'var(--color-text-muted)' }}>
+                        <td colSpan={4} style={{ padding: '32px', textAlign: 'center', color: 'var(--color-text-muted)' }}>
                           Không có dữ liệu hiển thị.
                         </td>
                       </tr>
@@ -175,8 +180,12 @@ export const AdminUserManagement: React.FC = () => {
                       users.map((user) => (
                         <tr key={user.id}>
                           <td style={{ fontFamily: 'monospace', fontWeight: 600 }}>{user.id}</td>
-                          <td style={{ fontWeight: 500, color: 'var(--color-text-main)' }}>{user.username}</td>
-                          <td>{user.email}</td>
+                          <td>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                              <span style={{ fontWeight: 600, color: 'var(--color-text-main)', fontSize: '13.5px' }}>{user.username}</span>
+                              <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>{user.email}</span>
+                            </div>
+                          </td>
                           <td>
                             {user.banned ? (
                               <span
@@ -213,14 +222,7 @@ export const AdminUserManagement: React.FC = () => {
                               {user.id !== currentAdminId ? (
                                 <button
                                   onClick={() => handleToggleBan(user)}
-                                  className={styles.btnTask}
-                                  style={{
-                                    backgroundColor: user.banned ? 'var(--color-green)' : 'var(--color-red)',
-                                    color: 'white',
-                                    border: 'none',
-                                    padding: '4px 12px',
-                                    fontSize: '12px'
-                                  }}
+                                  className={user.banned ? styles.adminBtnUnban : styles.adminBtnBan}
                                 >
                                   {user.banned ? 'Unban' : 'Ban'}
                                 </button>
