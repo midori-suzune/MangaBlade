@@ -57,13 +57,22 @@
 }
 
 .heroEyebrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 32px;
     margin-bottom: 14px;
-    padding: 6px 11px;
+    padding: 0 12px;
     border-radius: 6px;
     background: rgba(99, 102, 241, 0.92);
     color: #ffffff;
     font-size: 13px;
     font-weight: 900;
+}
+
+:global(:root[data-theme="dark"]) .heroEyebrow {
+    background: #000000;
+    color: #ffffff;
 }
 
 .heroTitle {
@@ -94,14 +103,23 @@
     min-height: 46px;
     padding: 0 20px;
     border-radius: 8px;
-    background: #ffffff;
+    background: var(--color-accent);
+    color: #ffffff;
     font-size: 15px;
     font-weight: 900;
     transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s;
 }
 
 .heroButton:hover {
-    background: #eef2ff;
+    background: var(--color-accent);
+}
+
+:global(:root[data-theme="dark"]) .heroButton {
+    background: #000000;
+}
+
+:global(:root[data-theme="dark"]) .heroButton:hover {
+    background: #000000;
 }
 
 .heroButton:active {

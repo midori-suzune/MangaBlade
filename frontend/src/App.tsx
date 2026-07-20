@@ -13,6 +13,11 @@ export default function App() {
     loadFromStorage();
   }, [loadFromStorage]);
 
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('mangablade-theme');
+    document.documentElement.dataset.theme = savedTheme === 'dark' ? 'dark' : 'light';
+  }, []);
+
   return (
     <RouterProvider router={router} />
   )
