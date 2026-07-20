@@ -2,6 +2,7 @@ package com.mangablade.backend.dtos.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
@@ -16,6 +17,10 @@ public class RegisterRequest{
 
     @NotBlank(message = "Password is required")
     @Size(min = 8, max = 72, message = "Password must be between 8 and 72 characters")
+    @Pattern(
+        regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]|.*[^A-Za-z0-9]).{8,72}$",
+        message = "Password must contain at least 1 uppercase letter, 1 lowercase letter, and 1 number or special character"
+    )
     private String password;
 
     @NotBlank(message = "Email is required")
