@@ -16,24 +16,24 @@ import type {ApiResponse} from '../types/auth';
 import axiosInstance from './axiosInstance';
 
 export async function getManga(): Promise<ApiResponse<MangaResponse[]>> {
-  const response = await axiosInstance.get<ApiResponse<MangaResponse[]>>('/api/v1/manga');
+  const response = await axiosInstance.get<ApiResponse<MangaResponse[]>>('/v1/manga');
   return response.data;
 }
 
 export async function getFollowedManga(): Promise<ApiResponse<MangaResponse[]>> {
-  const response = await axiosInstance.get<ApiResponse<MangaResponse[]>>('/api/v1/manga/followed');
+  const response = await axiosInstance.get<ApiResponse<MangaResponse[]>>('/v1/manga/followed');
   return response.data;
 }
 
 export async function getMangaRanking(sort: 'views' | 'follows'): Promise<ApiResponse<MangaRankingResponse[]>> {
-  const response = await axiosInstance.get<ApiResponse<MangaRankingResponse[]>>('/api/v1/manga/ranking', {
+  const response = await axiosInstance.get<ApiResponse<MangaRankingResponse[]>>('/v1/manga/ranking', {
     params: { sort },
   });
   return response.data;
 }
 
 export async function searchManga(query: string, limit = 5): Promise<ApiResponse<MangaSearchResponse[]>> {
-  const response = await axiosInstance.get<ApiResponse<MangaSearchResponse[]>>('/api/v1/manga/search', {
+  const response = await axiosInstance.get<ApiResponse<MangaSearchResponse[]>>('/v1/manga/search', {
     params: { query, limit },
   });
   return response.data;
@@ -46,19 +46,19 @@ export async function filterManga(params: {
   page?: number;
   size?: number;
 }): Promise<ApiResponse<MangaSearchResponse[]>> {
-  const response = await axiosInstance.get<ApiResponse<MangaSearchResponse[]>>('/api/v1/manga/filter', {
+  const response = await axiosInstance.get<ApiResponse<MangaSearchResponse[]>>('/v1/manga/filter', {
     params,
   });
   return response.data;
 }
 
 export async function getCategories(): Promise<ApiResponse<CategoryResponse[]>> {
-  const response = await axiosInstance.get<ApiResponse<CategoryResponse[]>>('/api/v1/categories');
+  const response = await axiosInstance.get<ApiResponse<CategoryResponse[]>>('/v1/categories');
   return response.data;
 }
 
 export async function getRecentUserComments(): Promise<ApiResponse<RecentCommentResponse[]>> {
-  const response = await axiosInstance.get<ApiResponse<RecentCommentResponse[]>>('/api/v1/manga/comments/recent-users');
+  const response = await axiosInstance.get<ApiResponse<RecentCommentResponse[]>>('/v1/manga/comments/recent-users');
   return response.data;
 }
 
@@ -67,39 +67,39 @@ export async function getReadingHistory(params?: {
   page?: number;
   size?: number;
 }): Promise<ApiResponse<ReadingHistoryResponse[]>> {
-  const response = await axiosInstance.get<ApiResponse<ReadingHistoryResponse[]>>('/api/v1/reading-history', {
+  const response = await axiosInstance.get<ApiResponse<ReadingHistoryResponse[]>>('/v1/reading-history', {
     params,
   });
   return response.data;
 }
 
 export async function getLatestReadingHistory(slug: string): Promise<ApiResponse<ReadingHistoryResponse | null>> {
-  const response = await axiosInstance.get<ApiResponse<ReadingHistoryResponse | null>>(`/api/v1/reading-history/${slug}`);
+  const response = await axiosInstance.get<ApiResponse<ReadingHistoryResponse | null>>(`/v1/reading-history/${slug}`);
   return response.data;
 }
 
 export async function getMangaBySlug(slug: string): Promise<ApiResponse<MangaDetailResponse>> {
-  const response = await axiosInstance.post<ApiResponse<MangaDetailResponse>>(`/api/v1/manga/${slug}`);
+  const response = await axiosInstance.post<ApiResponse<MangaDetailResponse>>(`/v1/manga/${slug}`);
   return response.data;
 }
 
 export async function requestChapterPage( body : ChapterPageRequest) : Promise<ApiResponse<ChapterPageResponse[]>>{
-   const response = await axiosInstance.post<ApiResponse<ChapterPageResponse[]>>("/api/v1/chapter", body );
+   const response = await axiosInstance.post<ApiResponse<ChapterPageResponse[]>>("/v1/chapter", body );
    return response.data
 }
 
 export async function toggleMangaFollow(slug: string): Promise<ApiResponse<MangaInteractionResponse>> {
-  const response = await axiosInstance.post<ApiResponse<MangaInteractionResponse>>(`/api/v1/manga/${slug}/follow`);
+  const response = await axiosInstance.post<ApiResponse<MangaInteractionResponse>>(`/v1/manga/${slug}/follow`);
   return response.data;
 }
 
 export async function markFollowedMangaLatestChapterSeen(slug: string): Promise<ApiResponse<void>> {
-  const response = await axiosInstance.post<ApiResponse<void>>(`/api/v1/manga/${slug}/follow/seen-latest`);
+  const response = await axiosInstance.post<ApiResponse<void>>(`/v1/manga/${slug}/follow/seen-latest`);
   return response.data;
 }
 
 export async function getMangaComments(slug: string): Promise<ApiResponse<MangaCommentResponse[]>> {
-  const response = await axiosInstance.get<ApiResponse<MangaCommentResponse[]>>(`/api/v1/manga/${slug}/comments`);
+  const response = await axiosInstance.get<ApiResponse<MangaCommentResponse[]>>(`/v1/manga/${slug}/comments`);
   return response.data;
 }
 
@@ -107,7 +107,7 @@ export async function createMangaComment(
   slug: string,
   body: CreateCommentRequest
 ): Promise<ApiResponse<MangaCommentResponse>> {
-  const response = await axiosInstance.post<ApiResponse<MangaCommentResponse>>(`/api/v1/manga/${slug}/comments`, body);
+  const response = await axiosInstance.post<ApiResponse<MangaCommentResponse>>(`/v1/manga/${slug}/comments`, body);
   return response.data;
 }
 
@@ -116,7 +116,7 @@ export async function getChapterComments(
   chapterNumber: string
 ): Promise<ApiResponse<MangaCommentResponse[]>> {
   const response = await axiosInstance.get<ApiResponse<MangaCommentResponse[]>>(
-    `/api/v1/manga/${slug}/chapters/${chapterNumber}/comments`
+    `/v1/manga/${slug}/chapters/${chapterNumber}/comments`
   );
   return response.data;
 }
@@ -127,7 +127,7 @@ export async function createChapterComment(
   body: CreateCommentRequest
 ): Promise<ApiResponse<MangaCommentResponse>> {
   const response = await axiosInstance.post<ApiResponse<MangaCommentResponse>>(
-    `/api/v1/manga/${slug}/chapters/${chapterNumber}/comments`,
+    `/v1/manga/${slug}/chapters/${chapterNumber}/comments`,
     body
   );
   return response.data;

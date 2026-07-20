@@ -42,32 +42,32 @@ export interface TitleResponse {
 }
 
 export const getDailyStatus = async (): Promise<ApiResponse<DailyStatusResponse>> => {
-  const response = await axiosInstance.get('/api/v1/tasks/daily-status');
+  const response = await axiosInstance.get('/v1/tasks/daily-status');
   return response.data;
 };
 
 export const claimCheckIn = async (): Promise<ApiResponse<number>> => {
-  const response = await axiosInstance.post('/api/v1/tasks/claim-checkin');
+  const response = await axiosInstance.post('/v1/tasks/claim-checkin');
   return response.data;
 };
 
 export const spinWheel = async (): Promise<ApiResponse<number>> => {
-  const response = await axiosInstance.post('/api/v1/tasks/spin-wheel');
+  const response = await axiosInstance.post('/v1/tasks/spin-wheel');
   return response.data;
 };
 
 export const claimAchievement = async (achievementId: number): Promise<ApiResponse<number>> => {
-  const response = await axiosInstance.post(`/api/v1/tasks/claim-achievement/${achievementId}`);
+  const response = await axiosInstance.post(`/v1/tasks/claim-achievement/${achievementId}`);
   return response.data;
 };
 
 export const getUnlockedTitles = async (): Promise<ApiResponse<TitleResponse[]>> => {
-  const response = await axiosInstance.get('/api/v1/titles/unlocked');
+  const response = await axiosInstance.get('/v1/titles/unlocked');
   return response.data;
 };
 
 export const equipTitle = async (titleId: number | null): Promise<ApiResponse<void>> => {
-  const response = await axiosInstance.post('/api/v1/titles/equip', null, {
+  const response = await axiosInstance.post('/v1/titles/equip', null, {
     params: { titleId }
   });
   return response.data;

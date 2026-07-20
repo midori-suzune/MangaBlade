@@ -168,6 +168,12 @@ export function Header() {
                                         </svg>
                                         Cài đặt tài khoản
                                     </Link>
+                                    <Link to="/profile?tab=manga" onClick={() => setIsDropdownOpen(false)} className={styles.dropdownItem}>
+                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
+                                            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                                        </svg>
+                                        Theo dõi
+                                    </Link>
                                     <Link to="/profile?tab=tasks" onClick={() => setIsDropdownOpen(false)} className={styles.dropdownItem}>
                                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
                                             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -178,18 +184,6 @@ export function Header() {
                                         </svg>
                                         Nhiệm vụ hàng ngày
                                     </Link>
-                                    <Link to="/profile?tab=password" onClick={() => setIsDropdownOpen(false)} className={styles.dropdownItem}>
-                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
-                                            <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
-                                        </svg>
-                                        Thay đổi mật khẩu
-                                    </Link>
-                                    <Link to="/profile?tab=manga" onClick={() => setIsDropdownOpen(false)} className={styles.dropdownItem}>
-                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
-                                            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-                                        </svg>
-                                        Theo dõi
-                                    </Link>
                                     <Link to="/profile?tab=history" onClick={() => setIsDropdownOpen(false)} className={styles.dropdownItem}>
                                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
                                             <circle cx="12" cy="12" r="10"></circle>
@@ -197,6 +191,61 @@ export function Header() {
                                         </svg>
                                         Lịch sử đọc
                                     </Link>
+                                    <Link to="/profile?tab=password" onClick={() => setIsDropdownOpen(false)} className={styles.dropdownItem}>
+                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
+                                            <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
+                                        </svg>
+                                        Thay đổi mật khẩu
+                                    </Link>
+
+                                    {/* Các tùy chọn tác giả / đăng ký tác giả hiển thị ở cuối */}
+                                    {user.role === 'AUTHOR' ? (
+                                        <>
+                                            <Link to="/profile?tab=author-manga" onClick={() => setIsDropdownOpen(false)} className={styles.dropdownItem}>
+                                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
+                                                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                                                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                                                </svg>
+                                                Truyện của tôi
+                                            </Link>
+                                            <Link to="/profile?tab=author-manga-create" onClick={() => setIsDropdownOpen(false)} className={styles.dropdownItem}>
+                                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
+                                                    <circle cx="12" cy="12" r="10"></circle>
+                                                    <line x1="12" y1="8" x2="12" y2="16"></line>
+                                                    <line x1="8" y1="12" x2="16" y2="12"></line>
+                                                </svg>
+                                                Đăng truyện mới
+                                            </Link>
+                                            <Link to="/profile?tab=author-statistics" onClick={() => setIsDropdownOpen(false)} className={styles.dropdownItem}>
+                                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
+                                                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                                                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                                                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                                                </svg>
+                                                Thống kê tác phẩm
+                                            </Link>
+                                        </>
+                                    ) : (
+                                        user.role !== 'ADMIN' && (
+                                            <Link to="/profile?tab=author" onClick={() => setIsDropdownOpen(false)} className={styles.dropdownItem}>
+                                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
+                                                    <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path>
+                                                    <line x1="16" y1="8" x2="2" y2="22"></line>
+                                                    <line x1="17.5" y1="15" x2="9" y2="15"></line>
+                                                </svg>
+                                                Đăng ký Tác giả
+                                            </Link>
+                                        )
+                                    )}
+                                    {user.role === 'ADMIN' && (
+                                        <Link to="/admin/users" onClick={() => setIsDropdownOpen(false)} className={styles.dropdownItem}>
+                                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
+                                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                                <line x1="9" y1="3" x2="9" y2="21"></line>
+                                            </svg>
+                                            Quản lý Admin
+                                        </Link>
+                                    )}
                                     <div className={styles.dropdownDivider}></div>
                                     <button onClick={() => { setIsDropdownOpen(false); logout(); }} className={`${styles.dropdownItem} ${styles.logout}`}>
                                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
