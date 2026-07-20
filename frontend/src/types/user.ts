@@ -6,6 +6,13 @@ export interface UserType {
   email: string;
   role: UserRole;
   banned: boolean;
+  online?: boolean;
+  createdAt?: string;
+  activeTitleId?: number | null;
+  activeTitle?: {
+    id: number;
+    name: string;
+  } | null;
   avatarUrl?: string;
   providerId?: string;
   authProvider: 'LOCAL' | 'GOOGLE';

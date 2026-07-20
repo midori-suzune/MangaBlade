@@ -13,6 +13,8 @@ public interface ChapterService {
 
     List<ChapterPageResponse> fetchChapterPage(String slug, String chapterNumber);
 
+    void recordChapterRead(Long userId, String slug, String chapterNumber);
+
     void recordReadingHistory(Long userId, String slug, String chapterNumber);
 
     List<ReadingHistoryResponse> fetchReadingHistory(Long userId);

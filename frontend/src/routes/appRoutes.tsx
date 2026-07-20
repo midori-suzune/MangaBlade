@@ -1,5 +1,6 @@
 import type {RouteObject} from "react-router-dom";
 import {MainLayout} from "../layouts/MainLayout.tsx";
+import {AdminLayout} from "../layouts/AdminLayout.tsx";
 import {Home} from "../pages/Home/Home.tsx";
 import {LoginPage} from "../pages/Login/LoginPage.tsx";
 import {RegisterPage} from "../pages/Register/RegisterPage.tsx";
@@ -8,8 +9,9 @@ import {CategoryPage} from "../pages/Category/CategoryPage.tsx";
 import {MangaDetailPage} from "../pages/MangaDetail/MangaDetailPage.tsx";
 import {ReadingMangaPage} from "../pages/ReadingManga/ReadingMangaPage.tsx";
 import {UserProfile} from "../pages/UserProfile/UserProfile.tsx";
-import {AdminUserManagement} from "../pages/ListUser/AdminUserManagement.tsx";
-import {AdminAuthorRequests} from "../pages/ListUser/AdminAuthorRequests.tsx";
+import {AdminDashboard} from "../pages/Admin/Dashboard/AdminDashboard.tsx";
+import {UserManagement} from "../pages/Admin/UserManagement/UserManagement.tsx";
+import {AuthorRequests} from "../pages/Admin/AuthorRequests/AuthorRequests.tsx";
 import {ReadingHistory} from "../pages/ReadingHistory/ReadingHistory.tsx";
 import {FollowedManga} from "../pages/FollowedManga/FollowedManga.tsx";
 import {RouteError} from "./RouteError.tsx";
@@ -58,6 +60,17 @@ export const appRoutes: RouteObject[] = [
             {
                 path: "followed-manga",
                 element: <FollowedManga />
+            }
+        ]
+    },
+    {
+        path: "/admin",
+        element: <AdminLayout />,
+        errorElement: <RouteError />,
+        children: [
+            {
+                index: true,
+                element: <AdminDashboard />
             },
             {
                 path: "author/manga",
@@ -84,16 +97,16 @@ export const appRoutes: RouteObject[] = [
                 element: <AuthorStatistics />
             },
             {
-                path: "admin/users",
-                element: <AdminUserManagement />
+                path: "dashboard",
+                element: <AdminDashboard />
             },
             {
-                path: "admin/users/author-requests",
-                element: <AdminAuthorRequests />
+                path: "users",
+                element: <UserManagement />
             },
             {
-                path: "admin/users/:roleType",
-                element: <AdminUserManagement />
+                path: "author-requests",
+                element: <AuthorRequests />
             }
         ]
     },

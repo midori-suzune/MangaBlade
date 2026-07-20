@@ -1,0 +1,29 @@
+# --- Stage 1: Build the frontend application ---
+FROM node:24-alpine AS build
+
+# Set the working directory
+WORKDIR /app
+
+# Copy only package files first to leverage Docker layer caching for dependencies
+COPY frontend/package*.json ./
+
+# Install frontend dependencies
+RUN npm ci
+
+# Copy the frontend source code
+COPY frontend ./
+
+# Build the production static files
+RUN npm run build
+
+# --- Stage 2: Create the Nginx runtime image ---
+FROM nginx:alpine
+
+# Copy the Nginx configuration for serving the SPA and proxying API requests
+COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
+
+# Copy the compiled frontend assets from the builder stage
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# Expose the HTTP port
+EXPOSE 80

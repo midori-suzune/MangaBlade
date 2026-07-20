@@ -1,0 +1,39 @@
+services:
+
+  cloudflare:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      - nginx
+
+  nginx:
+    build:
+      context: .
+      dockerfile: DockerfileFE
+    image: mangablade-frontend:latest
+    depends_on:
+      - spring-boot
+
+  spring-boot:
+    build:
+      context: .
+      dockerfile: DockerfileBE
+    image: mangablade-backend:latest
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/MangaBlade?createDatabaseIfNotExist=true&serverTimezone=UTC
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mysql:latest
+    container_name: mangablade-mysql
+    environment:
+      MYSQL_DATABASE: MangaBlade
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
