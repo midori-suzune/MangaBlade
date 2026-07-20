@@ -1,22 +1,42 @@
 import axiosClient from './axiosClient';
 import type { UserType, SpringPageResponse, UserRole } from '../types/user';
 
+interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  payload: T;
+  error?: string;
+  fieldsErrors?: Record<string, string>;
+}
+
+interface GetUsersParams {
+  role?: UserRole;
+  search?: string;
+  isBanned?: boolean;
+  page?: number;
+  size?: number;
+}
+
 export const adminUserApi = {
-  getUsers: (role: UserRole, search?: string, isBanned?: boolean, page = 0, size = 10) => {
-    return axiosClient.get<SpringPageResponse<UserType>>(`/v1/admin/users`, {
-      params: { role, search, isBanned, page, size }
+  getUsers: async (params: GetUsersParams = {}) => {
+    const response = await axiosClient.get<ApiResponse<SpringPageResponse<UserType>>>(`/v1/admin/users`, {
+      params
     });
+    return { ...response, data: response.data.payload };
   },
 
-  updateUser: (id: number, data: Partial<Pick<UserType, 'username' | 'email' | 'role'>>) => {
-    return axiosClient.put<UserType>(`/v1/admin/users/${id}`, data);
+  updateUser: async (id: number, data: Partial<Pick<UserType, 'username' | 'email' | 'role'>>) => {
+    const response = await axiosClient.put<ApiResponse<UserType>>(`/v1/admin/users/${id}`, data);
+    return { ...response, data: response.data.payload };
   },
 
-  deleteUser: (id: number) => {
-    return axiosClient.delete<string>(`/v1/admin/users/${id}`);
+  deleteUser: async (id: number) => {
+    const response = await axiosClient.delete<ApiResponse<void>>(`/v1/admin/users/${id}`);
+    return { ...response, data: response.data.payload };
   },
 
-  toggleBan: (id: number) => {
-    return axiosClient.patch<UserType>(`/v1/admin/users/${id}/toggle-ban`);
+  toggleBan: async (id: number) => {
+    const response = await axiosClient.patch<ApiResponse<UserType>>(`/v1/admin/users/${id}/toggle-ban`);
+    return { ...response, data: response.data.payload };
   }
 };

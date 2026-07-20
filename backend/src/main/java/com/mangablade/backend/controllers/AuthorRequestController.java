@@ -4,6 +4,7 @@ import com.mangablade.backend.dtos.request.AuthorRequestCreateRequest;
 import com.mangablade.backend.dtos.request.AuthorRequestReviewRequest;
 import com.mangablade.backend.dtos.response.ApiResponse;
 import com.mangablade.backend.dtos.response.AuthorRequestResponse;
+import com.mangablade.backend.dtos.response.PageResponse;
 import com.mangablade.backend.entities.User;
 import com.mangablade.backend.services.mangablade.AuthorRequestService;
 import jakarta.validation.Valid;
@@ -53,7 +54,7 @@ public class AuthorRequestController {
     }
 
     @GetMapping("/admin/author-requests")
-    public ResponseEntity<ApiResponse<Page<AuthorRequestResponse>>> getAllRequests(
+    public ResponseEntity<ApiResponse<PageResponse<AuthorRequestResponse>>> getAllRequests(
             @RequestParam(value = "status", required = false) String status,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "10") int size) {
@@ -63,10 +64,10 @@ public class AuthorRequestController {
                 PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"))
         );
         return ResponseEntity.ok(
-                ApiResponse.<Page<AuthorRequestResponse>>builder()
+                ApiResponse.<PageResponse<AuthorRequestResponse>>builder()
                         .success(true)
                         .message("Lấy danh sách đăng ký thành công")
-                        .payload(response)
+                        .payload(PageResponse.from(response))
                         .build()
         );
     }

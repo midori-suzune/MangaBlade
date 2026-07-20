@@ -146,11 +146,17 @@ export function AuthModal() {
     }
 
     if (!password) {
-      errors.password = "Password is required";
+      errors.password = "Mật khẩu không được để trống";
     } else if (password.length < 8) {
-      errors.password = "Password must be at least 8 characters";
+      errors.password = "Mật khẩu phải có ít nhất 8 ký tự";
+    } else if (!/[A-Z]/.test(password)) {
+      errors.password = "Mật khẩu phải chứa ít nhất 1 chữ cái viết hoa";
+    } else if (!/[a-z]/.test(password)) {
+      errors.password = "Mật khẩu phải chứa ít nhất 1 chữ cái viết thường";
+    } else if (!/[0-9]/.test(password) && !/[^A-Za-z0-9]/.test(password)) {
+      errors.password = "Mật khẩu phải chứa ít nhất 1 số hoặc ký tự đặc biệt";
     } else if (password.length > 72) {
-      errors.password = "Password must be at most 72 characters";
+      errors.password = "Mật khẩu không được vượt quá 72 ký tự";
     }
 
     if (!confirmPassword) {

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Feather, CheckCircle, Clock, BookOpen, BarChart3, MessageSquare, AlertCircle, X } from "lucide-react";
 import { authorRequestApi, type AuthorRequestResponse } from "../../../api/authorRequestApi";
@@ -147,6 +148,8 @@ function AuthorStatusView({
   myRequest: AuthorRequestResponse | null;
   onResubmit: () => void;
 }) {
+  const navigate = useNavigate();
+
   if (view === 'loading') {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
@@ -173,11 +176,19 @@ function AuthorStatusView({
           borderRadius: 'var(--border-radius-sm)',
           color: '#03543f',
           fontWeight: 600,
-          fontSize: '14px'
+          fontSize: '14px',
+          marginBottom: '20px'
         }}>
           <CheckCircle size={20} />
           Vai trò hiện tại: Tác giả (Author)
         </div>
+        <button
+          onClick={() => navigate('/author/manga')}
+          className={styles.btnTask}
+          style={{ width: 'auto', display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 24px', cursor: 'pointer', border: 'none', backgroundColor: 'var(--color-accent)', color: 'white', borderRadius: 'var(--border-radius-sm)' }}
+        >
+          <BookOpen size={16} /> Vào trang Quản lý Tác giả
+        </button>
       </div>
     );
   }

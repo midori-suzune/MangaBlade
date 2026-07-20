@@ -1,0 +1,36 @@
+# --- Stage 1: Build the application ---
+FROM maven:3.9.6-eclipse-temurin-21-jammy AS build
+
+# Set the working directory
+WORKDIR /app
+
+# Copy only the pom.xml first to leverage Docker layer caching for dependencies
+COPY backend/pom.xml /app
+
+# Download dependencies (this layer won't rebuild unless pom.xml changes)
+RUN mvn dependency:go-offline -B
+
+# Copy the source code
+COPY backend/src ./src
+
+# Build the application package and skip tests for faster building
+RUN mvn clean package -DskipTests
+
+# --- Stage 2: Create the runtime image ---
+FROM eclipse-temurin:21-jre-jammy
+
+# Create a non-root user for security
+RUN useradd -m suzune
+USER suzune
+
+# Set working directory
+WORKDIR /app
+
+# Copy the compiled JAR from the builder stage
+COPY --chown=suzune:suzune --from=build /app/target/*.jar app.jar
+
+# Expose the application port
+EXPOSE 8080
+
+# Execute the application
+ENTRYPOINT ["java", "-jar", "app.jar"]

@@ -38,9 +38,11 @@ public class ChapterController {
                 user != null ? user.getRole() : null
         );
         var chapterPage = chapterService.fetchChapterPage(request.getSlugManga(), request.getChapterNumber());
-        if (user != null) {
-            chapterService.recordReadingHistory(user.getId(), request.getSlugManga(), request.getChapterNumber());
-        }
+        chapterService.recordChapterRead(
+                user != null ? user.getId() : null,
+                request.getSlugManga(),
+                request.getChapterNumber()
+        );
         return ResponseEntity.status(HttpStatus.OK).body(
                 ApiResponse.<List<ChapterPageResponse>>builder()
                         .success(true)

@@ -1,5 +1,5 @@
 import { useSearchParams } from "react-router-dom";
-import { LogIn, User, BookOpen, CalendarCheck, Clock, Key, LogOut, Feather } from "lucide-react";
+import { LogIn, User, BookOpen, CalendarCheck, Clock, Key, LogOut, Feather, PlusCircle, BarChart3 } from "lucide-react";
 import { useAuthStore } from "../../stores/authStore";
 import { AccountSettingsTab } from "./components/AccountSettingsTab";
 import { ChangePasswordTab } from "./components/ChangePasswordTab";
@@ -7,6 +7,14 @@ import { MangaMarkTag } from "./components/MangaMarkTag";
 import { HistoryTab } from "./components/HistoryTab";
 import { DailyTasksTab } from "./components/DailyTasksTab";
 import { AuthorRegistrationTab } from "./components/AuthorRegistrationTab";
+
+import { AuthorMangaList } from "../AuthorDashboard/AuthorMangaList";
+import { AuthorMangaCreate } from "../AuthorDashboard/AuthorMangaCreate";
+import { AuthorMangaEdit } from "../AuthorDashboard/AuthorMangaEdit";
+import { AuthorChapterManage } from "../AuthorDashboard/AuthorChapterManage";
+import { AuthorChapterUpload } from "../AuthorDashboard/AuthorChapterUpload";
+import { AuthorStatistics } from "../AuthorDashboard/AuthorStatistics";
+
 import styles from "./UserProfile.module.css";
 
 function UnauthorizedProfileView({ onLoginClick }: { onLoginClick: () => void }) {
@@ -50,6 +58,18 @@ function TabContent({ activeTab, showAuthorTab, userRole }: TabContentProps) {
             return <DailyTasksTab />;
         case "author":
             return showAuthorTab ? <AuthorRegistrationTab userRole={userRole} /> : null;
+        case "author-manga":
+            return <AuthorMangaList standalone={true} />;
+        case "author-manga-create":
+            return <AuthorMangaCreate standalone={true} />;
+        case "author-manga-edit":
+            return <AuthorMangaEdit standalone={true} />;
+        case "author-chapters":
+            return <AuthorChapterManage standalone={true} />;
+        case "author-chapter-upload":
+            return <AuthorChapterUpload standalone={true} />;
+        case "author-statistics":
+            return <AuthorStatistics standalone={true} />;
         default:
             return null;
     }
@@ -89,38 +109,67 @@ export function UserProfile() {
                             >
                                 <User size={16} /> Thông tin tài khoản
                             </button>
+                            
                             <button 
                                 className={`${styles.sidebarNavItem} ${activeTab === "manga" ? styles.sidebarActiveItem : ""}`}
                                 onClick={() => handleTabChange("manga")}
                             >
                                 <BookOpen size={16} /> Truyện theo dõi
                             </button>
-                            <button 
-                                className={`${styles.sidebarNavItem} ${activeTab === "tasks" ? styles.sidebarActiveItem : ""}`}
-                                onClick={() => handleTabChange("tasks")}
-                            >
-                                <CalendarCheck size={16} /> Nhiệm vụ hàng ngày
-                            </button>
+                            
                             <button 
                                 className={`${styles.sidebarNavItem} ${activeTab === "history" ? styles.sidebarActiveItem : ""}`}
                                 onClick={() => handleTabChange("history")}
                             >
                                 <Clock size={16} /> Lịch sử đọc
                             </button>
+
+                            <button 
+                                className={`${styles.sidebarNavItem} ${activeTab === "tasks" ? styles.sidebarActiveItem : ""}`}
+                                onClick={() => handleTabChange("tasks")}
+                            >
+                                <CalendarCheck size={16} /> Nhiệm vụ hàng ngày
+                            </button>
+
                             <button 
                                 className={`${styles.sidebarNavItem} ${activeTab === "password" ? styles.sidebarActiveItem : ""}`}
                                 onClick={() => handleTabChange("password")}
                             >
                                 <Key size={16} /> Đổi mật khẩu
                             </button>
-                            {showAuthorTab && (
+                            
+                            {showAuthorTab && user.role !== 'AUTHOR' && (
                                 <button 
                                     className={`${styles.sidebarNavItem} ${activeTab === "author" ? styles.sidebarActiveItem : ""}`}
                                     onClick={() => handleTabChange("author")}
                                 >
-                                    <Feather size={16} /> {user.role === 'AUTHOR' ? 'Tác giả' : 'Đăng ký Tác giả'}
+                                    <Feather size={16} /> Đăng ký Tác giả
                                 </button>
                             )}
+
+                            {user.role === 'AUTHOR' && (
+                                <>
+                                    <button 
+                                        className={`${styles.sidebarNavItem} ${["author-manga", "author-manga-edit", "author-chapters", "author-chapter-upload"].includes(activeTab) ? styles.sidebarActiveItem : ""}`}
+                                        onClick={() => handleTabChange("author-manga")}
+                                    >
+                                        <BookOpen size={16} /> Truyện của tôi
+                                    </button>
+                                    <button 
+                                        className={`${styles.sidebarNavItem} ${activeTab === "author-manga-create" ? styles.sidebarActiveItem : ""}`}
+                                        onClick={() => handleTabChange("author-manga-create")}
+                                    >
+                                        <PlusCircle size={16} /> Đăng truyện mới
+                                    </button>
+                                    <button 
+                                        className={`${styles.sidebarNavItem} ${activeTab === "author-statistics" ? styles.sidebarActiveItem : ""}`}
+                                        onClick={() => handleTabChange("author-statistics")}
+                                    >
+                                        <BarChart3 size={16} /> Thống kê tác phẩm
+                                    </button>
+                                </>
+                            )}
+
                             <button 
                                 className={`${styles.sidebarNavItem} ${styles.sidebarLogoutItem}`}
                                 onClick={() => logout()}

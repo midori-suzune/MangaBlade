@@ -897,7 +897,7 @@
 }
 
 .sidebarUserCard {
-  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  background: black;
   padding: 24px 20px;
   display: flex;
   align-items: center;
