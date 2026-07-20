@@ -74,6 +74,14 @@ export const appRoutes: RouteObject[] = [
                 element: <UserManagement />
             },
             {
+                path: "manga",
+                element: <MangaManagement />
+            },
+            {
+                path: "chapter-reports",
+                element: <ChapterReports />
+            },
+            {
                 path: "author-requests",
                 element: <AuthorRequests />
             }
