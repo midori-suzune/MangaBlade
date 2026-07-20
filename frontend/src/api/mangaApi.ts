@@ -111,6 +111,11 @@ export async function createMangaComment(
   return response.data;
 }
 
+export async function deleteMangaComment(commentId: number): Promise<ApiResponse<void>> {
+  const response = await axiosInstance.delete<ApiResponse<void>>(`/v1/manga/comments/${commentId}`);
+  return response.data;
+}
+
 export async function getChapterComments(
   slug: string,
   chapterNumber: string

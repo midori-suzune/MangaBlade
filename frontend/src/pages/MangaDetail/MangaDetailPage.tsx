@@ -9,6 +9,7 @@ import {CommentEmojiPicker} from "../../components/CommentEmojiPicker/CommentEmo
 import {CommentText} from "../../components/CommentEmojiPicker/CommentText.tsx";
 import {
     createMangaComment,
+    deleteMangaComment,
     getLatestReadingHistory,
     getMangaBySlug,
     getMangaComments,
@@ -79,6 +80,7 @@ export function MangaDetailPage() {
     const [expandedReplyParentIds, setExpandedReplyParentIds] = useState<number[]>([]);
     const [isSubmittingComment, setIsSubmittingComment] = useState(false);
     const [submittingReplyParentId, setSubmittingReplyParentId] = useState<number | null>(null);
+    const [deletingCommentId, setDeletingCommentId] = useState<number | null>(null);
     const [visibleCommentCount, setVisibleCommentCount] = useState(COMMENTS_PER_PAGE);
     const chapterListRef = useRef<HTMLDivElement>(null);
     const chapterListScrollTop = useRef(0);
@@ -298,6 +300,41 @@ export function MangaDetailPage() {
         }
     }
 
+    function canDeleteComment(comment: MangaCommentResponse) {
+        return Boolean(user && (user.role === "ADMIN" || user.id === comment.user.id));
+    }
+
+    function removeCommentById(commentList: MangaCommentResponse[], commentId: number) {
+        return commentList
+            .filter((comment) => comment.id !== commentId)
+            .map((comment) => ({
+                ...comment,
+                replies: comment.replies?.filter((reply) => reply.id !== commentId) ?? [],
+            }));
+    }
+
+    async function handleDeleteComment(commentId: number) {
+        if (!isAuthenticated) {
+            openAuthModal("login");
+            return;
+        }
+
+        if (!window.confirm("Bạn có chắc chắn muốn gỡ bình luận này?")) {
+            return;
+        }
+
+        try {
+            setDeletingCommentId(commentId);
+            setCommentError(null);
+            await deleteMangaComment(commentId);
+            setComments((currentComments) => removeCommentById(currentComments, commentId));
+        } catch {
+            setCommentError("Không thể gỡ bình luận");
+        } finally {
+            setDeletingCommentId(null);
+        }
+    }
+
     function toggleReplies(parentId: number) {
         setExpandedReplyParentIds((currentIds) => currentIds.includes(parentId)
             ? currentIds.filter((currentId) => currentId !== parentId)
@@ -508,7 +545,15 @@ export function MangaDetailPage() {
                                                         >
                                                             Trả lời
                                                         </button>
-                                                        <button type="button">Báo cáo</button>
+                                                        {canDeleteComment(comment) && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => void handleDeleteComment(comment.id)}
+                                                                disabled={deletingCommentId === comment.id}
+                                                            >
+                                                                {deletingCommentId === comment.id ? "Đang gỡ..." : "Gỡ"}
+                                                            </button>
+                                                        )}
                                                     </div>
                                                     {comment.replies?.length > 0 && (
                                                         <button
@@ -568,7 +613,15 @@ export function MangaDetailPage() {
                                                                 >
                                                                     Trả lời
                                                                 </button>
-                                                                <button type="button">Báo cáo</button>
+                                                                {canDeleteComment(reply) && (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => void handleDeleteComment(reply.id)}
+                                                                        disabled={deletingCommentId === reply.id}
+                                                                    >
+                                                                        {deletingCommentId === reply.id ? "Đang gỡ..." : "Gỡ"}
+                                                                    </button>
+                                                                )}
                                                             </div>
                                                         </div>
                                                     </article>

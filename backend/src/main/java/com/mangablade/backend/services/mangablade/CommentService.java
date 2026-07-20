@@ -7,6 +7,7 @@ import com.mangablade.backend.entities.Comment;
 import com.mangablade.backend.entities.Manga;
 import com.mangablade.backend.entities.User;
 import com.mangablade.backend.enums.CommentStatus;
+import com.mangablade.backend.enums.UserRole;
 import com.mangablade.backend.exceptions.AppException;
 import com.mangablade.backend.exceptions.ErrorCode;
 import com.mangablade.backend.repositories.CommentRepository;
@@ -122,6 +123,31 @@ public class CommentService {
         taskService.handleCommentPosted(dbUser.getId());
 
         return toResponse(savedComment);
+    }
+
+    @Transactional
+    public void delete(Long commentId, User user) {
+        if (user == null) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+
+        var comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new AppException(ErrorCode.COMMENT_NOT_FOUND));
+
+        if (comment.getStatus() == CommentStatus.DELETED) {
+            return;
+        }
+
+        boolean isOwner = comment.getUserId().equals(user.getId());
+        boolean isAdmin = user.getRole() == UserRole.ADMIN;
+        if (!isOwner && !isAdmin) {
+            throw new AppException(ErrorCode.FORBIDDEN);
+        }
+
+        var now = Instant.now();
+        comment.setStatus(CommentStatus.DELETED);
+        comment.setDeletedAt(now);
+        comment.setUpdatedAt(now);
     }
 
     private Manga findMangaBySlugOrThrow(String slug) {
