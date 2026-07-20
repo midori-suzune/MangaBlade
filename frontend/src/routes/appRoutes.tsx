@@ -12,6 +12,8 @@ import {UserProfile} from "../pages/UserProfile/UserProfile.tsx";
 import {AdminDashboard} from "../pages/Admin/Dashboard/AdminDashboard.tsx";
 import {UserManagement} from "../pages/Admin/UserManagement/UserManagement.tsx";
 import {AuthorRequests} from "../pages/Admin/AuthorRequests/AuthorRequests.tsx";
+import {MangaManagement} from "../pages/Admin/MangaManagement/MangaManagement.tsx";
+import {ChapterReports} from "../pages/Admin/ChapterReports/ChapterReports.tsx";
 import {ReadingHistory} from "../pages/ReadingHistory/ReadingHistory.tsx";
 import {FollowedManga} from "../pages/FollowedManga/FollowedManga.tsx";
 import {RouteError} from "./RouteError.tsx";
