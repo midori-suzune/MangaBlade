@@ -11,7 +11,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-    padding: 6px 15px;
+    padding: 4px 15px;
 }
 
 .navLinks {
@@ -21,12 +21,29 @@
 }
 
 .navLinks a {
-    padding: 8px 10px;
-    border-radius: 3px;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-height: 48px;
+    padding: 0 10px;
     color: var(--color-text-muted);
     font-size: 16px;
-    font-weight: 700;
+    font-weight: 800;
     transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s, background-color 0.2s;
+}
+
+.navLinks a::after {
+    position: absolute;
+    right: 10px;
+    bottom: 0;
+    left: 10px;
+    height: 3px;
+    border-radius: 999px 999px 0 0;
+    background: var(--color-accent);
+    opacity: 0;
+    transform: scaleX(0.45);
+    transition: opacity 0.2s, transform 0.2s;
+    content: "";
 }
 
 .navLinks a:hover {
@@ -37,7 +54,11 @@
     color: var(--color-accent);
 }
 
-.navLinks a:active,
+.navLinks .active::after {
+    opacity: 1;
+    transform: scaleX(1);
+}
+
 .themeToggleBtn:active {
     transform: scale(0.96);
 }
@@ -86,7 +107,13 @@
     }
 
     .navLinks a {
-        padding: 5px 8px;
+        min-height: 38px;
+        padding: 0 8px;
         font-size: 14px;
+    }
+
+    .navLinks a::after {
+        right: 8px;
+        left: 8px;
     }
 }

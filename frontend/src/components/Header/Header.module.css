@@ -195,6 +195,15 @@
     background-color: var(--color-text-strong);
 }
 
+:global(:root[data-theme="dark"]) .btnSignup {
+    background-color: #000000;
+    color: #ffffff;
+}
+
+:global(:root[data-theme="dark"]) .btnSignup:hover {
+    background-color: #000000;
+}
+
 .btnLogin {
     background-color: var(--color-surface-muted);
     color: var(--color-text);

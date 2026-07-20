@@ -278,6 +278,15 @@
     background-color: var(--color-accent);
 }
 
+:global(:root[data-theme="dark"]) .btnSubmitComment {
+    background-color: #000000;
+    color: #ffffff;
+}
+
+:global(:root[data-theme="dark"]) .btnSubmitComment:hover {
+    background-color: #000000;
+}
+
 .btnSubmitComment:disabled {
     background-color: var(--color-surface-muted);
     cursor: not-allowed;
@@ -365,6 +374,10 @@
     color: var(--color-text-soft);
     font-size: 13px;
     font-weight: 650;
+}
+
+:global(:root[data-theme="dark"]) .commentFooterActions {
+    color: var(--color-text-muted);
 }
 
 .commentFooterActions span,

@@ -278,7 +278,9 @@
 }
 
 .submitBtn:disabled {
-  opacity: 0.6;
+  background-color: var(--color-surface-muted);
+  color: var(--color-text-soft);
+  opacity: 1;
   cursor: not-allowed;
 }
 
