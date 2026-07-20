@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { AuthorDashboardLayout } from './AuthorDashboardLayout';
 import { authorMangaApi } from '../../api/authorMangaApi';
@@ -33,7 +33,7 @@ export const AuthorChapterUpload: React.FC<AuthorChapterUploadProps> = ({ standa
   // Newly selected local files
   const [newFiles, setNewFiles] = useState<LocalPageFile[]>([]);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!mId || !cId) return;
     setLoading(true);
     try {
@@ -62,11 +62,12 @@ export const AuthorChapterUpload: React.FC<AuthorChapterUploadProps> = ({ standa
     } finally {
       setLoading(false);
     }
-  };
+  }, [mId, cId]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchData();
-  }, [mId, cId]);
+  }, [fetchData]);
 
   const handleFilesSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {

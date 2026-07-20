@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { AuthorDashboardLayout } from './AuthorDashboardLayout';
 import { authorMangaApi } from '../../api/authorMangaApi';
 import type { AuthorStatsOverview, AuthorMangaStats } from '../../types/author';
@@ -15,7 +15,7 @@ export const AuthorStatistics: React.FC<AuthorStatisticsProps> = ({ standalone =
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     setLoading(true);
     try {
       const overviewRes = await authorMangaApi.getStatsOverview();
@@ -33,11 +33,12 @@ export const AuthorStatistics: React.FC<AuthorStatisticsProps> = ({ standalone =
     } finally {
       setLoading(false);
     }
-  };
+  }, [page]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchStats();
-  }, [page]);
+  }, [fetchStats]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {

@@ -101,7 +101,7 @@ let mockMangas: AuthorMangaResponse[] = [
   }
 ];
 
-let mockChapters: Record<number, AuthorChapterResponse[]> = {
+const mockChapters: Record<number, AuthorChapterResponse[]> = {
   1: [
     {
       id: 101,
@@ -158,7 +158,7 @@ let mockChapters: Record<number, AuthorChapterResponse[]> = {
   ]
 };
 
-let mockChapterPages: Record<number, { id: number; pageNumber: number; imageUrl: string }[]> = {
+const mockChapterPages: Record<number, { id: number; pageNumber: number; imageUrl: string }[]> = {
   101: [
     { id: 1001, pageNumber: 1, imageUrl: "https://picsum.photos/id/101/600/900" },
     { id: 1002, pageNumber: 2, imageUrl: "https://picsum.photos/id/102/600/900" },
@@ -224,7 +224,7 @@ export const authorMangaApi = {
       console.warn("API getMangaDetail failed, using mock fallback data.", err);
       const manga = mockMangas.find(m => m.id === mangaId);
       if (!manga) {
-        return { success: false, message: "Manga not found", payload: null as any };
+        return { success: false, message: "Manga not found", payload: null as never };
       }
       return {
         success: true,
@@ -289,7 +289,7 @@ export const authorMangaApi = {
     } catch (err) {
       console.warn("API updateManga failed, writing to mock DB.", err);
       const idx = mockMangas.findIndex(m => m.id === mangaId);
-      if (idx === -1) return { success: false, message: "Manga not found", payload: null as any };
+      if (idx === -1) return { success: false, message: "Manga not found", payload: null as never };
 
       mockMangas[idx] = {
         ...mockMangas[idx],
@@ -318,7 +318,7 @@ export const authorMangaApi = {
       if (idx !== -1) {
         mockMangas[idx].approvalStatus = "PENDING";
       }
-      return { success: true, message: "Submitted mock manga successfully", payload: null as any };
+      return { success: true, message: "Submitted mock manga successfully", payload: null as never };
     }
   },
 
@@ -329,7 +329,7 @@ export const authorMangaApi = {
     } catch (err) {
       console.warn("API deleteManga failed, deleting from mock DB.", err);
       mockMangas = mockMangas.filter(m => m.id !== mangaId);
-      return { success: true, message: "Deleted mock manga successfully", payload: null as any };
+      return { success: true, message: "Deleted mock manga successfully", payload: null as never };
     }
   },
 
@@ -402,7 +402,7 @@ export const authorMangaApi = {
           return { success: true, message: "Loaded from mock data", payload: ch };
         }
       }
-      return { success: false, message: "Chapter not found", payload: null as any };
+      return { success: false, message: "Chapter not found", payload: null as never };
     }
   },
 
@@ -478,7 +478,7 @@ export const authorMangaApi = {
           };
         }
       }
-      return { success: false, message: "Chapter not found", payload: null as any };
+      return { success: false, message: "Chapter not found", payload: null as never };
     }
   },
 
@@ -496,7 +496,7 @@ export const authorMangaApi = {
         pageNumber: index + 1,
         imageUrl: url
       }));
-      return { success: true, message: "Saved mock chapter pages", payload: null as any };
+      return { success: true, message: "Saved mock chapter pages", payload: null as never };
     }
   },
 
@@ -547,7 +547,7 @@ export const authorMangaApi = {
         }
       }
 
-      return { success: true, message: "Uploaded mock chapter pages successfully", payload: null as any };
+      return { success: true, message: "Uploaded mock chapter pages successfully", payload: null as never };
     }
   },
 
@@ -563,7 +563,7 @@ export const authorMangaApi = {
           mockChapters[mId][idx].approvalStatus = "PENDING";
         }
       }
-      return { success: true, message: "Submitted mock chapter successfully", payload: null as any };
+      return { success: true, message: "Submitted mock chapter successfully", payload: null as never };
     }
   },
 
@@ -585,7 +585,7 @@ export const authorMangaApi = {
           break;
         }
       }
-      return { success: true, message: "Deleted mock chapter successfully", payload: null as any };
+      return { success: true, message: "Deleted mock chapter successfully", payload: null as never };
     }
   },
 

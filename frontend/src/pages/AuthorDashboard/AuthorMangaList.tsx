@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AuthorDashboardLayout } from './AuthorDashboardLayout';
 import { authorMangaApi } from '../../api/authorMangaApi';
@@ -23,7 +23,7 @@ export const AuthorMangaList: React.FC<AuthorMangaListProps> = ({ standalone = f
   const [statusFilter, setStatusFilter] = useState(''); // approvalStatus
   const [mangaStatusFilter, setMangaStatusFilter] = useState(''); // status (Đang tiến hành, ...)
 
-  const fetchMangas = async () => {
+  const fetchMangas = useCallback(async () => {
     setLoading(true);
     try {
       const res = await authorMangaApi.getMangas(
@@ -42,14 +42,14 @@ export const AuthorMangaList: React.FC<AuthorMangaListProps> = ({ standalone = f
     } finally {
       setLoading(false);
     }
-  };
+  }, [statusFilter, page, searchQuery, mangaStatusFilter]);
 
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
       fetchMangas();
     }, 300);
     return () => clearTimeout(delayDebounce);
-  }, [statusFilter, mangaStatusFilter, searchQuery, page]);
+  }, [fetchMangas]);
 
   const handleNavigate = (path: string) => {
     if (standalone) {

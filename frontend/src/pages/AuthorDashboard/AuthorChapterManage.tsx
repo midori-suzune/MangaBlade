@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { AuthorDashboardLayout } from './AuthorDashboardLayout';
 import { authorMangaApi } from '../../api/authorMangaApi';
@@ -43,7 +43,7 @@ export const AuthorChapterManage: React.FC<AuthorChapterManageProps> = ({ standa
     return () => document.removeEventListener('click', handleOutsideClick);
   }, []);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!mId) return;
     setLoading(true);
     try {
@@ -62,11 +62,12 @@ export const AuthorChapterManage: React.FC<AuthorChapterManageProps> = ({ standa
     } finally {
       setLoading(false);
     }
-  };
+  }, [mId, page]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchData();
-  }, [mId, page]);
+  }, [fetchData]);
 
   const handleNavigate = (path: string) => {
     if (standalone) {
@@ -151,7 +152,7 @@ export const AuthorChapterManage: React.FC<AuthorChapterManageProps> = ({ standa
       } else {
         alert(res.message || "Gửi duyệt thất bại!");
       }
-    } catch (err) {
+    } catch {
       alert("Lỗi khi gửi duyệt chương!");
     }
   };
@@ -166,7 +167,7 @@ export const AuthorChapterManage: React.FC<AuthorChapterManageProps> = ({ standa
       } else {
         alert(res.message || "Xóa chương thất bại!");
       }
-    } catch (err) {
+    } catch {
       alert("Lỗi khi xóa chương!");
     }
   };
@@ -181,7 +182,7 @@ export const AuthorChapterManage: React.FC<AuthorChapterManageProps> = ({ standa
       } else {
         alert(res.message || "Gửi kiểm duyệt thất bại!");
       }
-    } catch (err) {
+    } catch {
       alert("Lỗi khi gửi kiểm duyệt!");
     }
   };
@@ -196,7 +197,7 @@ export const AuthorChapterManage: React.FC<AuthorChapterManageProps> = ({ standa
       } else {
         alert(res.message || "Gỡ truyện thất bại!");
       }
-    } catch (err) {
+    } catch {
       alert("Lỗi khi gỡ truyện!");
     }
   };
