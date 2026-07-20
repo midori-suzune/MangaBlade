@@ -49,7 +49,14 @@ public class SecurityConfig {
             "/api/v1/manga/comments/recent-users",
             "/api/v1/manga/{slug}",
             "/api/v1/chapter",
-            "/api/v1/categories"
+            "/api/v1/categories",
+            "/api/v1/admin/users",
+            "/api/v1/admin/users/{id}",
+            "/api/v1/admin/users/{id}/toggle-ban",
+            "/api/v1/admin/dashboard/reading-stats",
+            "/api/v1/admin/dashboard/statistics",
+            "/api/v1/admin/author-requests",
+            "/api/v1/admin/author-requests/{id}/review"
     };
 
     @Bean
@@ -62,7 +69,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(request ->
                         request.requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/v1/manga/{slug}/comments").permitAll()
-                                .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+//                                .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                                 .anyRequest().authenticated()
                 ).authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

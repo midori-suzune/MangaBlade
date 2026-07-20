@@ -1,5 +1,6 @@
 package com.mangablade.backend.repositories;
 
+import java.time.Instant;
 import java.util.Optional;
 
 import com.mangablade.backend.enums.UserRole;
@@ -24,9 +25,16 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByUsername(String username);
 
-    @Query("SELECT u FROM User u WHERE u.role = :role " +
-            "AND (:search IS NULL OR u.username LIKE %:search% OR u.email LIKE %:search%) " +
-            "AND (:isBanned IS NULL OR u.isBanned = :isBanned)")
+    long countByCreatedAtGreaterThanEqualAndCreatedAtLessThan(Instant startAt, Instant endAt);
+
+    @Query(
+            value = "SELECT u FROM User u LEFT JOIN FETCH u.activeTitle WHERE (:role IS NULL OR u.role = :role) " +
+                    "AND (:search IS NULL OR u.username LIKE %:search% OR u.email LIKE %:search%) " +
+                    "AND (:isBanned IS NULL OR u.isBanned = :isBanned)",
+            countQuery = "SELECT COUNT(u) FROM User u WHERE (:role IS NULL OR u.role = :role) " +
+                    "AND (:search IS NULL OR u.username LIKE %:search% OR u.email LIKE %:search%) " +
+                    "AND (:isBanned IS NULL OR u.isBanned = :isBanned)"
+    )
     Page<User> findByRoleWithFilters(@Param("role") UserRole role,
                                      @Param("search") String search,
                                      @Param("isBanned") Boolean isBanned,

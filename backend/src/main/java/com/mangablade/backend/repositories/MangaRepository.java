@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.query.Param;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,6 +20,12 @@ public interface MangaRepository extends JpaRepository<Manga, Long> {
     Optional<Manga> findByOtruyenMangaId(String id);
 
     Optional<Manga> findBySlug(String slug);
+
+    long countByCreatedAtGreaterThanEqualAndCreatedAtLessThan(Instant startAt, Instant endAt);
+
+    long countByStatus(String status);
+
+    long countByDeletedAtIsNotNull();
 
     @Query(MangaQuery.FIND_TOP_RANKED_BY_FOLLOWS)
     List<MangaRankingProjection> findTopRankedByFollows();

@@ -3,7 +3,10 @@ package com.mangablade.backend.services.mangablade.impl;
 import com.mangablade.backend.dtos.response.ChapterPageResponse;
 import com.mangablade.backend.dtos.response.ChapterProjection;
 import com.mangablade.backend.dtos.response.ReadingHistoryResponse;
+import com.mangablade.backend.entities.Chapter;
+import com.mangablade.backend.entities.ChapterReadEvent;
 import com.mangablade.backend.repositories.ChapterPageRepository;
+import com.mangablade.backend.repositories.ChapterReadEventRepository;
 import com.mangablade.backend.repositories.ChapterRepository;
 import com.mangablade.backend.repositories.ReadingHistoryRepository;
 import com.mangablade.backend.services.mangablade.ChapterService;
@@ -28,6 +31,7 @@ public class ChapterServiceImpl implements ChapterService {
 
     private final ChapterRepository chapterRepository;
     private  final ChapterPageRepository chapterPageRepository;
+    private final ChapterReadEventRepository chapterReadEventRepository;
     private final ReadingHistoryRepository readingHistoryRepository;
     private final TaskService taskService;
 
@@ -48,7 +52,7 @@ public class ChapterServiceImpl implements ChapterService {
 
     @Override
     @Transactional
-    public void recordReadingHistory(Long userId, String slug, String chapterNumber) {
+    public void recordChapterRead(Long userId, String slug, String chapterNumber) {
         var chapter = chapterRepository.findByMangaSlugAndChapterNumber(slug, chapterNumber);
 
         if (chapter.isEmpty()) {
@@ -56,11 +60,42 @@ public class ChapterServiceImpl implements ChapterService {
         }
 
         var now = Instant.now();
+        saveChapterReadEvent(userId, chapter.get(), now);
+
+        if (userId != null) {
+            upsertReadingHistory(userId, chapter.get(), now);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void recordReadingHistory(Long userId, String slug, String chapterNumber) {
+        var chapter = chapterRepository.findByMangaSlugAndChapterNumber(slug, chapterNumber);
+
+        if (chapter.isEmpty()) {
+            return;
+        }
+
+        upsertReadingHistory(userId, chapter.get(), Instant.now());
+    }
+
+    private void saveChapterReadEvent(Long userId, Chapter chapter, Instant readAt) {
+        chapterReadEventRepository.save(
+                ChapterReadEvent.builder()
+                        .userId(userId)
+                        .mangaId(chapter.getMangaId())
+                        .chapterId(chapter.getId())
+                        .readAt(readAt)
+                        .build()
+        );
+    }
+
+    private void upsertReadingHistory(Long userId, Chapter chapter, Instant readAt) {
         var affectedRows = readingHistoryRepository.upsertReadingHistory(
                 userId,
-                chapter.get().getMangaId(),
-                chapter.get().getId(),
-                now
+                chapter.getMangaId(),
+                chapter.getId(),
+                readAt
         );
 
         if (affectedRows == 1) {
