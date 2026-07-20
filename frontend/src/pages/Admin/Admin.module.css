@@ -419,6 +419,10 @@
   width: 260px;
 }
 
+.mangaInfoColumn {
+  width: 430px;
+}
+
 .roleColumn,
 .titleColumn {
   width: 150px;
@@ -448,6 +452,49 @@
   white-space: nowrap;
 }
 
+.mangaTable {
+  min-width: 1220px;
+}
+
+.mangaInfoCell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.mangaThumb {
+  width: 86px;
+  height: 116px;
+  flex: 0 0 auto;
+  border: 1px solid #d8e0ea;
+  border-radius: 4px;
+  background: #f8fafc;
+  object-fit: cover;
+}
+
+.mangaInfoText {
+  min-width: 0;
+}
+
+.mangaModalHeader {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #d8e0ea;
+}
+
+.mangaModalThumb {
+  width: 72px;
+  height: 96px;
+  flex: 0 0 auto;
+  border: 1px solid #d8e0ea;
+  border-radius: 4px;
+  background: #f8fafc;
+  object-fit: cover;
+}
+
 .dotStatus {
   display: inline-flex;
   align-items: center;
@@ -462,6 +509,14 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
+}
+
+.plainStatus {
+  display: inline-flex;
+  align-items: center;
+  color: #111827;
+  font-size: 14px;
+  font-weight: 650;
 }
 
 .dotSuccess {
@@ -850,6 +905,16 @@
   font-size: 13px;
 }
 
+.warningBox {
+  padding: 12px 16px;
+  border: 1px solid #facc15;
+  border-radius: 6px;
+  background: #fffbeb;
+  color: #854d0e;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 .modalActions {
   display: flex;
   justify-content: flex-end;
@@ -875,6 +940,128 @@
 .textarea {
   min-height: 88px;
   resize: vertical;
+}
+
+.notifyPanel {
+  display: grid;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid #d8e0ea;
+  border-radius: 6px;
+  background: #f8fafc;
+}
+
+.notifyToggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #111827;
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.notifyToggle input {
+  width: 15px;
+  height: 15px;
+  accent-color: #111827;
+}
+
+.notifyPreview {
+  display: grid;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid #d8e0ea;
+}
+
+.notifyPreview div {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 12px;
+}
+
+.notifyPreview span {
+  color: #667085;
+  font-size: 13px;
+}
+
+.notifyPreview strong {
+  color: #111827;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.reportDescription,
+.reportScreenshot {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px solid #d8e0ea;
+  border-radius: 6px;
+  background: #f8fafc;
+}
+
+.reportDescription span,
+.reportScreenshot span {
+  color: #667085;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.reportDescription p {
+  margin: 0;
+  color: #111827;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.reportScreenshotButton {
+  width: 96px;
+  height: 128px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: zoom-in;
+}
+
+.reportScreenshotButton img,
+.reportScreenshot img {
+  width: 96px;
+  height: 128px;
+  border: 1px solid #d8e0ea;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.imageZoomBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  background: rgba(15, 23, 42, 0.08);
+  backdrop-filter: none;
+}
+
+.imageZoomClose {
+  position: fixed;
+  top: 22px;
+  right: 28px;
+  border: 0;
+  background: transparent;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 34px;
+  line-height: 1;
+}
+
+.imageZoomPreview {
+  max-width: min(960px, 92vw);
+  max-height: 88vh;
+  border-radius: 6px;
+  background: #ffffff;
+  object-fit: contain;
 }
 
 .btnCancel {

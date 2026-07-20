@@ -5,6 +5,7 @@ import com.mangablade.backend.dtos.response.AdminUserResponse;
 import com.mangablade.backend.dtos.response.ApiResponse;
 import com.mangablade.backend.dtos.response.DashboardReadingStatsResponse;
 import com.mangablade.backend.dtos.response.DashboardStatisticResponse;
+import com.mangablade.backend.dtos.response.PageResponse;
 import com.mangablade.backend.entities.User;
 import com.mangablade.backend.enums.UserRole;
 import com.mangablade.backend.services.mangablade.AdminDashboardService;
@@ -27,7 +28,7 @@ public class AdminController {
     private final AdminDashboardService adminDashboardService;
 
     @GetMapping("/users")
-    public ResponseEntity<ApiResponse<Page<AdminUserResponse>>> getUsers(
+    public ResponseEntity<ApiResponse<PageResponse<AdminUserResponse>>> getUsers(
             @RequestParam(required = false) UserRole role,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) Boolean isBanned,
@@ -42,10 +43,10 @@ public class AdminController {
         ).map(AdminUserResponse::from);
 
         return ResponseEntity.ok(
-                ApiResponse.<Page<AdminUserResponse>>builder()
+                ApiResponse.<PageResponse<AdminUserResponse>>builder()
                         .success(true)
                         .message("Lấy danh sách người dùng thành công")
-                        .payload(users)
+                        .payload(PageResponse.from(users))
                         .build()
         );
     }

@@ -117,6 +117,7 @@ CREATE TABLE manga (
     status VARCHAR(30) NOT NULL,
     thumb_url VARCHAR(500),
     local_cover_url VARCHAR(1000),
+    hidden_reason VARCHAR(1000) NULL,
     approval_status VARCHAR(20) NOT NULL DEFAULT 'DRAFT',
     submitted_at DATETIME(3),
     reviewed_at DATETIME(3),
@@ -213,6 +214,30 @@ CREATE TABLE reading_history (
     CONSTRAINT fk_reading_history_user FOREIGN KEY (user_id) REFERENCES users(id),
     CONSTRAINT fk_reading_history_manga FOREIGN KEY (manga_id) REFERENCES manga(id),
     CONSTRAINT fk_reading_history_chapter_manga FOREIGN KEY (chapter_id, manga_id) REFERENCES chapter(id, manga_id)
+);
+
+CREATE TABLE chapter_reports (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    manga_id BIGINT NOT NULL,
+    chapter_id BIGINT NOT NULL,
+    type VARCHAR(30) NOT NULL,
+    description TEXT NOT NULL,
+    screenshot_url VARCHAR(1000),
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    reject_reason VARCHAR(1000),
+    created_at DATETIME(3) NOT NULL,
+    updated_at DATETIME(3) NOT NULL,
+    reviewed_at DATETIME(3),
+    reviewed_by BIGINT,
+
+    PRIMARY KEY (id),
+    CONSTRAINT fk_chapter_reports_user FOREIGN KEY (user_id) REFERENCES users(id),
+    CONSTRAINT fk_chapter_reports_manga FOREIGN KEY (manga_id) REFERENCES manga(id),
+    CONSTRAINT fk_chapter_reports_chapter FOREIGN KEY (chapter_id) REFERENCES chapter(id),
+    CONSTRAINT fk_chapter_reports_reviewed_by FOREIGN KEY (reviewed_by) REFERENCES users(id),
+    CONSTRAINT chk_chapter_reports_type CHECK (type IN ('IMAGE_BROKEN', 'MISSING_PAGE', 'WRONG_ORDER', 'DUPLICATE_CHAPTER', 'WRONG_CONTENT')),
+    CONSTRAINT chk_chapter_reports_status CHECK (status IN ('PENDING', 'CHECKING', 'RESOLVED', 'REJECTED'))
 );
 
 CREATE TABLE chapter_read_event (

@@ -79,6 +79,10 @@ public class Manga {
     @Column(name = "local_cover_url", length = 1000)
     private String localCoverUrl;
 
+    @Size(max = 1000)
+    @Column(name = "hidden_reason", length = 1000)
+    private String hiddenReason;
+
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "approval_status", nullable = false, length = 20)

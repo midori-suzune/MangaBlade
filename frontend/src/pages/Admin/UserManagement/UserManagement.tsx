@@ -4,7 +4,7 @@ import axios from 'axios';
 import { adminUserApi } from '../../../api/userApi';
 import type { UserType, UserRole, SpringPageResponse } from '../../../types/user';
 import { useAuthStore } from '../../../stores/authStore';
-import { BarChart3, Users, FileText, ChevronDown, Pencil, Trash2 } from 'lucide-react';
+import { AlertTriangle, BarChart3, BookOpen, Users, FileText, ChevronDown, Pencil, Trash2 } from 'lucide-react';
 import styles from '../Admin.module.css';
 
 type UserRoleFilter = 'ALL' | UserRole;
@@ -346,6 +346,18 @@ export const UserManagement: React.FC = () => {
                 onClick={() => navigate('/admin/users')}
               >
                 <Users size={16} /> Quản lý User
+              </button>
+              <button
+                className={styles.adminNavItem}
+                onClick={() => navigate('/admin/manga')}
+              >
+                <BookOpen size={16} /> Quản lý Truyện
+              </button>
+              <button
+                className={styles.adminNavItem}
+                onClick={() => navigate('/admin/chapter-reports')}
+              >
+                <AlertTriangle size={16} /> Báo cáo lỗi chương
               </button>
               <button
                 className={styles.adminNavItem}

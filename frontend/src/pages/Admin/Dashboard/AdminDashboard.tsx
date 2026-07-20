@@ -4,6 +4,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import {
   AlertTriangle,
   BarChart3,
+  BookOpen,
   ChevronDown,
   FileText,
   TrendingUp,
@@ -150,6 +151,18 @@ export const AdminDashboard: React.FC = () => {
             </button>
             <button
               className={styles.adminNavItem}
+              onClick={() => navigate('/admin/manga')}
+            >
+              <BookOpen size={16} /> Quản lý Truyện
+            </button>
+            <button
+              className={styles.adminNavItem}
+              onClick={() => navigate('/admin/chapter-reports')}
+            >
+              <AlertTriangle size={16} /> Báo cáo lỗi chương
+            </button>
+            <button
+              className={styles.adminNavItem}
               onClick={() => navigate('/admin/author-requests')}
             >
               <FileText size={16} /> Đơn đăng ký Tác giả
@@ -256,7 +269,7 @@ export const AdminDashboard: React.FC = () => {
                   <button type="button" onClick={() => navigate('/admin/author-requests')}>
                     <FileText size={16} /> Duyệt 12 đơn tác giả
                   </button>
-                  <button type="button" onClick={() => navigate('/admin/users')}>
+                  <button type="button" onClick={() => navigate('/admin/chapter-reports')}>
                     <AlertTriangle size={16} /> Kiểm tra 6 báo cáo lỗi chương
                   </button>
                 </div>

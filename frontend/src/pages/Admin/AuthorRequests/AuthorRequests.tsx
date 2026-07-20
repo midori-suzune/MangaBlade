@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { authorRequestApi, type AuthorRequestResponse } from '../../../api/authorRequestApi';
 import { useAuthStore } from '../../../stores/authStore';
-import { BarChart3, Users, FileText, ChevronDown, Eye } from 'lucide-react';
+import { AlertTriangle, BarChart3, BookOpen, Users, FileText, ChevronDown, Eye } from 'lucide-react';
 import styles from '../Admin.module.css';
 
 interface DetailModalProps {
@@ -353,6 +353,18 @@ export const AuthorRequests: React.FC = () => {
                 onClick={() => navigate('/admin/users')}
               >
                 <Users size={16} /> Quản lý User
+              </button>
+              <button
+                className={styles.adminNavItem}
+                onClick={() => navigate('/admin/manga')}
+              >
+                <BookOpen size={16} /> Quản lý Truyện
+              </button>
+              <button
+                className={styles.adminNavItem}
+                onClick={() => navigate('/admin/chapter-reports')}
+              >
+                <AlertTriangle size={16} /> Báo cáo lỗi chương
               </button>
               <button
                 className={`${styles.adminNavItem} ${activeTab === "author-requests" ? styles.active : ""}`}
