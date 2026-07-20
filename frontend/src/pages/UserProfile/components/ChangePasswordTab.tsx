@@ -28,6 +28,21 @@ export function ChangePasswordTab() {
             return;
         }
 
+        if (!/[A-Z]/.test(newPassword)) {
+            setErrorMessage("Mật khẩu mới phải chứa ít nhất 1 chữ cái viết hoa!");
+            return;
+        }
+
+        if (!/[a-z]/.test(newPassword)) {
+            setErrorMessage("Mật khẩu mới phải chứa ít nhất 1 chữ cái viết thường!");
+            return;
+        }
+
+        if (!/[0-9]/.test(newPassword) && !/[^A-Za-z0-9]/.test(newPassword)) {
+            setErrorMessage("Mật khẩu mới phải chứa ít nhất 1 số hoặc ký tự đặc biệt!");
+            return;
+        }
+
         if (newPassword !== confirmPassword) {
             setErrorMessage("Mật khẩu mới và xác nhận mật khẩu không khớp!");
             return;
