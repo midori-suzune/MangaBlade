@@ -2,12 +2,13 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { adminUserApi } from '../../../api/userApi';
-import type { UserType, UserRole } from '../../../types/user';
+import type { UserType, UserRole, SpringPageResponse } from '../../../types/user';
 import { useAuthStore } from '../../../stores/authStore';
 import { BarChart3, Users, FileText, ChevronDown, Pencil, Trash2 } from 'lucide-react';
 import styles from '../Admin.module.css';
 
 type UserRoleFilter = 'ALL' | UserRole;
+type UserStatusFilter = 'all' | 'active' | 'banned';
 
 const USER_TABLE_PAGE_SIZE = 10;
 
@@ -71,6 +72,47 @@ function UserDetailModal({ user, onSubmit, onClose }: UserDetailModalProps) {
           </div>
 
           <div className={styles.detailGrid}>
+            <span className={styles.detailLabel}>Username:</span>
+            <div className={styles.editableFieldRow}>
+              <input
+                className={`${styles.formInput} ${styles.modalFormInput}`}
+                value={form.username}
+                disabled={!editingFields.username}
+                onChange={(e) => setForm((current) => ({ ...current, username: e.target.value }))}
+                onBlur={() => toggleFieldEdit('username', false)}
+                onKeyDown={(e) => saveFieldOnEnter(e, 'username')}
+              />
+              <button
+                type="button"
+                className={`${styles.fieldEditButton} ${editingFields.username ? styles.fieldEditButtonActive : ''}`}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => toggleFieldSave('username')}
+              >
+                <Pencil size={18} />
+              </button>
+            </div>
+
+            <span className={styles.detailLabel}>Email:</span>
+            <div className={styles.editableFieldRow}>
+              <input
+                className={`${styles.formInput} ${styles.modalFormInput}`}
+                type="email"
+                value={form.email}
+                disabled={!editingFields.email}
+                onChange={(e) => setForm((current) => ({ ...current, email: e.target.value }))}
+                onBlur={() => toggleFieldEdit('email', false)}
+                onKeyDown={(e) => saveFieldOnEnter(e, 'email')}
+              />
+              <button
+                type="button"
+                className={`${styles.fieldEditButton} ${editingFields.email ? styles.fieldEditButtonActive : ''}`}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => toggleFieldSave('email')}
+              >
+                <Pencil size={18} />
+              </button>
+            </div>
+
             <span className={styles.detailLabel}>Role:</span>
             <div className={styles.editableFieldRow}>
               <select
@@ -124,80 +166,20 @@ function UserDetailModal({ user, onSubmit, onClose }: UserDetailModalProps) {
   );
 }
 
-const seededUsers: UserType[] = [
-  {
-    id: 1,
-    username: 'hieuminh4958',
-    email: 'hieuminh4958@gmail.com',
-    role: 'USER',
-    banned: false,
-    online: true,
-    createdAt: '2026-07-01T08:30:00',
-    activeTitleId: 3,
-    activeTitle: { id: 3, name: 'Kết Đan Cảnh' },
-    authProvider: 'LOCAL',
-  },
-  {
-    id: 2,
-    username: 'blade_reader',
-    email: 'reader@demo.com',
-    role: 'USER',
-    banned: true,
-    online: false,
-    createdAt: '2026-07-03T10:15:00',
-    activeTitleId: 5,
-    activeTitle: { id: 5, name: 'Hóa Thần Cảnh' },
-    authProvider: 'GOOGLE',
-  },
-  {
-    id: 3,
-    username: 'nguyen_author',
-    email: 'author@demo.com',
-    role: 'AUTHOR',
-    banned: false,
-    online: true,
-    createdAt: '2026-07-08T14:20:00',
-    activeTitleId: null,
-    activeTitle: null,
-    authProvider: 'LOCAL',
-  },
-  {
-    id: 4,
-    username: 'manga_admin',
-    email: 'admin@demo.com',
-    role: 'ADMIN',
-    banned: false,
-    online: true,
-    createdAt: '2026-07-10T09:05:00',
-    activeTitleId: null,
-    activeTitle: null,
-    authProvider: 'LOCAL',
-  },
-  {
-    id: 5,
-    username: 'locked_author',
-    email: 'locked-author@demo.com',
-    role: 'AUTHOR',
-    banned: true,
-    online: false,
-    createdAt: '2026-07-12T16:40:00',
-    activeTitleId: null,
-    activeTitle: null,
-    authProvider: 'LOCAL',
-  },
-];
-
 export const UserManagement: React.FC = () => {
   const navigate = useNavigate();
   const { displayName, user: loggedInUser } = useAuthStore();
   const currentAdminId = loggedInUser?.id;
 
   const [users, setUsers] = useState<UserType[]>([]);
+  const [userPage, setUserPage] = useState<SpringPageResponse<UserType> | null>(null);
   const [selectedRole, setSelectedRole] = useState<UserRoleFilter>('ALL');
   const [search, setSearch] = useState<string>('');
   const [searchInput, setSearchInput] = useState<string>('');
-  const [filterBan, setFilterBan] = useState<string>('all');
+  const [filterBan, setFilterBan] = useState<UserStatusFilter>('all');
   const [page, setPage] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>('');
   const [selectionMode, setSelectionMode] = useState<boolean>(false);
   const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
   const [selectionResetKey, setSelectionResetKey] = useState<number>(0);
@@ -206,31 +188,17 @@ export const UserManagement: React.FC = () => {
   const getErrorMessage = (error: unknown) => {
     if (axios.isAxiosError(error)) {
       const responseData = error.response?.data;
-      return typeof responseData === 'string' ? responseData : 'Có lỗi xảy ra';
+      if (typeof responseData === 'string') return responseData;
+      if (responseData?.message) return responseData.message;
+      if (responseData?.error) return responseData.error;
+      return 'Có lỗi xảy ra';
     }
     return 'Có lỗi xảy ra';
   };
 
-  const getSeededUsers = useCallback(() => {
-    const normalizedSearch = search.trim().toLowerCase();
-    return seededUsers.filter((user) => {
-      const matchesRole = selectedRole === 'ALL' || user.role === selectedRole;
-      const matchesStatus = filterBan === 'all'
-        || user.banned === (filterBan === 'banned')
-        || Boolean(user.online) === (filterBan === 'online');
-      const matchesSearch = !normalizedSearch
-        || user.username.toLowerCase().includes(normalizedSearch)
-        || user.email.toLowerCase().includes(normalizedSearch);
-      return matchesRole && matchesStatus && matchesSearch;
-    });
-  }, [selectedRole, search, filterBan]);
-
-  const filterUsersByStatus = useCallback((items: UserType[]) => {
-    if (filterBan === 'all' || filterBan === 'active' || filterBan === 'banned') return items;
-    return items.filter((user) => Boolean(user.online) === (filterBan === 'online'));
-  }, [filterBan]);
-
   const fetchUsers = useCallback(async (nextPage = page) => {
+    setLoading(true);
+    setErrorMessage('');
     try {
       const isBannedParam = filterBan === 'active' ? false : filterBan === 'banned' ? true : undefined;
       const response = await adminUserApi.getUsers({
@@ -240,13 +208,17 @@ export const UserManagement: React.FC = () => {
         page: nextPage,
         size: USER_TABLE_PAGE_SIZE,
       });
-      const filteredUsers = filterUsersByStatus(response.data.content);
-      setUsers(response.data.content.length > 0 ? filteredUsers : getSeededUsers());
+      setUsers(response.data.content);
+      setUserPage(response.data);
     } catch (error) {
       console.error("Lỗi khi tải danh sách người dùng:", error);
-      setUsers(getSeededUsers());
+      setUsers([]);
+      setUserPage(null);
+      setErrorMessage(getErrorMessage(error));
+    } finally {
+      setLoading(false);
     }
-  }, [selectedRole, search, filterBan, page, filterUsersByStatus, getSeededUsers]);
+  }, [selectedRole, search, filterBan, page]);
 
   useEffect(() => {
     Promise.resolve().then(() => fetchUsers());
@@ -294,10 +266,12 @@ export const UserManagement: React.FC = () => {
       await Promise.all(selectedUserIds.map((id) => adminUserApi.deleteUser(id)));
       setUsers((current) => current.filter((user) => !selectedUserIds.includes(user.id)));
       setSelectedUserIds([]);
-      fetchUsers();
+      if (users.length === selectedUserIds.length && page > 0) {
+        setPage((current) => current - 1);
+      } else {
+        fetchUsers();
+      }
     } catch (err: unknown) {
-      setUsers((current) => current.filter((user) => !selectedUserIds.includes(user.id)));
-      setSelectedUserIds([]);
       alert(getErrorMessage(err));
     }
   };
@@ -325,9 +299,6 @@ export const UserManagement: React.FC = () => {
       setSelectedUser(mergedUser);
       alert("Cập nhật user thành công!");
     } catch (err: unknown) {
-      const mergedUser = { ...selectedUser, ...updatedUser };
-      setUsers((current) => current.map((user) => (user.id === selectedUser.id ? mergedUser : user)));
-      setSelectedUser(mergedUser);
       alert(getErrorMessage(err));
     }
   };
@@ -348,6 +319,13 @@ export const UserManagement: React.FC = () => {
   const emptyColSpan = selectionMode ? baseColSpan + 1 : baseColSpan;
   const selectableUsers = users.filter((user) => user.id !== currentAdminId);
   const isAllSelected = selectableUsers.length > 0 && selectableUsers.every((user) => selectedUserIds.includes(user.id));
+  const canGoPrevious = userPage ? !userPage.first : false;
+  const canGoNext = userPage ? !userPage.last : false;
+
+  const goToPage = (nextPage: number) => {
+    setPage(nextPage);
+    setSelectedUserIds([]);
+  };
 
   return (
     <div className={styles.adminPage}>
@@ -427,7 +405,7 @@ export const UserManagement: React.FC = () => {
                   <select
                     value={filterBan}
                     onChange={(e) => {
-                      setFilterBan(e.target.value);
+                      setFilterBan(e.target.value as UserStatusFilter);
                       setPage(0);
                       setSelectionResetKey((current) => current + 1);
                     }}
@@ -436,8 +414,6 @@ export const UserManagement: React.FC = () => {
                     <option value="all">Tất cả trạng thái</option>
                     <option value="active">Không bị khóa</option>
                     <option value="banned">Bị khóa</option>
-                    <option value="online">Online</option>
-                    <option value="offline">Offline</option>
                   </select>
                 </div>
 
@@ -483,7 +459,7 @@ export const UserManagement: React.FC = () => {
                       {users.length === 0 ? (
                         <tr>
                           <td colSpan={emptyColSpan} className={styles.emptyCell}>
-                            Không có dữ liệu hiển thị.
+                            {loading ? 'Đang tải dữ liệu...' : errorMessage || 'Không có dữ liệu hiển thị.'}
                           </td>
                         </tr>
                       ) : (
@@ -537,6 +513,29 @@ export const UserManagement: React.FC = () => {
                     </tbody>
                   </table>
                 </div>
+                {userPage && userPage.totalPages > 1 && (
+                  <div className={styles.pagination}>
+                    <button
+                      type="button"
+                      className={styles.btnPage}
+                      disabled={!canGoPrevious}
+                      onClick={() => goToPage(page - 1)}
+                    >
+                      Trước
+                    </button>
+                    <span className={styles.pageCount}>
+                      {page + 1}/{userPage.totalPages}
+                    </span>
+                    <button
+                      type="button"
+                      className={styles.btnPage}
+                      disabled={!canGoNext}
+                      onClick={() => goToPage(page + 1)}
+                    >
+                      Sau
+                    </button>
+                  </div>
+                )}
               </div>
           </main>
         </section>
