@@ -185,6 +185,20 @@ public class MangaController {
         );
     }
 
+    @DeleteMapping("/comments/{commentId}")
+    public ResponseEntity<ApiResponse<Void>> deleteComment(
+            @PathVariable Long commentId,
+            @AuthenticationPrincipal User user
+    ) {
+        commentService.delete(commentId, user);
+        return ResponseEntity.ok(
+                ApiResponse.<Void>builder()
+                        .success(true)
+                        .message("success")
+                        .build()
+        );
+    }
+
     @GetMapping("/{slug}/chapters/{chapterNumber}/comments")
     public ResponseEntity<ApiResponse<List<MangaCommentResponse>>> getChapterComments(
             @PathVariable String slug,

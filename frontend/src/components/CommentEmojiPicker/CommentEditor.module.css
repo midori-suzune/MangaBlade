@@ -3,12 +3,12 @@
     min-height: 92px;
     padding: 15px;
     overflow-y: auto;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--color-border);
     border-radius: 0;
-    background-color: #f8fafc;
-    color: #1e293b;
+    background-color: var(--color-surface-soft);
+    color: var(--color-text);
     font-family: inherit;
-    font-size: 14px;
+    font-size: 16px;
     line-height: 1.5;
     outline: none;
     white-space: pre-wrap;
@@ -17,12 +17,12 @@
 }
 
 .commentEditor:focus {
-    border-color: #e2e8f0;
-    background-color: #ffffff;
+    border-color: var(--color-border);
+    background-color: var(--color-surface);
 }
 
 .commentEditor:empty::before {
-    color: #94a3b8;
+    color: var(--color-text-soft);
     content: attr(data-placeholder);
     pointer-events: none;
 }

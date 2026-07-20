@@ -15,6 +15,7 @@ public enum ErrorCode {
     EXPIRED_TOKEN(400, "Password reset link has expired", HttpStatus.BAD_REQUEST),
     MANGA_NOT_FOUND(404, "Manga not found", HttpStatus.NOT_FOUND),
     CHAPTER_NOT_FOUND(404, "Chapter not found", HttpStatus.NOT_FOUND),
+    COMMENT_NOT_FOUND(404, "Comment not found", HttpStatus.NOT_FOUND),
     UNAUTHORIZED(401, "Unauthorized", HttpStatus.UNAUTHORIZED),
     FORBIDDEN(403, "Forbidden", HttpStatus.FORBIDDEN),
     WRONG_PASSWORD(400, "Incorrect current password", HttpStatus.BAD_REQUEST),

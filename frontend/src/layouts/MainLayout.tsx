@@ -8,11 +8,11 @@ import {ScrollToTop} from "../components/ScrollToTop/ScrollToTop.tsx";
 
 export function MainLayout(){
     return (
-        <div>
+        <div className="appShell">
             <Header></Header>
             <Menu></Menu>
             <ScrollToTop />
-            <main>
+            <main className="appMain">
                 <Outlet></Outlet>
             </main>
             <Footer></Footer>

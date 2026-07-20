@@ -4,7 +4,7 @@ import {ArrowLeft, ArrowRight, MessageCircle} from "lucide-react";
 import styles from "./ReadingMangaPage.module.css";
 import type {ChapterPageRequest, ChapterPageResponse, MangaCommentResponse} from "../../types/manga.ts";
 import {useEffect, useMemo, useState} from "react";
-import {createChapterComment, getChapterComments, requestChapterPage} from "../../api/mangaApi.ts";
+import {createChapterComment, deleteMangaComment, getChapterComments, requestChapterPage} from "../../api/mangaApi.ts";
 import {useAuthStore} from "../../stores/authStore.ts";
 import {CommentEditor} from "../../components/CommentEmojiPicker/CommentEditor.tsx";
 import {CommentEmojiPicker} from "../../components/CommentEmojiPicker/CommentEmojiPicker.tsx";
@@ -22,6 +22,7 @@ export function ReadingMangaPage() {
     const [commentContent, setCommentContent] = useState("");
     const [commentError, setCommentError] = useState("");
     const [commentSubmitting, setCommentSubmitting] = useState(false);
+    const [deletingCommentId, setDeletingCommentId] = useState<number | null>(null);
     const chapterPageRequest : ChapterPageRequest = useMemo<ChapterPageRequest>( () => ({
         slugManga : slug as string ,
         chapterNumber : chapterNumber as string
@@ -96,6 +97,32 @@ export function ReadingMangaPage() {
             setCommentError("Không thể gửi bình luận.");
         } finally {
             setCommentSubmitting(false);
+        }
+    }
+
+    function canDeleteComment(comment: MangaCommentResponse) {
+        return Boolean(user && (user.role === "ADMIN" || user.id === comment.user.id));
+    }
+
+    async function handleDeleteComment(commentId: number) {
+        if (!isAuthenticated) {
+            openAuthModal("login");
+            return;
+        }
+
+        if (!window.confirm("Bạn có chắc chắn muốn gỡ bình luận này?")) {
+            return;
+        }
+
+        setDeletingCommentId(commentId);
+        try {
+            await deleteMangaComment(commentId);
+            setComments((current) => current.filter((comment) => comment.id !== commentId));
+            setCommentError("");
+        } catch {
+            setCommentError("Không thể gỡ bình luận.");
+        } finally {
+            setDeletingCommentId(null);
         }
     }
 
@@ -266,7 +293,15 @@ export function ReadingMangaPage() {
                                         <span>{new Date(comment.createdAt).toLocaleDateString("vi-VN")}</span>
                                         <button type="button">Thích</button>
                                         <button type="button">Trả lời</button>
-                                        <button type="button">Báo cáo</button>
+                                        {canDeleteComment(comment) && (
+                                            <button
+                                                type="button"
+                                                onClick={() => void handleDeleteComment(comment.id)}
+                                                disabled={deletingCommentId === comment.id}
+                                            >
+                                                {deletingCommentId === comment.id ? "Đang gỡ..." : "Gỡ"}
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             </article>
