@@ -5,6 +5,39 @@ import styles from "../UserProfile.module.css";
 import axios from "axios";
 import type { ApiResponse } from "../../../types/auth";
 
+function validatePassword(newPassword: string, confirmPassword: string): string | null {
+    if (newPassword.length < 8) {
+        return "Mật khẩu mới phải có tối thiểu 8 ký tự!";
+    }
+    if (!/[A-Z]/.test(newPassword)) {
+        return "Mật khẩu mới phải chứa ít nhất 1 chữ cái viết hoa!";
+    }
+    if (!/[a-z]/.test(newPassword)) {
+        return "Mật khẩu mới phải chứa ít nhất 1 chữ cái viết thường!";
+    }
+    if (!/[0-9]/.test(newPassword) && !/[^A-Za-z0-9]/.test(newPassword)) {
+        return "Mật khẩu mới phải chứa ít nhất 1 số hoặc ký tự đặc biệt!";
+    }
+    if (newPassword !== confirmPassword) {
+        return "Mật khẩu mới và xác nhận mật khẩu không khớp!";
+    }
+    return null;
+}
+
+function getChangePasswordErrorMessage(err: unknown): string {
+    if (axios.isAxiosError(err) && err.response?.data) {
+        const data = err.response.data as ApiResponse<void>;
+        if (data.message === "Incorrect current password") {
+            return "Mật khẩu hiện tại không chính xác!";
+        }
+        if (data.message === "Google accounts do not support local password changes") {
+            return "Tài khoản đăng nhập bằng Google không hỗ trợ đổi mật khẩu trực tiếp!";
+        }
+        return data.message || "Thay đổi mật khẩu thất bại.";
+    }
+    return "Không thể kết nối đến máy chủ. Vui lòng thử lại sau.";
+}
+
 export function ChangePasswordTab() {
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
@@ -23,28 +56,9 @@ export function ChangePasswordTab() {
         setSuccessMessage(null);
         setErrorMessage(null);
 
-        if (newPassword.length < 8) {
-            setErrorMessage("Mật khẩu mới phải có tối thiểu 8 ký tự!");
-            return;
-        }
-
-        if (!/[A-Z]/.test(newPassword)) {
-            setErrorMessage("Mật khẩu mới phải chứa ít nhất 1 chữ cái viết hoa!");
-            return;
-        }
-
-        if (!/[a-z]/.test(newPassword)) {
-            setErrorMessage("Mật khẩu mới phải chứa ít nhất 1 chữ cái viết thường!");
-            return;
-        }
-
-        if (!/[0-9]/.test(newPassword) && !/[^A-Za-z0-9]/.test(newPassword)) {
-            setErrorMessage("Mật khẩu mới phải chứa ít nhất 1 số hoặc ký tự đặc biệt!");
-            return;
-        }
-
-        if (newPassword !== confirmPassword) {
-            setErrorMessage("Mật khẩu mới và xác nhận mật khẩu không khớp!");
+        const error = validatePassword(newPassword, confirmPassword);
+        if (error) {
+            setErrorMessage(error);
             return;
         }
 
@@ -64,18 +78,7 @@ export function ChangePasswordTab() {
                 setErrorMessage(response.message || "Đã xảy ra lỗi khi đổi mật khẩu.");
             }
         } catch (err: unknown) {
-            if (axios.isAxiosError(err) && err.response?.data) {
-                const data = err.response.data as ApiResponse<void>;
-                if (data.message === "Incorrect current password") {
-                    setErrorMessage("Mật khẩu hiện tại không chính xác!");
-                } else if (data.message === "Google accounts do not support local password changes") {
-                    setErrorMessage("Tài khoản đăng nhập bằng Google không hỗ trợ đổi mật khẩu trực tiếp!");
-                } else {
-                    setErrorMessage(data.message || "Thay đổi mật khẩu thất bại.");
-                }
-            } else {
-                setErrorMessage("Không thể kết nối đến máy chủ. Vui lòng thử lại sau.");
-            }
+            setErrorMessage(getChangePasswordErrorMessage(err));
         } finally {
             setLoading(false);
         }
