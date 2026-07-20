@@ -14,6 +14,13 @@ import {ReadingHistory} from "../pages/ReadingHistory/ReadingHistory.tsx";
 import {FollowedManga} from "../pages/FollowedManga/FollowedManga.tsx";
 import {RouteError} from "./RouteError.tsx";
 
+import { AuthorMangaList } from "../pages/AuthorDashboard/AuthorMangaList.tsx";
+import { AuthorMangaCreate } from "../pages/AuthorDashboard/AuthorMangaCreate.tsx";
+import { AuthorMangaEdit } from "../pages/AuthorDashboard/AuthorMangaEdit.tsx";
+import { AuthorChapterManage } from "../pages/AuthorDashboard/AuthorChapterManage.tsx";
+import { AuthorChapterUpload } from "../pages/AuthorDashboard/AuthorChapterUpload.tsx";
+import { AuthorStatistics } from "../pages/AuthorDashboard/AuthorStatistics.tsx";
+
 export const appRoutes: RouteObject[] = [
     {
         path: "/",
@@ -51,6 +58,30 @@ export const appRoutes: RouteObject[] = [
             {
                 path: "followed-manga",
                 element: <FollowedManga />
+            },
+            {
+                path: "author/manga",
+                element: <AuthorMangaList />
+            },
+            {
+                path: "author/manga/create",
+                element: <AuthorMangaCreate />
+            },
+            {
+                path: "author/manga/:mangaId/edit",
+                element: <AuthorMangaEdit />
+            },
+            {
+                path: "author/manga/:mangaId/chapters",
+                element: <AuthorChapterManage />
+            },
+            {
+                path: "author/manga/:mangaId/chapters/:chapterId/upload",
+                element: <AuthorChapterUpload />
+            },
+            {
+                path: "author/statistics",
+                element: <AuthorStatistics />
             },
             {
                 path: "admin/users",
