@@ -2,8 +2,10 @@ package com.mangablade.backend.controllers;
 
 
 import com.mangablade.backend.dtos.request.CreateCommentRequest;
+import com.mangablade.backend.dtos.request.CreateChapterReportRequest;
 import com.mangablade.backend.dtos.response.*;
 import com.mangablade.backend.entities.User;
+import com.mangablade.backend.services.mangablade.ChapterReportService;
 import com.mangablade.backend.services.mangablade.CommentService;
 import com.mangablade.backend.services.mangablade.MangaSearchService;
 import com.mangablade.backend.services.mangablade.MangaService;
@@ -25,6 +27,7 @@ public class MangaController {
 
     private final MangaService mangaService;
     private final CommentService commentService;
+    private final ChapterReportService chapterReportService;
     private final MangaSearchService mangaSearchService;
 
     @GetMapping
@@ -227,6 +230,22 @@ public class MangaController {
                         .success(true)
                         .message("success")
                         .payload(comment)
+                        .build()
+        );
+    }
+
+    @PostMapping("/{slug}/chapters/{chapterNumber}/reports")
+    public ResponseEntity<ApiResponse<Void>> createChapterReport(
+            @PathVariable String slug,
+            @PathVariable String chapterNumber,
+            @Valid @RequestBody CreateChapterReportRequest request,
+            @AuthenticationPrincipal User user
+    ) {
+        chapterReportService.create(slug, chapterNumber, request, user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                ApiResponse.<Void>builder()
+                        .success(true)
+                        .message("Đã gửi báo cáo lỗi chương")
                         .build()
         );
     }

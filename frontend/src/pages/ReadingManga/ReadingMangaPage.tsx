@@ -2,9 +2,9 @@ import {Link, useNavigate, useParams} from "react-router-dom";
 import {AlertTriangle, ArrowLeft, ArrowRight, MessageCircle} from "lucide-react";
 
 import styles from "./ReadingMangaPage.module.css";
-import type {ChapterPageRequest, ChapterPageResponse, MangaCommentResponse} from "../../types/manga.ts";
+import type {ChapterPageRequest, ChapterPageResponse, ChapterReportType, MangaCommentResponse} from "../../types/manga.ts";
 import {useEffect, useMemo, useState} from "react";
-import {createChapterComment, deleteMangaComment, getChapterComments, requestChapterPage} from "../../api/mangaApi.ts";
+import {createChapterComment, createChapterReport, deleteMangaComment, getChapterComments, requestChapterPage} from "../../api/mangaApi.ts";
 import {useAuthStore} from "../../stores/authStore.ts";
 import {CommentEditor} from "../../components/CommentEmojiPicker/CommentEditor.tsx";
 import {CommentEmojiPicker} from "../../components/CommentEmojiPicker/CommentEmojiPicker.tsx";
@@ -24,10 +24,11 @@ export function ReadingMangaPage() {
     const [commentSubmitting, setCommentSubmitting] = useState(false);
     const [deletingCommentId, setDeletingCommentId] = useState<number | null>(null);
     const [activeSupportTab, setActiveSupportTab] = useState<"comments" | "report">("comments");
-    const [reportType, setReportType] = useState("IMAGE_BROKEN");
+    const [reportType, setReportType] = useState<ChapterReportType>("IMAGE_BROKEN");
     const [reportPage, setReportPage] = useState("");
     const [reportDescription, setReportDescription] = useState("");
     const [reportMessage, setReportMessage] = useState("");
+    const [reportSubmitting, setReportSubmitting] = useState(false);
     const chapterPageRequest : ChapterPageRequest = useMemo<ChapterPageRequest>( () => ({
         slugManga : slug as string ,
         chapterNumber : chapterNumber as string
@@ -131,21 +132,39 @@ export function ReadingMangaPage() {
         }
     }
 
-    function handleSubmitReport() {
+    async function handleSubmitReport() {
         if (!isAuthenticated) {
             openAuthModal("login");
             return;
         }
 
-        if (!reportDescription.trim()) {
+        const description = reportDescription.trim();
+        if (!description) {
             setReportMessage("Vui lòng mô tả lỗi cần báo cáo.");
             return;
         }
 
-        setReportMessage("Đã ghi nhận báo cáo lỗi chương. Prototype này chưa gửi API.");
-        setReportType("IMAGE_BROKEN");
-        setReportPage("");
-        setReportDescription("");
+        if (!slug || !chapterNumber) {
+            setReportMessage("Không xác định được chương cần báo cáo.");
+            return;
+        }
+
+        setReportSubmitting(true);
+        try {
+            await createChapterReport(slug, chapterNumber, {
+                type: reportType,
+                pageHint: reportPage.trim() || undefined,
+                description,
+            });
+            setReportMessage("Đã gửi báo cáo lỗi chương.");
+            setReportType("IMAGE_BROKEN");
+            setReportPage("");
+            setReportDescription("");
+        } catch {
+            setReportMessage("Không thể gửi báo cáo lỗi chương.");
+        } finally {
+            setReportSubmitting(false);
+        }
     }
 
     function getAvatarLabel(username?: string) {
@@ -358,7 +377,7 @@ export function ReadingMangaPage() {
                             <div className={styles.reportGrid}>
                                 <label className={styles.reportField}>
                                     <span>Loại lỗi</span>
-                                    <select value={reportType} onChange={(event) => setReportType(event.target.value)}>
+                                    <select value={reportType} onChange={(event) => setReportType(event.target.value as ChapterReportType)}>
                                         <option value="IMAGE_BROKEN">Ảnh bị lỗi / không tải được</option>
                                         <option value="MISSING_PAGE">Thiếu trang</option>
                                         <option value="WRONG_ORDER">Sai thứ tự trang</option>
@@ -385,8 +404,13 @@ export function ReadingMangaPage() {
                             </label>
                             <div className={styles.reportActions}>
                                 {reportMessage && <p className={styles.reportMessage}>{reportMessage}</p>}
-                                <button type="button" className={styles.btnSubmitComment} onClick={handleSubmitReport}>
-                                    Gửi báo cáo
+                                <button
+                                    type="button"
+                                    className={styles.btnSubmitComment}
+                                    onClick={handleSubmitReport}
+                                    disabled={reportSubmitting || !reportDescription.trim()}
+                                >
+                                    {reportSubmitting ? "Đang gửi..." : "Gửi báo cáo"}
                                 </button>
                             </div>
                         </div>

@@ -2,6 +2,7 @@ import type {
   CategoryResponse,
   ChapterPageRequest,
   ChapterPageResponse,
+  CreateChapterReportRequest,
   CreateCommentRequest,
   MangaCommentResponse,
   MangaDetailResponse,
@@ -133,6 +134,18 @@ export async function createChapterComment(
 ): Promise<ApiResponse<MangaCommentResponse>> {
   const response = await axiosInstance.post<ApiResponse<MangaCommentResponse>>(
     `/v1/manga/${slug}/chapters/${chapterNumber}/comments`,
+    body
+  );
+  return response.data;
+}
+
+export async function createChapterReport(
+  slug: string,
+  chapterNumber: string,
+  body: CreateChapterReportRequest
+): Promise<ApiResponse<void>> {
+  const response = await axiosInstance.post<ApiResponse<void>>(
+    `/v1/manga/${slug}/chapters/${chapterNumber}/reports`,
     body
   );
   return response.data;
