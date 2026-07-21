@@ -15,6 +15,10 @@ import java.util.List;
 public interface ChapterPageRepository extends JpaRepository<ChapterPage, Long> {
     boolean existsByChapterId(Long chapterId);
 
+    int countByChapterId(Long chapterId);
+
+    List<ChapterPage> findByChapterIdOrderByPageNumberAsc(Long chapterId);
+
     void deleteByChapterId(Long chapterId);
 
     @Query(value = ChapterPageQuery.FIND_PAGES_BY_SLUG_AND_CHAPTER_NUMBER, nativeQuery = true)

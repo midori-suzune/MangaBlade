@@ -89,6 +89,9 @@ public class AuthorRequestService {
             User user = userRepository.findById(authorRequest.getUserId())
                     .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
             user.setRole(UserRole.AUTHOR);
+            if (authorRequest.getPenName() != null && !authorRequest.getPenName().isBlank()) {
+                user.setDisplayName(authorRequest.getPenName().trim());
+            }
             userRepository.save(user);
         } else if ("REJECT".equalsIgnoreCase(req.getAction())) {
             authorRequest.setStatus(AuthorRequestStatus.REJECTED);
