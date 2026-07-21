@@ -107,6 +107,14 @@ export type CreateCommentRequest = {
     parentId?: number,
 }
 
+export type ChapterReportType = "IMAGE_BROKEN" | "MISSING_PAGE" | "WRONG_ORDER" | "DUPLICATE_CHAPTER";
+
+export type CreateChapterReportRequest = {
+    type: ChapterReportType,
+    pageHint?: string,
+    description: string,
+}
+
 export type ChapterPageRequest = {
     slugManga: string,
     chapterNumber: string,
@@ -119,5 +127,4 @@ export type ChapterPageResponse = {
     previousChapterNumber?: string,
     nextChapterNumber?: string,
 }
-
 

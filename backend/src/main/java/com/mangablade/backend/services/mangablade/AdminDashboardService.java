@@ -14,8 +14,10 @@ import com.mangablade.backend.dtos.response.DashboardReadingStatsResponse;
 import com.mangablade.backend.dtos.response.DashboardStatisticResponse;
 import com.mangablade.backend.dtos.response.DailyReadCountProjection;
 import com.mangablade.backend.enums.AuthorRequestStatus;
+import com.mangablade.backend.enums.ChapterReportStatus;
 import com.mangablade.backend.repositories.AuthorRequestRepository;
 import com.mangablade.backend.repositories.ChapterReadEventRepository;
+import com.mangablade.backend.repositories.ChapterReportRepository;
 import com.mangablade.backend.repositories.CommentRepository;
 import com.mangablade.backend.repositories.MangaRepository;
 import com.mangablade.backend.repositories.UserRepository;
@@ -35,6 +37,7 @@ public class AdminDashboardService {
     private final MangaRepository mangaRepository;
     private final CommentRepository commentRepository;
     private final AuthorRequestRepository authorRequestRepository;
+    private final ChapterReportRepository chapterReportRepository;
 
     public DashboardStatisticResponse getStatistics() {
         LocalDate today = LocalDate.now(Clock.systemUTC());
@@ -53,6 +56,10 @@ public class AdminDashboardService {
                 .newCommentsToday(commentRepository.countByCreatedAtGreaterThanEqualAndCreatedAtLessThan(startAt, endAt))
                 .totalAuthorRequests(authorRequestRepository.count())
                 .pendingAuthorRequests(authorRequestRepository.countByStatus(AuthorRequestStatus.PENDING))
+                .pendingChapterReports(chapterReportRepository.countByStatusIn(List.of(
+                        ChapterReportStatus.PENDING,
+                        ChapterReportStatus.CHECKING
+                )))
                 .build();
     }
 

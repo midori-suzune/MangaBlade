@@ -189,6 +189,50 @@
     padding: 20px;
 }
 
+.supportTabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 22px;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--color-border-soft);
+}
+
+.supportTab {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 0 2px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.supportTab:hover,
+.activeSupportTab {
+    color: #f97316;
+}
+
+.activeSupportTab::after {
+    position: absolute;
+    right: 0;
+    bottom: -16px;
+    left: 0;
+    height: 2px;
+    background: #f97316;
+    content: "";
+}
+
+.supportTab svg {
+    width: 16px;
+    height: 16px;
+}
+
 .sectionTitleSmall {
     display: flex;
     align-items: center;
@@ -205,6 +249,96 @@
     display: flex;
     gap: 15px;
     margin-bottom: 20px;
+}
+
+.reportPanel {
+    display: grid;
+    gap: 16px;
+}
+
+.reportIntro {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 14px;
+    border-left: 3px solid #f97316;
+    background: var(--color-surface-soft);
+}
+
+.reportIntro strong {
+    color: var(--color-text);
+    font-size: 15px;
+}
+
+.reportIntro span {
+    color: var(--color-text-muted);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.reportGrid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(160px, 0.6fr);
+    gap: 14px;
+}
+
+.reportField {
+    display: grid;
+    gap: 8px;
+}
+
+.reportField span {
+    color: var(--color-text-muted);
+    font-size: 13px;
+    font-weight: 750;
+}
+
+.reportField input,
+.reportField select,
+.reportField textarea {
+    width: 100%;
+    border: 1px solid var(--color-border);
+    border-radius: 0;
+    background: var(--color-surface-soft);
+    color: var(--color-text);
+    font: inherit;
+    font-size: 14px;
+    outline: none;
+}
+
+.reportField input,
+.reportField select {
+    min-height: 40px;
+    padding: 0 12px;
+}
+
+.reportField textarea {
+    min-height: 118px;
+    padding: 12px;
+    resize: vertical;
+}
+
+.reportField input:focus,
+.reportField select:focus,
+.reportField textarea:focus {
+    border-color: #f97316;
+    background: var(--color-surface);
+}
+
+.reportActions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.reportMessage {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: 13px;
+    font-weight: 700;
 }
 
 .commentAvatar {
@@ -412,6 +546,16 @@
     .commentInputBox,
     .commentItem {
         gap: 10px;
+    }
+
+    .reportGrid,
+    .reportActions {
+        grid-template-columns: 1fr;
+    }
+
+    .reportActions {
+        align-items: stretch;
+        flex-direction: column;
     }
 
     .commentAvatar {

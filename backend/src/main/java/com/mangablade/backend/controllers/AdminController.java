@@ -1,14 +1,22 @@
 package com.mangablade.backend.controllers;
 
 import com.mangablade.backend.dtos.request.AdminUserUpdateRequest;
+import com.mangablade.backend.dtos.request.AdminChapterReportReviewRequest;
+import com.mangablade.backend.dtos.request.AdminMangaVisibilityRequest;
+import com.mangablade.backend.dtos.response.AdminChapterReportResponse;
+import com.mangablade.backend.dtos.response.AdminMangaResponse;
 import com.mangablade.backend.dtos.response.AdminUserResponse;
 import com.mangablade.backend.dtos.response.ApiResponse;
 import com.mangablade.backend.dtos.response.DashboardReadingStatsResponse;
 import com.mangablade.backend.dtos.response.DashboardStatisticResponse;
 import com.mangablade.backend.dtos.response.PageResponse;
 import com.mangablade.backend.entities.User;
+import com.mangablade.backend.enums.ChapterReportStatus;
+import com.mangablade.backend.enums.ChapterReportType;
 import com.mangablade.backend.enums.UserRole;
 import com.mangablade.backend.services.mangablade.AdminDashboardService;
+import com.mangablade.backend.services.mangablade.AdminMangaService;
+import com.mangablade.backend.services.mangablade.ChapterReportService;
 import com.mangablade.backend.services.mangablade.UserService;
 
 import jakarta.validation.Valid;
@@ -26,6 +34,8 @@ import org.springframework.web.bind.annotation.*;
 public class AdminController {
     private final UserService userService;
     private final AdminDashboardService adminDashboardService;
+    private final AdminMangaService adminMangaService;
+    private final ChapterReportService chapterReportService;
 
     @GetMapping("/users")
     public ResponseEntity<ApiResponse<PageResponse<AdminUserResponse>>> getUsers(
@@ -97,6 +107,87 @@ public class AdminController {
                         .success(true)
                         .message("Cập nhật trạng thái người dùng thành công")
                         .payload(AdminUserResponse.from(updatedUser))
+                        .build()
+        );
+    }
+
+    @GetMapping("/manga")
+    public ResponseEntity<ApiResponse<PageResponse<AdminMangaResponse>>> getManga(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String origin,
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int size
+    ) {
+        Page<AdminMangaResponse> manga = adminMangaService.findManga(
+                normalizeSearch(search),
+                normalizeSearch(status),
+                normalizeSearch(origin),
+                PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id"))
+        );
+
+        return ResponseEntity.ok(
+                ApiResponse.<PageResponse<AdminMangaResponse>>builder()
+                        .success(true)
+                        .message("Lấy danh sách truyện thành công")
+                        .payload(PageResponse.from(manga))
+                        .build()
+        );
+    }
+
+    @PatchMapping("/manga/{id}/visibility")
+    public ResponseEntity<ApiResponse<AdminMangaResponse>> toggleMangaVisibility(
+            @PathVariable Long id,
+            @Valid @RequestBody AdminMangaVisibilityRequest request,
+            @AuthenticationPrincipal User currentAdmin
+    ) {
+        AdminMangaResponse manga = adminMangaService.toggleVisibility(id, request.getReason(), currentAdmin.getId());
+        return ResponseEntity.ok(
+                ApiResponse.<AdminMangaResponse>builder()
+                        .success(true)
+                        .message("Cập nhật trạng thái truyện thành công")
+                        .payload(manga)
+                        .build()
+        );
+    }
+
+    @GetMapping("/chapter-reports")
+    public ResponseEntity<ApiResponse<PageResponse<AdminChapterReportResponse>>> getChapterReports(
+            @RequestParam(required = false) ChapterReportStatus status,
+            @RequestParam(required = false) ChapterReportType type,
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Page<AdminChapterReportResponse> reports = chapterReportService.findReports(
+                status,
+                type,
+                normalizeSearch(search),
+                PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"))
+        );
+
+        return ResponseEntity.ok(
+                ApiResponse.<PageResponse<AdminChapterReportResponse>>builder()
+                        .success(true)
+                        .message("Lấy danh sách báo cáo lỗi chương thành công")
+                        .payload(PageResponse.from(reports))
+                        .build()
+        );
+    }
+
+    @PatchMapping("/chapter-reports/{id}/review")
+    public ResponseEntity<ApiResponse<AdminChapterReportResponse>> reviewChapterReport(
+            @PathVariable Long id,
+            @Valid @RequestBody AdminChapterReportReviewRequest request,
+            @AuthenticationPrincipal User currentAdmin
+    ) {
+        Long adminId = currentAdmin == null ? null : currentAdmin.getId();
+        AdminChapterReportResponse report = chapterReportService.review(id, request, adminId);
+        return ResponseEntity.ok(
+                ApiResponse.<AdminChapterReportResponse>builder()
+                        .success(true)
+                        .message("Cập nhật báo cáo lỗi chương thành công")
+                        .payload(report)
                         .build()
         );
     }

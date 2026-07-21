@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { authorRequestApi, type AuthorRequestResponse } from '../../../api/authorRequestApi';
 import { useAuthStore } from '../../../stores/authStore';
-import { AlertTriangle, BarChart3, BookOpen, Users, FileText, ChevronDown, Eye } from 'lucide-react';
+import { AlertTriangle, BarChart3, BookOpen, Users, FileCheck, FileText, ChevronDown, Eye } from 'lucide-react';
 import styles from '../Admin.module.css';
 
 interface DetailModalProps {
@@ -359,6 +359,12 @@ export const AuthorRequests: React.FC = () => {
                 onClick={() => navigate('/admin/manga')}
               >
                 <BookOpen size={16} /> Quản lý Truyện
+              </button>
+              <button
+                className={styles.adminNavItem}
+                onClick={() => navigate('/admin/content-moderation')}
+              >
+                <FileCheck size={16} /> Kiểm duyệt nội dung
               </button>
               <button
                 className={styles.adminNavItem}

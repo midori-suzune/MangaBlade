@@ -29,4 +29,6 @@ public interface ChapterReadEventRepository extends JpaRepository<ChapterReadEve
     );
 
     long countByReadAtGreaterThanEqualAndReadAtLessThan(Instant startAt, Instant endAt);
+
+    long countByMangaId(Long mangaId);
 }
