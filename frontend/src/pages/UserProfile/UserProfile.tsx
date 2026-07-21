@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { LogIn, User, BookOpen, CalendarCheck, Clock, Key, LogOut, Feather, PlusCircle, BarChart3 } from "lucide-react";
 import { useAuthStore } from "../../stores/authStore";
@@ -76,9 +77,17 @@ function TabContent({ activeTab, showAuthorTab, userRole }: TabContentProps) {
 }
 
 export function UserProfile() {
-    const { isAuthenticated, user, openAuthModal, logout, displayName } = useAuthStore();
+    const { isAuthenticated, user, openAuthModal, logout, displayName, fetchProfile } = useAuthStore();
     const [searchParams, setSearchParams] = useSearchParams();
-    const activeTab = searchParams.get("tab") || "settings";
+    const defaultTab = user?.role === 'AUTHOR' ? 'author-manga' : 'settings';
+    const rawTab = searchParams.get("tab");
+    const activeTab = (rawTab === "author" && user?.role === 'AUTHOR') ? 'author-manga' : (rawTab || defaultTab);
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            fetchProfile();
+        }
+    }, [isAuthenticated, fetchProfile]);
 
     if (!isAuthenticated || !user) {
         return <UnauthorizedProfileView onLoginClick={() => openAuthModal("login")} />;

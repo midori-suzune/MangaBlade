@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { UserInfo } from '../types/auth';
+import { userProfileApi } from '../api/userApi';
 
 interface AuthState {
   token: string | null;
@@ -18,10 +19,11 @@ interface AuthState {
   loadFromStorage: () => void;
   openAuthModal: (tab: 'login' | 'register' | 'forgot') => void;
   closeAuthModal: () => void;
-  updateAvatar: (url: string | null) => void;
-  updateDisplayName: (name: string) => void;
+  updateAvatar: (file: File) => Promise<void>;
+  updateDisplayName: (name: string) => Promise<void>;
   updateLevelAndExp: (level: number, exp: number) => void;
   updateActiveTitle: (title: string | null, color: string | null) => void;
+  fetchProfile: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -50,8 +52,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       user, 
       isAuthenticated: true, 
       isAuthModalOpen: false,
-      avatarUrl: savedAvatar,
-      displayName: savedName,
+      avatarUrl: user.avatarUrl ?? savedAvatar,
+      displayName: user.displayName ?? savedName,
       level: user.level ?? 0,
       exp: user.exp ?? 0,
       activeTitle: user.activeTitle ?? null,
@@ -89,8 +91,8 @@ export const useAuthStore = create<AuthState>((set) => ({
           token, 
           user, 
           isAuthenticated: true,
-          avatarUrl: savedAvatar,
-          displayName: savedName,
+          avatarUrl: user.avatarUrl ?? savedAvatar,
+          displayName: user.displayName ?? savedName,
           level: user.level ?? 0,
           exp: user.exp ?? 0,
           activeTitle: user.activeTitle ?? null,
@@ -115,26 +117,45 @@ export const useAuthStore = create<AuthState>((set) => ({
   openAuthModal: (tab) => set({ isAuthModalOpen: true, authModalTab: tab }),
   closeAuthModal: () => set({ isAuthModalOpen: false }),
 
-  updateAvatar: (url) => {
-    set((state) => {
-      if (state.user) {
-        if (url) {
-          localStorage.setItem(`avatar_${state.user.id}`, url);
-        } else {
-          localStorage.removeItem(`avatar_${state.user.id}`);
+  updateAvatar: async (file) => {
+    const tempUrl = URL.createObjectURL(file);
+    const previousUrl = useAuthStore.getState().avatarUrl;
+
+    // Cập nhật giao diện lập tức (Optimistic UI)
+    set({ avatarUrl: tempUrl });
+
+    try {
+      const res = await userProfileApi.updateAvatar(file);
+      if (res.success && res.payload) {
+        set({ avatarUrl: res.payload.avatarUrl || null });
+        if (res.payload.avatarUrl) {
+          localStorage.setItem(`avatar_${res.payload.id}`, res.payload.avatarUrl);
         }
       }
-      return { avatarUrl: url };
-    });
+    } catch (err) {
+      // Revert lại ảnh cũ nếu có lỗi
+      set({ avatarUrl: previousUrl });
+      console.error("Failed to update avatar", err);
+      throw err;
+    } finally {
+      // Giải phóng bộ nhớ của blob URL sau khi trình duyệt đã tải xong ảnh mới
+      setTimeout(() => {
+        URL.revokeObjectURL(tempUrl);
+      }, 1000);
+    }
   },
 
-  updateDisplayName: (name) => {
-    set((state) => {
-      if (state.user) {
-        localStorage.setItem(`displayName_${state.user.id}`, name);
+  updateDisplayName: async (name) => {
+    try {
+      const res = await userProfileApi.updateProfile({ displayName: name });
+      if (res.success && res.payload) {
+        set({ displayName: res.payload.displayName || name });
+        localStorage.setItem(`displayName_${res.payload.id}`, res.payload.displayName || name);
       }
-      return { displayName: name };
-    });
+    } catch (err) {
+      console.error("Failed to update display name", err);
+      throw err;
+    }
   },
 
   updateLevelAndExp: (level, exp) => {
@@ -143,5 +164,30 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   updateActiveTitle: (title, color) => {
     set({ activeTitle: title, activeTitleColor: color });
+  },
+
+  fetchProfile: async () => {
+    try {
+      const res = await userProfileApi.getProfile();
+      if (res.success && res.payload) {
+        const u = res.payload;
+        set({
+          level: u.level ?? 0,
+          exp: u.exp ?? 0,
+          avatarUrl: u.avatarUrl || null,
+          displayName: u.displayName || u.username,
+          activeTitle: u.activeTitle || null,
+          activeTitleColor: u.activeTitleColor || null
+        });
+        if (u.avatarUrl) {
+          localStorage.setItem(`avatar_${u.id}`, u.avatarUrl);
+        }
+        if (u.displayName) {
+          localStorage.setItem(`displayName_${u.id}`, u.displayName);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch user profile", err);
+    }
   },
 }));

@@ -1,5 +1,6 @@
 import axiosClient from './axiosClient';
 import type { UserType, SpringPageResponse, UserRole } from '../types/user';
+import type { UserInfo } from '../types/auth';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -40,3 +41,25 @@ export const adminUserApi = {
     return { ...response, data: response.data.payload };
   }
 };
+
+export const userProfileApi = {
+  getProfile: async () => {
+    const response = await axiosClient.get<ApiResponse<UserInfo>>('/v1/users/profile');
+    return response.data;
+  },
+  updateProfile: async (data: { displayName: string }) => {
+    const response = await axiosClient.put<ApiResponse<UserInfo>>('/v1/users/profile', data);
+    return response.data;
+  },
+  updateAvatar: async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await axiosClient.post<ApiResponse<UserInfo>>('/v1/users/profile/avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return response.data;
+  }
+};
+
