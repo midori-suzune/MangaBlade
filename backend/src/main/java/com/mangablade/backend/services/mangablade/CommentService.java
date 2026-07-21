@@ -10,11 +10,12 @@ import com.mangablade.backend.enums.CommentStatus;
 import com.mangablade.backend.enums.UserRole;
 import com.mangablade.backend.exceptions.AppException;
 import com.mangablade.backend.exceptions.ErrorCode;
-import com.mangablade.backend.repositories.CommentRepository;
 import com.mangablade.backend.repositories.ChapterRepository;
+import com.mangablade.backend.repositories.CommentRepository;
 import com.mangablade.backend.repositories.MangaRepository;
 import com.mangablade.backend.repositories.UserRepository;
-
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,15 +25,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Slf4j
 public class CommentService {
-
     private final CommentRepository commentRepository;
     private final MangaRepository mangaRepository;
     private final ChapterRepository chapterRepository;
@@ -46,7 +42,7 @@ public class CommentService {
     public List<MangaCommentResponse> findByMangaSlug(String slug) {
         var manga = findMangaBySlugOrThrow(slug);
         var rootComments = commentRepository.findRootCommentsByMangaId(manga.getId(), CommentStatus.VISIBLE);
-        return attachReplies(rootComments);
+        return attachReplies(rootComments, manga.getOwnerUserId());
     }
 
     public List<MangaCommentResponse> findByMangaSlugAndChapterNumber(String slug, String chapterNumber) {
@@ -61,10 +57,10 @@ public class CommentService {
                 chapter.getId(),
                 CommentStatus.VISIBLE
         );
-        return attachReplies(rootComments);
+        return attachReplies(rootComments, manga.getOwnerUserId());
     }
 
-    private List<MangaCommentResponse> attachReplies(List<Comment> rootComments) {
+    private List<MangaCommentResponse> attachReplies(List<Comment> rootComments, Long ownerUserId) {
         var parentIds = rootComments.stream()
                 .map(Comment::getId)
                 .toList();
@@ -75,12 +71,12 @@ public class CommentService {
                 .stream()
                 .collect(Collectors.groupingBy(
                         Comment::getParentId,
-                        Collectors.mapping(this::toResponse, Collectors.toList())
+                        Collectors.mapping(c -> toResponse(c, ownerUserId), Collectors.toList())
                 ));
 
         return rootComments.stream()
                 .map(comment -> {
-                    var response = toResponse(comment);
+                    var response = toResponse(comment, ownerUserId);
                     response.setReplies(repliesByParentId.getOrDefault(comment.getId(), List.of()));
                     return response;
                 })
@@ -122,7 +118,7 @@ public class CommentService {
         
         taskService.handleCommentPosted(dbUser.getId());
 
-        return toResponse(savedComment);
+        return toResponse(savedComment, manga.getOwnerUserId());
     }
 
     @Transactional
@@ -158,19 +154,34 @@ public class CommentService {
                 });
     }
 
-    private MangaCommentResponse toResponse(Comment comment) {
-        String activeTitle = comment.getUser().getActiveTitle() != null ? comment.getUser().getActiveTitle().getName() : null;
-        String activeTitleColor = comment.getUser().getActiveTitle() != null ? comment.getUser().getActiveTitle().getColorCode() : null;
+    private MangaCommentResponse toResponse(Comment comment, Long ownerUserId) {
+        User u = comment.getUser();
+        String activeTitle = (u != null && u.getActiveTitle() != null) ? u.getActiveTitle().getName() : null;
+        String activeTitleColor = (u != null && u.getActiveTitle() != null) ? u.getActiveTitle().getColorCode() : null;
+
+        Long mangaOwnerId = ownerUserId;
+        if (mangaOwnerId == null && comment.getManga() != null) {
+            mangaOwnerId = comment.getManga().getOwnerUserId();
+        }
+
+        boolean isAuthor = mangaOwnerId != null && comment.getUserId() != null && mangaOwnerId.equals(comment.getUserId());
+
+        Long userId = u != null ? u.getId() : comment.getUserId();
+        String nameToDisplay = (u != null && u.getDisplayName() != null && !u.getDisplayName().isBlank())
+                ? u.getDisplayName().trim()
+                : toPublicUsername(u != null ? u.getUsername() : "");
 
         return MangaCommentResponse.builder()
                 .id(comment.getId())
                 .content(comment.getContent())
                 .createdAt(comment.getCreatedAt())
+                .isAuthor(isAuthor)
                 .user(MangaCommentResponse.User.builder()
-                        .id(comment.getUser().getId())
-                        .username(toPublicUsername(comment.getUser().getUsername()))
+                        .id(userId)
+                        .username(nameToDisplay)
                         .activeTitle(activeTitle)
                         .activeTitleColor(activeTitleColor)
+                        .isAuthor(isAuthor)
                         .build())
                 .build();
     }
@@ -179,12 +190,10 @@ public class CommentService {
         if (username == null) {
             return "";
         }
-
-        var atIndex = username.indexOf("@");
+        int atIndex = username.indexOf("@");
         if (atIndex > 0) {
             return username.substring(0, atIndex);
         }
-
         return username;
     }
 }

@@ -1,5 +1,5 @@
 import {Link, useNavigate, useParams} from "react-router-dom";
-import {ArrowLeft, ArrowRight, MessageCircle} from "lucide-react";
+import {ArrowLeft, ArrowRight, MessageCircle, PenTool} from "lucide-react";
 
 import styles from "./ReadingMangaPage.module.css";
 import type {ChapterPageRequest, ChapterPageResponse, MangaCommentResponse} from "../../types/manga.ts";
@@ -266,6 +266,27 @@ export function ReadingMangaPage() {
                                     <div className={styles.commentBubble}>
                                         <div className={styles.commentAuthorRow}>
                                             <span className={styles.commentAuthor}>{getCommentAuthorName(comment.user.id, comment.user.username)}</span>
+                                            {(comment.isAuthor || comment.user?.isAuthor) && (
+                                                <span 
+                                                    style={{ 
+                                                        marginLeft: "8px", 
+                                                        fontSize: "11px", 
+                                                        padding: "2px 8px", 
+                                                        borderRadius: "12px", 
+                                                        backgroundColor: "#e0e7ff",
+                                                        color: "#4f46e5",
+                                                        border: "1px solid #c7d2fe",
+                                                        fontWeight: "bold",
+                                                        display: "inline-flex",
+                                                        alignItems: "center",
+                                                        gap: "4px",
+                                                        verticalAlign: "middle"
+                                                    }}
+                                                    title="Tác giả của bộ truyện"
+                                                >
+                                                    <PenTool size={11} /> Tác giả
+                                                </span>
+                                            )}
                                             {comment.user.activeTitle && (
                                                 <span 
                                                     style={{ 
