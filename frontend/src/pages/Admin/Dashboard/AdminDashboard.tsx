@@ -6,6 +6,7 @@ import {
   BarChart3,
   BookOpen,
   ChevronDown,
+  FileCheck,
   FileText,
   TrendingUp,
   Users,
@@ -154,6 +155,12 @@ export const AdminDashboard: React.FC = () => {
               onClick={() => navigate('/admin/manga')}
             >
               <BookOpen size={16} /> Quản lý Truyện
+            </button>
+            <button
+              className={styles.adminNavItem}
+              onClick={() => navigate('/admin/content-moderation')}
+            >
+              <FileCheck size={16} /> Kiểm duyệt nội dung
             </button>
             <button
               className={styles.adminNavItem}

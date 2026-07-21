@@ -1,6 +1,8 @@
 package com.mangablade.backend.controllers;
 
 import com.mangablade.backend.dtos.request.AdminUserUpdateRequest;
+import com.mangablade.backend.dtos.request.AdminMangaVisibilityRequest;
+import com.mangablade.backend.dtos.response.AdminMangaResponse;
 import com.mangablade.backend.dtos.response.AdminUserResponse;
 import com.mangablade.backend.dtos.response.ApiResponse;
 import com.mangablade.backend.dtos.response.DashboardReadingStatsResponse;
@@ -9,6 +11,7 @@ import com.mangablade.backend.dtos.response.PageResponse;
 import com.mangablade.backend.entities.User;
 import com.mangablade.backend.enums.UserRole;
 import com.mangablade.backend.services.mangablade.AdminDashboardService;
+import com.mangablade.backend.services.mangablade.AdminMangaService;
 import com.mangablade.backend.services.mangablade.UserService;
 
 import jakarta.validation.Valid;
@@ -26,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 public class AdminController {
     private final UserService userService;
     private final AdminDashboardService adminDashboardService;
+    private final AdminMangaService adminMangaService;
 
     @GetMapping("/users")
     public ResponseEntity<ApiResponse<PageResponse<AdminUserResponse>>> getUsers(
@@ -97,6 +101,46 @@ public class AdminController {
                         .success(true)
                         .message("Cập nhật trạng thái người dùng thành công")
                         .payload(AdminUserResponse.from(updatedUser))
+                        .build()
+        );
+    }
+
+    @GetMapping("/manga")
+    public ResponseEntity<ApiResponse<PageResponse<AdminMangaResponse>>> getManga(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String origin,
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int size
+    ) {
+        Page<AdminMangaResponse> manga = adminMangaService.findManga(
+                normalizeSearch(search),
+                normalizeSearch(status),
+                normalizeSearch(origin),
+                PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id"))
+        );
+
+        return ResponseEntity.ok(
+                ApiResponse.<PageResponse<AdminMangaResponse>>builder()
+                        .success(true)
+                        .message("Lấy danh sách truyện thành công")
+                        .payload(PageResponse.from(manga))
+                        .build()
+        );
+    }
+
+    @PatchMapping("/manga/{id}/visibility")
+    public ResponseEntity<ApiResponse<AdminMangaResponse>> toggleMangaVisibility(
+            @PathVariable Long id,
+            @Valid @RequestBody AdminMangaVisibilityRequest request,
+            @AuthenticationPrincipal User currentAdmin
+    ) {
+        AdminMangaResponse manga = adminMangaService.toggleVisibility(id, request.getReason(), currentAdmin.getId());
+        return ResponseEntity.ok(
+                ApiResponse.<AdminMangaResponse>builder()
+                        .success(true)
+                        .message("Cập nhật trạng thái truyện thành công")
+                        .payload(manga)
                         .build()
         );
     }

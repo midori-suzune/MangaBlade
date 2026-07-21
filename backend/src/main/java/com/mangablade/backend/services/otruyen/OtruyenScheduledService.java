@@ -50,19 +50,19 @@ public class OtruyenScheduledService {
                 target.markSuccess(importedAt);
                 log.info("Imported OTruyen manga: slug={}", target.getSlug());
 
-                try {
-                    var syncedChapters = cloudImportChapterService.syncMangaChapterPages(manga);
-                    log.info("Synced Cloudinary chapters after OTruyen import: slug={}, syncedChapters={}",
-                            manga.getSlug(), syncedChapters);
-                } catch (Exception cloudException) {
-                    log.warn(
-                            "Cloudinary sync after OTruyen import skipped: mangaId={}, slug={}, reason={}",
-                            manga.getId(),
-                            manga.getSlug(),
-                            cloudException.getMessage(),
-                            cloudException
-                    );
-                }
+//                try {
+//                    var syncedChapters = cloudImportChapterService.syncMangaChapterPages(manga);
+//                    log.info("Synced Cloudinary chapters after OTruyen import: slug={}, syncedChapters={}",
+//                            manga.getSlug(), syncedChapters);
+//                } catch (Exception cloudException) {
+//                    log.warn(
+//                            "Cloudinary sync after OTruyen import skipped: mangaId={}, slug={}, reason={}",
+//                            manga.getId(),
+//                            manga.getSlug(),
+//                            cloudException.getMessage(),
+//                            cloudException
+//                    );
+//                }
 
                 try {
                     mangaSearchService.indexManga(manga);

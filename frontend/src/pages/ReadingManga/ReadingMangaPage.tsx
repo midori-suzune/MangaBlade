@@ -1,5 +1,5 @@
 import {Link, useNavigate, useParams} from "react-router-dom";
-import {ArrowLeft, ArrowRight, MessageCircle} from "lucide-react";
+import {AlertTriangle, ArrowLeft, ArrowRight, MessageCircle} from "lucide-react";
 
 import styles from "./ReadingMangaPage.module.css";
 import type {ChapterPageRequest, ChapterPageResponse, MangaCommentResponse} from "../../types/manga.ts";
@@ -23,6 +23,11 @@ export function ReadingMangaPage() {
     const [commentError, setCommentError] = useState("");
     const [commentSubmitting, setCommentSubmitting] = useState(false);
     const [deletingCommentId, setDeletingCommentId] = useState<number | null>(null);
+    const [activeSupportTab, setActiveSupportTab] = useState<"comments" | "report">("comments");
+    const [reportType, setReportType] = useState("IMAGE_BROKEN");
+    const [reportPage, setReportPage] = useState("");
+    const [reportDescription, setReportDescription] = useState("");
+    const [reportMessage, setReportMessage] = useState("");
     const chapterPageRequest : ChapterPageRequest = useMemo<ChapterPageRequest>( () => ({
         slugManga : slug as string ,
         chapterNumber : chapterNumber as string
@@ -126,6 +131,23 @@ export function ReadingMangaPage() {
         }
     }
 
+    function handleSubmitReport() {
+        if (!isAuthenticated) {
+            openAuthModal("login");
+            return;
+        }
+
+        if (!reportDescription.trim()) {
+            setReportMessage("Vui lòng mô tả lỗi cần báo cáo.");
+            return;
+        }
+
+        setReportMessage("Đã ghi nhận báo cáo lỗi chương. Prototype này chưa gửi API.");
+        setReportType("IMAGE_BROKEN");
+        setReportPage("");
+        setReportDescription("");
+    }
+
     function getAvatarLabel(username?: string) {
         return (username || "U").slice(0, 1).toUpperCase();
     }
@@ -227,89 +249,148 @@ export function ReadingMangaPage() {
                 </section>
 
                 <section className={`${styles.cardBox} ${styles.commentSection}`}>
-                    <h2 className={styles.sectionTitleSmall}>
-                        <MessageCircle aria-hidden="true" />
-                        Bình Luận ({comments.length})
-                    </h2>
+                    <div className={styles.supportTabs} role="tablist" aria-label="Tương tác chương">
+                        <button
+                            type="button"
+                            className={`${styles.supportTab} ${activeSupportTab === "comments" ? styles.activeSupportTab : ""}`}
+                            onClick={() => setActiveSupportTab("comments")}
+                        >
+                            <MessageCircle aria-hidden="true" />
+                            Bình luận ({comments.length})
+                        </button>
+                        <button
+                            type="button"
+                            className={`${styles.supportTab} ${activeSupportTab === "report" ? styles.activeSupportTab : ""}`}
+                            onClick={() => setActiveSupportTab("report")}
+                        >
+                            <AlertTriangle aria-hidden="true" />
+                            Báo cáo lỗi chương
+                        </button>
+                    </div>
 
-                    <div className={styles.commentInputBox}>
-                        <div className={styles.commentAvatar}>{getAvatarLabel(user?.username)}</div>
-                        <div className={styles.commentInputWrapper}>
-                            <CommentEditor
-                                placeholder="Nhập bình luận của bạn..."
-                                minRows={3}
-                                value={commentContent}
-                                onChange={setCommentContent}
-                            />
-                            <div className={styles.commentActions}>
-                                <CommentEmojiPicker />
-                                <button
-                                    className={styles.btnSubmitComment}
-                                    type="button"
-                                    onClick={handleSubmitComment}
-                                    disabled={commentSubmitting || !commentContent.trim()}
-                                >
-                                    {commentSubmitting ? "Đang gửi..." : "Gửi bình luận"}
+                    {activeSupportTab === "comments" ? (
+                        <>
+                            <div className={styles.commentInputBox}>
+                                <div className={styles.commentAvatar}>{getAvatarLabel(user?.username)}</div>
+                                <div className={styles.commentInputWrapper}>
+                                    <CommentEditor
+                                        placeholder="Nhập bình luận của bạn..."
+                                        minRows={3}
+                                        value={commentContent}
+                                        onChange={setCommentContent}
+                                    />
+                                    <div className={styles.commentActions}>
+                                        <CommentEmojiPicker />
+                                        <button
+                                            className={styles.btnSubmitComment}
+                                            type="button"
+                                            onClick={handleSubmitComment}
+                                            disabled={commentSubmitting || !commentContent.trim()}
+                                        >
+                                            {commentSubmitting ? "Đang gửi..." : "Gửi bình luận"}
+                                        </button>
+                                    </div>
+                                    {commentError && <p className={styles.commentError}>{commentError}</p>}
+                                </div>
+                            </div>
+
+                            <div className={styles.detailComments}>
+                                {comments.map((comment) => (
+                                    <article className={styles.commentItem} key={comment.id}>
+                                        <div className={`${styles.commentAvatar} ${styles.sampleAvatar}`}>
+                                            {getAvatarLabel(getCommentAuthorName(comment.user.id, comment.user.username))}
+                                        </div>
+                                        <div className={styles.commentBody}>
+                                            <div className={styles.commentBubble}>
+                                                <div className={styles.commentAuthorRow}>
+                                                    <span className={styles.commentAuthor}>{getCommentAuthorName(comment.user.id, comment.user.username)}</span>
+                                                    {comment.user.activeTitle && (
+                                                        <span 
+                                                            style={{ 
+                                                                marginLeft: "8px", 
+                                                                fontSize: "10px", 
+                                                                padding: "1px 6px", 
+                                                                borderRadius: "3px", 
+                                                                backgroundColor: `${comment.user.activeTitleColor || '#6b7280'}18`,
+                                                                color: comment.user.activeTitleColor || '#6b7280',
+                                                                border: `1px solid ${comment.user.activeTitleColor || '#6b7280'}`,
+                                                                fontWeight: "bold",
+                                                                verticalAlign: "middle"
+                                                            }}
+                                                        >
+                                                            {comment.user.activeTitle}
+                                                        </span>
+                                                    )}
+                                                    <span className={styles.commentBadge}>{chapterLabel}</span>
+                                                </div>
+                                                <p className={styles.commentText}>
+                                                    <CommentText content={comment.content} />
+                                                </p>
+                                            </div>
+                                            <div className={styles.commentFooterActions}>
+                                                <span>{new Date(comment.createdAt).toLocaleDateString("vi-VN")}</span>
+                                                <button type="button">Thích</button>
+                                                <button type="button">Trả lời</button>
+                                                {canDeleteComment(comment) && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => void handleDeleteComment(comment.id)}
+                                                        disabled={deletingCommentId === comment.id}
+                                                    >
+                                                        {deletingCommentId === comment.id ? "Đang gỡ..." : "Gỡ"}
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </article>
+                                ))}
+                                {comments.length === 0 && (
+                                    <p className={styles.emptyComments}>Chưa có bình luận nào cho chương này.</p>
+                                )}
+                            </div>
+                        </>
+                    ) : (
+                        <div className={styles.reportPanel}>
+                            <div className={styles.reportIntro}>
+                                <strong>{title || "Truyện đang đọc"}</strong>
+                                <span>{chapterLabel}</span>
+                            </div>
+                            <div className={styles.reportGrid}>
+                                <label className={styles.reportField}>
+                                    <span>Loại lỗi</span>
+                                    <select value={reportType} onChange={(event) => setReportType(event.target.value)}>
+                                        <option value="IMAGE_BROKEN">Ảnh bị lỗi / không tải được</option>
+                                        <option value="MISSING_PAGE">Thiếu trang</option>
+                                        <option value="WRONG_ORDER">Sai thứ tự trang</option>
+                                        <option value="DUPLICATE_CHAPTER">Trùng chapter</option>
+                                    </select>
+                                </label>
+                                <label className={styles.reportField}>
+                                    <span>Trang liên quan</span>
+                                    <input
+                                        type="text"
+                                        value={reportPage}
+                                        onChange={(event) => setReportPage(event.target.value)}
+                                        placeholder="Ví dụ: 3, 7-9"
+                                    />
+                                </label>
+                            </div>
+                            <label className={styles.reportField}>
+                                <span>Mô tả lỗi</span>
+                                <textarea
+                                    value={reportDescription}
+                                    onChange={(event) => setReportDescription(event.target.value)}
+                                    placeholder="Mô tả ngắn lỗi bạn gặp trong chương này..."
+                                />
+                            </label>
+                            <div className={styles.reportActions}>
+                                {reportMessage && <p className={styles.reportMessage}>{reportMessage}</p>}
+                                <button type="button" className={styles.btnSubmitComment} onClick={handleSubmitReport}>
+                                    Gửi báo cáo
                                 </button>
                             </div>
-                            {commentError && <p className={styles.commentError}>{commentError}</p>}
                         </div>
-                    </div>
-
-                    <div className={styles.detailComments}>
-                        {comments.map((comment) => (
-                            <article className={styles.commentItem} key={comment.id}>
-                                <div className={`${styles.commentAvatar} ${styles.sampleAvatar}`}>
-                                    {getAvatarLabel(getCommentAuthorName(comment.user.id, comment.user.username))}
-                                </div>
-                                <div className={styles.commentBody}>
-                                    <div className={styles.commentBubble}>
-                                        <div className={styles.commentAuthorRow}>
-                                            <span className={styles.commentAuthor}>{getCommentAuthorName(comment.user.id, comment.user.username)}</span>
-                                            {comment.user.activeTitle && (
-                                                <span 
-                                                    style={{ 
-                                                        marginLeft: "8px", 
-                                                        fontSize: "10px", 
-                                                        padding: "1px 6px", 
-                                                        borderRadius: "3px", 
-                                                        backgroundColor: `${comment.user.activeTitleColor || '#6b7280'}18`,
-                                                        color: comment.user.activeTitleColor || '#6b7280',
-                                                        border: `1px solid ${comment.user.activeTitleColor || '#6b7280'}`,
-                                                        fontWeight: "bold",
-                                                        verticalAlign: "middle"
-                                                    }}
-                                                >
-                                                    {comment.user.activeTitle}
-                                                </span>
-                                            )}
-                                            <span className={styles.commentBadge}>{chapterLabel}</span>
-                                        </div>
-                                        <p className={styles.commentText}>
-                                            <CommentText content={comment.content} />
-                                        </p>
-                                    </div>
-                                    <div className={styles.commentFooterActions}>
-                                        <span>{new Date(comment.createdAt).toLocaleDateString("vi-VN")}</span>
-                                        <button type="button">Thích</button>
-                                        <button type="button">Trả lời</button>
-                                        {canDeleteComment(comment) && (
-                                            <button
-                                                type="button"
-                                                onClick={() => void handleDeleteComment(comment.id)}
-                                                disabled={deletingCommentId === comment.id}
-                                            >
-                                                {deletingCommentId === comment.id ? "Đang gỡ..." : "Gỡ"}
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            </article>
-                        ))}
-                        {comments.length === 0 && (
-                            <p className={styles.emptyComments}>Chưa có bình luận nào cho chương này.</p>
-                        )}
-                    </div>
+                    )}
                 </section>
             </main>
         </div>

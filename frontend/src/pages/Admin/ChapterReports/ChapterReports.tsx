@@ -7,6 +7,7 @@ import {
   Check,
   ChevronDown,
   Eye,
+  FileCheck,
   FileText,
   Users,
   X,
@@ -29,7 +30,6 @@ interface ChapterReportItem {
   description: string;
   status: ChapterReportStatus;
   createdAt: string;
-  screenshotUrl?: string;
   rejectReason?: string;
 }
 
@@ -45,7 +45,6 @@ const prototypeReports: ChapterReportItem[] = [
     description: 'Trang 8 và trang 9 không tải được ảnh.',
     status: 'PENDING',
     createdAt: '2026-07-20T09:12:00',
-    screenshotUrl: 'https://images.unsplash.com/photo-1618336753974-aae8e04506aa?auto=format&fit=crop&w=900&q=80',
   },
   {
     id: 1007,
@@ -117,12 +116,11 @@ interface ReportDetailModalProps {
   report: ChapterReportItem;
   rejectReason: string;
   setRejectReason: (value: string) => void;
-  onZoomImage: (imageUrl: string) => void;
   onStatusChange: (status: ChapterReportStatus) => void;
   onClose: () => void;
 }
 
-function ReportDetailModal({ report, rejectReason, setRejectReason, onZoomImage, onStatusChange, onClose }: ReportDetailModalProps) {
+function ReportDetailModal({ report, rejectReason, setRejectReason, onStatusChange, onClose }: ReportDetailModalProps) {
   const chapterPath = `/manga/${report.mangaSlug}/c/${report.chapterNumber}`;
 
   return (
@@ -157,15 +155,6 @@ function ReportDetailModal({ report, rejectReason, setRejectReason, onZoomImage,
             <span>Mô tả</span>
             <p>{report.description}</p>
           </div>
-
-          {report.screenshotUrl && (
-            <div className={styles.reportScreenshot}>
-              <span>Ảnh đính kèm</span>
-              <button type="button" className={styles.reportScreenshotButton} onClick={() => onZoomImage(report.screenshotUrl!)}>
-                <img src={report.screenshotUrl} alt="" />
-              </button>
-            </div>
-          )}
 
           {report.status === 'REJECTED' && report.rejectReason && (
             <div className={styles.rejectBox}>
@@ -213,7 +202,6 @@ export const ChapterReports: React.FC = () => {
   const [typeFilter, setTypeFilter] = useState<ChapterReportTypeFilter>('ALL');
   const [selectedReport, setSelectedReport] = useState<ChapterReportItem | null>(null);
   const [rejectReason, setRejectReason] = useState('');
-  const [zoomImageUrl, setZoomImageUrl] = useState<string | null>(null);
 
   const filteredReports = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
@@ -278,6 +266,9 @@ export const ChapterReports: React.FC = () => {
             </button>
             <button className={styles.adminNavItem} onClick={() => navigate('/admin/manga')}>
               <BookOpen size={16} /> Quản lý Truyện
+            </button>
+            <button className={styles.adminNavItem} onClick={() => navigate('/admin/content-moderation')}>
+              <FileCheck size={16} /> Kiểm duyệt nội dung
             </button>
             <button className={`${styles.adminNavItem} ${styles.active}`} onClick={() => navigate('/admin/chapter-reports')}>
               <AlertTriangle size={16} /> Báo cáo lỗi chương
@@ -410,21 +401,12 @@ export const ChapterReports: React.FC = () => {
           report={selectedReport}
           rejectReason={rejectReason}
           setRejectReason={setRejectReason}
-          onZoomImage={setZoomImageUrl}
           onStatusChange={updateReportStatus}
           onClose={() => {
             setSelectedReport(null);
             setRejectReason('');
           }}
         />
-      )}
-      {zoomImageUrl && (
-        <div className={styles.imageZoomBackdrop} onClick={() => setZoomImageUrl(null)}>
-          <button type="button" className={styles.imageZoomClose} onClick={() => setZoomImageUrl(null)}>
-            &times;
-          </button>
-          <img src={zoomImageUrl} alt="" className={styles.imageZoomPreview} />
-        </div>
       )}
     </div>
   );

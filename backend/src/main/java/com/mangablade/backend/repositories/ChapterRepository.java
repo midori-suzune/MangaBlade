@@ -16,6 +16,8 @@ import java.util.Optional;
 public interface ChapterRepository extends JpaRepository<Chapter, Long> {
     List<Chapter> findAllByMangaId(Long mangaId);
 
+    long countByMangaId(Long mangaId);
+
     Optional<Chapter> findByMangaIdAndChapterNumber(Long mangaId, String chapterNumber);
 
     @Query(ChapterQuery.FIND_BY_MANGA_SLUG_AND_CHAPTER_NUMBER)
