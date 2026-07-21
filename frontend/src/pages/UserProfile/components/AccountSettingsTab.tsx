@@ -77,7 +77,7 @@ export function AccountSettingsTab() {
             }
             try {
                 await updateAvatar(file);
-            } catch (err) {
+            } catch {
                 alert("Lỗi khi tải ảnh đại diện lên Cloudinary!");
             }
         }
