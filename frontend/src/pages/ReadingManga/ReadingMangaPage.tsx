@@ -1,5 +1,5 @@
 import {Link, useNavigate, useParams} from "react-router-dom";
-import {AlertTriangle, ArrowLeft, ArrowRight, MessageCircle} from "lucide-react";
+import {AlertTriangle, ArrowLeft, ArrowRight, MessageCircle, PenTool} from "lucide-react";
 
 import styles from "./ReadingMangaPage.module.css";
 import type {ChapterPageRequest, ChapterPageResponse, ChapterReportType, MangaCommentResponse} from "../../types/manga.ts";
@@ -9,6 +9,231 @@ import {useAuthStore} from "../../stores/authStore.ts";
 import {CommentEditor} from "../../components/CommentEmojiPicker/CommentEditor.tsx";
 import {CommentEmojiPicker} from "../../components/CommentEmojiPicker/CommentEmojiPicker.tsx";
 import {CommentText} from "../../components/CommentEmojiPicker/CommentText.tsx";
+
+interface CommentItemProps {
+    comment: MangaCommentResponse;
+    chapterLabel: string;
+    deletingCommentId: number | null;
+    getAvatarLabel: (username?: string) => string;
+    getCommentAuthorName: (userId: number, username: string) => string;
+    canDeleteComment: (comment: MangaCommentResponse) => boolean;
+    handleDeleteComment: (commentId: number) => void;
+}
+
+function CommentItem({
+    comment,
+    chapterLabel,
+    deletingCommentId,
+    getAvatarLabel,
+    getCommentAuthorName,
+    canDeleteComment,
+    handleDeleteComment
+}: CommentItemProps) {
+    return (
+        <article className={styles.commentItem}>
+            <div className={`${styles.commentAvatar} ${styles.sampleAvatar}`}>
+                {getAvatarLabel(getCommentAuthorName(comment.user.id, comment.user.username))}
+            </div>
+            <div className={styles.commentBody}>
+                <div className={styles.commentBubble}>
+                    <div className={styles.commentAuthorRow}>
+                        <span className={styles.commentAuthor}>{getCommentAuthorName(comment.user.id, comment.user.username)}</span>
+                        {(comment.isAuthor || comment.user?.isAuthor) && (
+                            <span 
+                                style={{ 
+                                    marginLeft: "8px", 
+                                    fontSize: "11px", 
+                                    padding: "2px 8px", 
+                                    borderRadius: "12px", 
+                                    backgroundColor: "#e0e7ff",
+                                    color: "#4f46e5",
+                                    border: "1px solid #c7d2fe",
+                                    fontWeight: "bold",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "4px",
+                                    verticalAlign: "middle"
+                                }}
+                                title="Tác giả của bộ truyện"
+                            >
+                                <PenTool size={11} /> Tác giả
+                            </span>
+                        )}
+                        {comment.user.activeTitle && (
+                            <span 
+                                style={{ 
+                                    marginLeft: "8px", 
+                                    fontSize: "10px", 
+                                    padding: "1px 6px", 
+                                    borderRadius: "3px", 
+                                    backgroundColor: `${comment.user.activeTitleColor || '#6b7280'}18`,
+                                    color: comment.user.activeTitleColor || '#6b7280',
+                                    border: `1px solid ${comment.user.activeTitleColor || '#6b7280'}`,
+                                    fontWeight: "bold",
+                                    verticalAlign: "middle"
+                                }}
+                            >
+                                {comment.user.activeTitle}
+                            </span>
+                        )}
+                        <span className={styles.commentBadge}>{chapterLabel}</span>
+                    </div>
+                    <p className={styles.commentText}>
+                        <CommentText content={comment.content} />
+                    </p>
+                </div>
+                <div className={styles.commentFooterActions}>
+                    <span>{new Date(comment.createdAt).toLocaleDateString("vi-VN")}</span>
+                    <button type="button">Thích</button>
+                    <button type="button">Trả lời</button>
+                    {canDeleteComment(comment) && (
+                        <button
+                            type="button"
+                            onClick={() => void handleDeleteComment(comment.id)}
+                            disabled={deletingCommentId === comment.id}
+                        >
+                            {deletingCommentId === comment.id ? "Đang gỡ..." : "Gỡ"}
+                        </button>
+                    )}
+                </div>
+            </div>
+        </article>
+    );
+}
+
+interface BreadcrumbProps {
+    className: string;
+    slug: string;
+    title: string;
+    chapterLabel: string;
+}
+
+function Breadcrumb({ className, slug, title, chapterLabel }: BreadcrumbProps) {
+    return (
+        <nav className={className} aria-label="Breadcrumb">
+            <Link to="/">Trang Chủ</Link>
+            <span>/</span>
+            <Link to={`/manga/${slug}`}>{title}</Link>
+            <span>/</span>
+            <strong>{chapterLabel}</strong>
+        </nav>
+    );
+}
+
+interface ChapterNavigationProps {
+    className: string;
+    hasPrevChapter: boolean;
+    hasNextChapter: boolean;
+    prevChapterPage: () => void;
+    nextChapterPage: () => void;
+}
+
+function ChapterNavigation({
+    className,
+    hasPrevChapter,
+    hasNextChapter,
+    prevChapterPage,
+    nextChapterPage
+}: ChapterNavigationProps) {
+    return (
+        <div className={className}>
+            <button
+                className={`${styles.btnNav} ${!hasPrevChapter ? styles.disabled : ""}`}
+                type="button"
+                onClick={prevChapterPage}
+                disabled={!hasPrevChapter}
+            >
+                <ArrowLeft aria-hidden="true" />
+                Chap trước
+            </button>
+            <button
+                className={`${styles.btnNav} ${!hasNextChapter ? styles.disabled : ""}`}
+                type="button"
+                onClick={nextChapterPage}
+                disabled={!hasNextChapter}
+            >
+                Chap sau
+                <ArrowRight aria-hidden="true" />
+            </button>
+        </div>
+    );
+}
+
+interface ReportPanelProps {
+    title: string;
+    chapterLabel: string;
+    reportType: ChapterReportType;
+    setReportType: (type: ChapterReportType) => void;
+    reportPage: string;
+    setReportPage: (page: string) => void;
+    reportDescription: string;
+    setReportDescription: (desc: string) => void;
+    reportMessage: string;
+    reportSubmitting: boolean;
+    handleSubmitReport: () => void;
+}
+
+function ReportPanel({
+    title,
+    chapterLabel,
+    reportType,
+    setReportType,
+    reportPage,
+    setReportPage,
+    reportDescription,
+    setReportDescription,
+    reportMessage,
+    reportSubmitting,
+    handleSubmitReport
+}: ReportPanelProps) {
+    return (
+        <div className={styles.reportPanel}>
+            <div className={styles.reportIntro}>
+                <strong>{title || "Truyện đang đọc"}</strong>
+                <span>{chapterLabel}</span>
+            </div>
+            <div className={styles.reportGrid}>
+                <label className={styles.reportField}>
+                    <span>Loại lỗi</span>
+                    <select value={reportType} onChange={(event) => setReportType(event.target.value as ChapterReportType)}>
+                        <option value="IMAGE_BROKEN">Ảnh bị lỗi / không tải được</option>
+                        <option value="MISSING_PAGE">Thiếu trang</option>
+                        <option value="WRONG_ORDER">Sai thứ tự trang</option>
+                        <option value="DUPLICATE_CHAPTER">Trùng chapter</option>
+                    </select>
+                </label>
+                <label className={styles.reportField}>
+                    <span>Trang liên quan</span>
+                    <input
+                        type="text"
+                        value={reportPage}
+                        onChange={(event) => setReportPage(event.target.value)}
+                        placeholder="Ví dụ: 3, 7-9"
+                    />
+                </label>
+            </div>
+            <label className={styles.reportField}>
+                <span>Mô tả lỗi</span>
+                <textarea
+                    value={reportDescription}
+                    onChange={(event) => setReportDescription(event.target.value)}
+                    placeholder="Mô tả ngắn lỗi bạn gặp trong chương này..."
+                />
+            </label>
+            <div className={styles.reportActions}>
+                {reportMessage && <p className={styles.reportMessage}>{reportMessage}</p>}
+                <button
+                    type="button"
+                    className={styles.btnSubmitComment}
+                    onClick={handleSubmitReport}
+                    disabled={reportSubmitting || !reportDescription.trim()}
+                >
+                    {reportSubmitting ? "Đang gửi..." : "Gửi báo cáo"}
+                </button>
+            </div>
+        </div>
+    );
+}
 
 export function ReadingMangaPage() {
 
@@ -192,39 +417,25 @@ export function ReadingMangaPage() {
         <div className={styles.readerPageBg}>
             <main className={styles.mainContainer}>
                 <section className={`${styles.cardBox} ${styles.chapterControl}`}>
-                    <nav className={styles.breadcrumbTop} aria-label="Breadcrumb">
-                        <Link to="/">Trang Chủ</Link>
-                        <span>/</span>
-                        <Link to={`/manga/${slug}`}>{title}</Link>
-                        <span>/</span>
-                        <strong>{chapterLabel}</strong>
-                    </nav>
+                    <Breadcrumb
+                        className={styles.breadcrumbTop}
+                        slug={slug || ""}
+                        title={title}
+                        chapterLabel={chapterLabel}
+                    />
 
                     <h1 className={styles.detailTitle}>
                         <Link to={`/manga/${slug}`}>{title}</Link> - {chapterLabel}
                     </h1>
                     <time className={styles.chapterTime}>Cập nhật lúc: 21:41 03/11/2021</time>
 
-                    <div className={styles.topNavBtns}>
-                        <button
-                            className={`${styles.btnNav} ${!hasPrevChapter ? styles.disabled : ""}`}
-                            type="button"
-                            onClick={prevChapterPage}
-                            disabled={!hasPrevChapter}
-                        >
-                            <ArrowLeft aria-hidden="true" />
-                            Chap trước
-                        </button>
-                        <button
-                            className={`${styles.btnNav} ${!hasNextChapter ? styles.disabled : ""}`}
-                            type="button"
-                            onClick={nextChapterPage}
-                            disabled={!hasNextChapter}
-                        >
-                            Chap sau
-                            <ArrowRight aria-hidden="true" />
-                        </button>
-                    </div>
+                    <ChapterNavigation
+                        className={styles.topNavBtns}
+                        hasPrevChapter={hasPrevChapter}
+                        hasNextChapter={hasNextChapter}
+                        prevChapterPage={prevChapterPage}
+                        nextChapterPage={nextChapterPage}
+                    />
                 </section>
 
                 <section className={styles.chapterContent} aria-label="Nội dung chương">
@@ -237,34 +448,20 @@ export function ReadingMangaPage() {
                 </section>
 
                 <section className={`${styles.cardBox} ${styles.bottomNav}`}>
-                    <div className={styles.navBtns}>
-                        <button
-                            className={`${styles.btnNav} ${!hasPrevChapter ? styles.disabled : ""}`}
-                            type="button"
-                            onClick={prevChapterPage}
-                            disabled={!hasPrevChapter}
-                        >
-                            <ArrowLeft aria-hidden="true" />
-                            Chap trước
-                        </button>
-                        <button
-                            className={`${styles.btnNav} ${!hasNextChapter ? styles.disabled : ""}`}
-                            type="button"
-                            onClick={nextChapterPage}
-                            disabled={!hasNextChapter}
-                        >
-                            Chap sau
-                            <ArrowRight aria-hidden="true" />
-                        </button>
-                    </div>
+                    <ChapterNavigation
+                        className={styles.navBtns}
+                        hasPrevChapter={hasPrevChapter}
+                        hasNextChapter={hasNextChapter}
+                        prevChapterPage={prevChapterPage}
+                        nextChapterPage={nextChapterPage}
+                    />
 
-                    <nav className={styles.breadcrumbBottom} aria-label="Breadcrumb">
-                        <Link to="/">Trang Chủ</Link>
-                        <span>/</span>
-                        <Link to={`/manga/${slug}`}>{title}</Link>
-                        <span>/</span>
-                        <strong>{chapterLabel}</strong>
-                    </nav>
+                    <Breadcrumb
+                        className={styles.breadcrumbBottom}
+                        slug={slug || ""}
+                        title={title}
+                        chapterLabel={chapterLabel}
+                    />
                 </section>
 
                 <section className={`${styles.cardBox} ${styles.commentSection}`}>
@@ -315,53 +512,16 @@ export function ReadingMangaPage() {
 
                             <div className={styles.detailComments}>
                                 {comments.map((comment) => (
-                                    <article className={styles.commentItem} key={comment.id}>
-                                        <div className={`${styles.commentAvatar} ${styles.sampleAvatar}`}>
-                                            {getAvatarLabel(getCommentAuthorName(comment.user.id, comment.user.username))}
-                                        </div>
-                                        <div className={styles.commentBody}>
-                                            <div className={styles.commentBubble}>
-                                                <div className={styles.commentAuthorRow}>
-                                                    <span className={styles.commentAuthor}>{getCommentAuthorName(comment.user.id, comment.user.username)}</span>
-                                                    {comment.user.activeTitle && (
-                                                        <span 
-                                                            style={{ 
-                                                                marginLeft: "8px", 
-                                                                fontSize: "10px", 
-                                                                padding: "1px 6px", 
-                                                                borderRadius: "3px", 
-                                                                backgroundColor: `${comment.user.activeTitleColor || '#6b7280'}18`,
-                                                                color: comment.user.activeTitleColor || '#6b7280',
-                                                                border: `1px solid ${comment.user.activeTitleColor || '#6b7280'}`,
-                                                                fontWeight: "bold",
-                                                                verticalAlign: "middle"
-                                                            }}
-                                                        >
-                                                            {comment.user.activeTitle}
-                                                        </span>
-                                                    )}
-                                                    <span className={styles.commentBadge}>{chapterLabel}</span>
-                                                </div>
-                                                <p className={styles.commentText}>
-                                                    <CommentText content={comment.content} />
-                                                </p>
-                                            </div>
-                                            <div className={styles.commentFooterActions}>
-                                                <span>{new Date(comment.createdAt).toLocaleDateString("vi-VN")}</span>
-                                                <button type="button">Thích</button>
-                                                <button type="button">Trả lời</button>
-                                                {canDeleteComment(comment) && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => void handleDeleteComment(comment.id)}
-                                                        disabled={deletingCommentId === comment.id}
-                                                    >
-                                                        {deletingCommentId === comment.id ? "Đang gỡ..." : "Gỡ"}
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </article>
+                                    <CommentItem
+                                        key={comment.id}
+                                        comment={comment}
+                                        chapterLabel={chapterLabel}
+                                        deletingCommentId={deletingCommentId}
+                                        getAvatarLabel={getAvatarLabel}
+                                        getCommentAuthorName={getCommentAuthorName}
+                                        canDeleteComment={canDeleteComment}
+                                        handleDeleteComment={handleDeleteComment}
+                                    />
                                 ))}
                                 {comments.length === 0 && (
                                     <p className={styles.emptyComments}>Chưa có bình luận nào cho chương này.</p>
@@ -369,51 +529,19 @@ export function ReadingMangaPage() {
                             </div>
                         </>
                     ) : (
-                        <div className={styles.reportPanel}>
-                            <div className={styles.reportIntro}>
-                                <strong>{title || "Truyện đang đọc"}</strong>
-                                <span>{chapterLabel}</span>
-                            </div>
-                            <div className={styles.reportGrid}>
-                                <label className={styles.reportField}>
-                                    <span>Loại lỗi</span>
-                                    <select value={reportType} onChange={(event) => setReportType(event.target.value as ChapterReportType)}>
-                                        <option value="IMAGE_BROKEN">Ảnh bị lỗi / không tải được</option>
-                                        <option value="MISSING_PAGE">Thiếu trang</option>
-                                        <option value="WRONG_ORDER">Sai thứ tự trang</option>
-                                        <option value="DUPLICATE_CHAPTER">Trùng chapter</option>
-                                    </select>
-                                </label>
-                                <label className={styles.reportField}>
-                                    <span>Trang liên quan</span>
-                                    <input
-                                        type="text"
-                                        value={reportPage}
-                                        onChange={(event) => setReportPage(event.target.value)}
-                                        placeholder="Ví dụ: 3, 7-9"
-                                    />
-                                </label>
-                            </div>
-                            <label className={styles.reportField}>
-                                <span>Mô tả lỗi</span>
-                                <textarea
-                                    value={reportDescription}
-                                    onChange={(event) => setReportDescription(event.target.value)}
-                                    placeholder="Mô tả ngắn lỗi bạn gặp trong chương này..."
-                                />
-                            </label>
-                            <div className={styles.reportActions}>
-                                {reportMessage && <p className={styles.reportMessage}>{reportMessage}</p>}
-                                <button
-                                    type="button"
-                                    className={styles.btnSubmitComment}
-                                    onClick={handleSubmitReport}
-                                    disabled={reportSubmitting || !reportDescription.trim()}
-                                >
-                                    {reportSubmitting ? "Đang gửi..." : "Gửi báo cáo"}
-                                </button>
-                            </div>
-                        </div>
+                        <ReportPanel
+                            title={title}
+                            chapterLabel={chapterLabel}
+                            reportType={reportType}
+                            setReportType={setReportType}
+                            reportPage={reportPage}
+                            setReportPage={setReportPage}
+                            reportDescription={reportDescription}
+                            setReportDescription={setReportDescription}
+                            reportMessage={reportMessage}
+                            reportSubmitting={reportSubmitting}
+                            handleSubmitReport={handleSubmitReport}
+                        />
                     )}
                 </section>
             </main>

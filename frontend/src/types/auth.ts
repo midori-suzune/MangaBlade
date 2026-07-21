@@ -19,6 +19,9 @@ export interface UserInfo {
   exp?: number;
   activeTitleId?: number | null;
   activeTitle?: string | null;
+  displayName?: string | null;
+  avatarUrl?: string | null;
+  activeTitleColor?: string | null;
 }
 
 export interface AuthResponse {

@@ -20,6 +20,8 @@ public interface ReadingHistoryRepository extends JpaRepository<ReadingHistory, 
 
     Optional<ReadingHistory> findByUserIdAndChapterId(Long userId, Long chapterId);
 
+    long countByMangaId(Long mangaId);
+
     @Modifying
     @Query(value = """
             INSERT INTO reading_history (user_id, manga_id, chapter_id, page_index, last_read_at)

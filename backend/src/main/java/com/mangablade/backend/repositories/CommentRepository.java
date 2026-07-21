@@ -18,6 +18,8 @@ import java.util.List;
 public interface CommentRepository extends JpaRepository<Comment, Long> {
     long countByCreatedAtGreaterThanEqualAndCreatedAtLessThan(Instant startAt, Instant endAt);
 
+    long countByMangaId(Long mangaId);
+
     @Query(CommentQuery.FIND_ROOT_COMMENTS_BY_MANGA_ID)
     List<Comment> findRootCommentsByMangaId(
             @Param("mangaId") Long mangaId,

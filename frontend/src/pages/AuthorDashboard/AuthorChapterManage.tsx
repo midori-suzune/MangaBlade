@@ -269,7 +269,7 @@ interface ChapterRowProps {
   chaptersLength: number;
   activeDropdownId: number | null;
   setActiveDropdownId: React.Dispatch<React.SetStateAction<number | null>>;
-  mId: number;
+  mId: number | string;
   handleNavigate: (path: string) => void;
   handleOpenEditModal: (chapter: AuthorChapterResponse) => void;
   handleSubmitChapterReview: (chapterId: number) => void;
@@ -579,8 +579,8 @@ export const AuthorChapterManage: React.FC<AuthorChapterManageProps> = ({ standa
   const navigate = useNavigate();
   const { mangaId } = useParams<{ mangaId: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
-
-  const mId = standalone ? Number(searchParams.get('mangaId')) : Number(mangaId);
+  const mangaIdParam = searchParams.get('mangaId');
+  const mId = standalone ? (mangaIdParam || mangaId || '') : (mangaId || '');
 
   const [manga, setManga] = useState<AuthorMangaResponse | null>(null);
   const [chapters, setChapters] = useState<AuthorChapterResponse[]>([]);

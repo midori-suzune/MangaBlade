@@ -352,6 +352,7 @@ function ChapterReviewModal({ chapter, rejectReason, setRejectReason, onReview, 
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPreviewOpen, chapter.previewPages.length]);
 
   return (

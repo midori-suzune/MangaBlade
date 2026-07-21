@@ -16,6 +16,8 @@ import java.util.Optional;
 public interface ChapterRepository extends JpaRepository<Chapter, Long> {
     List<Chapter> findAllByMangaId(Long mangaId);
 
+    org.springframework.data.domain.Page<Chapter> findByMangaId(Long mangaId, org.springframework.data.domain.Pageable pageable);
+
     long countByMangaId(Long mangaId);
 
     Optional<Chapter> findByMangaIdAndChapterNumber(Long mangaId, String chapterNumber);
@@ -32,7 +34,9 @@ public interface ChapterRepository extends JpaRepository<Chapter, Long> {
     )
     String getLatestChapterByMangaId(@Param("mangaId") Long mangaId);
 
-
-    @Query(value = ChapterQuery.GET_CHAPTERS_BY_MANGA_ID, nativeQuery = true)
-    List<ChapterProjection> getChaptersByMangaId(@Param("id") Long id);
+    @Query(
+            value = ChapterQuery.GET_CHAPTERS_BY_MANGA_ID,
+            nativeQuery = true
+    )
+    List<ChapterProjection> getChaptersByMangaId(@Param("id") Long mangaId);
 }

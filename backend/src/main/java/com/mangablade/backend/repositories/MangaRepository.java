@@ -24,6 +24,12 @@ public interface MangaRepository extends JpaRepository<Manga, Long> {
 
     Optional<Manga> findBySlug(String slug);
 
+    Optional<Manga> findBySlugAndDeletedAtIsNull(String slug);
+
+    boolean existsBySlug(String slug);
+
+    org.springframework.data.domain.Page<Manga> findByOwnerUserIdAndDeletedAtIsNull(Long ownerUserId, Pageable pageable);
+
     long countByCreatedAtGreaterThanEqualAndCreatedAtLessThan(Instant startAt, Instant endAt);
 
     long countByStatus(String status);
