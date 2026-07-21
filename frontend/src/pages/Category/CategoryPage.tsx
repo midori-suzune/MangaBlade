@@ -73,7 +73,7 @@ export function CategoryPage() {
           author: debouncedAuthor || undefined,
           sort: pendingSortBy,
           page: 0,
-          size: 20,
+          size: 30,
         });
 
         if (!cancelled) {

@@ -27,6 +27,9 @@ public interface MangaRepository extends JpaRepository<Manga, Long> {
 
     Optional<Manga> findBySlugAndDeletedAtIsNull(String slug);
 
+    @Query("SELECT m FROM Manga m WHERE m.deletedAt IS NULL")
+    List<Manga> findAllVisible();
+
     boolean existsBySlug(String slug);
 
     org.springframework.data.domain.Page<Manga> findByOwnerUserIdAndDeletedAtIsNull(Long ownerUserId, Pageable pageable);
