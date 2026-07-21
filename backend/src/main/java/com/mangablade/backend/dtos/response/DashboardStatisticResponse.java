@@ -17,4 +17,5 @@ public class DashboardStatisticResponse {
     private long newCommentsToday;
     private long totalAuthorRequests;
     private long pendingAuthorRequests;
+    private long pendingChapterReports;
 }

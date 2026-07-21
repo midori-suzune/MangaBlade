@@ -34,7 +34,6 @@ public interface ChapterRepository extends JpaRepository<Chapter, Long> {
     )
     String getLatestChapterByMangaId(@Param("mangaId") Long mangaId);
 
-
-    @Query(value = ChapterQuery.GET_CHAPTERS_BY_MANGA_ID, nativeQuery = true)
-    List<ChapterProjection> getChaptersByMangaId(@Param("id") Long id);
+    @Query(ChapterQuery.GET_CHAPTERS_BY_MANGA_ID)
+    List<ChapterProjection> getChaptersByMangaId(@Param("mangaId") Long mangaId);
 }

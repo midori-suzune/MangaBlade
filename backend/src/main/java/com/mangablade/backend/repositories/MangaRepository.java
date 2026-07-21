@@ -2,10 +2,13 @@ package com.mangablade.backend.repositories;
 
 import com.mangablade.backend.dtos.response.MangaRankingProjection;
 import com.mangablade.backend.entities.Manga;
+import com.mangablade.backend.enums.MangaSourceType;
 import com.mangablade.backend.utils.querysql.MangaQuery;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.stereotype.Repository;
 
 import org.springframework.data.domain.Pageable;
@@ -32,6 +35,47 @@ public interface MangaRepository extends JpaRepository<Manga, Long> {
     long countByStatus(String status);
 
     long countByDeletedAtIsNotNull();
+
+    @EntityGraph(attributePaths = {"owner"})
+    @Query(
+            value = """
+                    SELECT m
+                    FROM Manga m
+                    LEFT JOIN m.owner owner
+                    WHERE (:search IS NULL
+                        OR LOWER(m.title) LIKE LOWER(CONCAT('%', :search, '%'))
+                        OR LOWER(m.slug) LIKE LOWER(CONCAT('%', :search, '%'))
+                        OR LOWER(owner.username) LIKE LOWER(CONCAT('%', :search, '%'))
+                        OR LOWER(owner.email) LIKE LOWER(CONCAT('%', :search, '%')))
+                    AND (:sourceType IS NULL OR m.metadataSource = :sourceType)
+                    AND (:hidden IS NULL
+                        OR (:hidden = TRUE AND m.deletedAt IS NOT NULL)
+                        OR (:hidden = FALSE AND m.deletedAt IS NULL))
+                    AND (:status IS NULL OR m.status = :status)
+                    """,
+            countQuery = """
+                    SELECT COUNT(m)
+                    FROM Manga m
+                    LEFT JOIN m.owner owner
+                    WHERE (:search IS NULL
+                        OR LOWER(m.title) LIKE LOWER(CONCAT('%', :search, '%'))
+                        OR LOWER(m.slug) LIKE LOWER(CONCAT('%', :search, '%'))
+                        OR LOWER(owner.username) LIKE LOWER(CONCAT('%', :search, '%'))
+                        OR LOWER(owner.email) LIKE LOWER(CONCAT('%', :search, '%')))
+                    AND (:sourceType IS NULL OR m.metadataSource = :sourceType)
+                    AND (:hidden IS NULL
+                        OR (:hidden = TRUE AND m.deletedAt IS NOT NULL)
+                        OR (:hidden = FALSE AND m.deletedAt IS NULL))
+                    AND (:status IS NULL OR m.status = :status)
+                    """
+    )
+    Page<Manga> findAdminManga(
+            @Param("search") String search,
+            @Param("status") String status,
+            @Param("sourceType") MangaSourceType sourceType,
+            @Param("hidden") Boolean hidden,
+            Pageable pageable
+    );
 
     @Query(MangaQuery.FIND_TOP_RANKED_BY_FOLLOWS)
     List<MangaRankingProjection> findTopRankedByFollows();

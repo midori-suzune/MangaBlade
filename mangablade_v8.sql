@@ -40,6 +40,21 @@ CREATE TABLE users (
     CONSTRAINT fk_users_active_title FOREIGN KEY (active_title_id) REFERENCES titles(id)
 );
 
+CREATE TABLE notifications (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    type VARCHAR(50) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    message VARCHAR(1000) NOT NULL,
+    target_type VARCHAR(50),
+    target_id BIGINT,
+    read_at DATETIME(3),
+    created_at DATETIME(3) NOT NULL,
+
+    PRIMARY KEY (id),
+    CONSTRAINT fk_notifications_user FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
 CREATE TABLE email_verification_token (
     id BIGINT NOT NULL AUTO_INCREMENT,
     user_id BIGINT NOT NULL,

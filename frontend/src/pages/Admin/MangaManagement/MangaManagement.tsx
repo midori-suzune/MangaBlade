@@ -1,118 +1,42 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import {
   BarChart3,
   BookOpen,
   ChevronDown,
   Eye,
   EyeOff,
+  FileCheck,
   FileText,
   AlertTriangle,
   Users,
 } from 'lucide-react';
 import { useAuthStore } from '../../../stores/authStore';
+import { adminMangaApi } from '../../../api/adminMangaApi';
+import type { AdminMangaItem, AdminMangaOrigin } from '../../../api/adminMangaApi';
+import type { SpringPageResponse } from '../../../types/user';
 import styles from '../Admin.module.css';
 
 type MangaStatusFilter = 'ALL' | 'ongoing' | 'completed' | 'hidden';
 type MangaOriginFilter = 'ALL' | 'crawl' | 'author';
-type MangaOrigin = Exclude<MangaOriginFilter, 'ALL'>;
+const MANGA_TABLE_PAGE_SIZE = 10;
 
-interface MangaManagementItem {
-  id: number;
-  title: string;
-  slug: string;
-  author: string;
-  authorEmail?: string;
-  origin: MangaOrigin;
-  status: Exclude<MangaStatusFilter, 'ALL'>;
-  chapters: number;
-  reads: number;
-  updatedAt: string;
-  hiddenReason?: string;
-  thumbnail: string;
-}
-
-const prototypeManga: MangaManagementItem[] = [
-  {
-    id: 54,
-    title: 'Đảo Hải Tặc',
-    slug: 'one-piece',
-    author: 'Eiichiro Oda',
-    origin: 'crawl',
-    status: 'ongoing',
-    chapters: 1121,
-    reads: 12840,
-    updatedAt: '2026-07-20T08:20:00',
-    thumbnail: 'https://img.otruyenapi.com/uploads/comics/one-piece-thumb.jpg',
-  },
-  {
-    id: 53,
-    title: 'Hướng Dẫn Sinh Tồn Trong Học Viện',
-    slug: 'huong-dan-sinh-ton-trong-hoc-vien',
-    author: 'Korita',
-    origin: 'crawl',
-    status: 'ongoing',
-    chapters: 86,
-    reads: 1842,
-    updatedAt: '2026-07-19T22:10:00',
-    thumbnail: 'https://img.otruyenapi.com/uploads/comics/huong-dan-sinh-ton-trong-hoc-vien-thumb.jpg',
-  },
-  {
-    id: 52,
-    title: 'Toàn Trí Độc Giả',
-    slug: 'toan-tri-doc-gia',
-    author: 'sing N song',
-    origin: 'crawl',
-    status: 'ongoing',
-    chapters: 217,
-    reads: 9350,
-    updatedAt: '2026-07-18T19:35:00',
-    thumbnail: 'https://img.otruyenapi.com/uploads/comics/toan-tri-doc-gia-thumb.jpg',
-  },
-  {
-    id: 49,
-    title: 'Tôi Thăng Cấp Một Mình',
-    slug: 'toi-thang-cap-mot-minh',
-    author: 'Chugong',
-    origin: 'crawl',
-    status: 'completed',
-    chapters: 201,
-    reads: 15120,
-    updatedAt: '2026-07-17T12:05:00',
-    thumbnail: 'https://img.otruyenapi.com/uploads/comics/toi-thang-cap-mot-minh-thumb.jpg',
-  },
-  {
-    id: 46,
-    title: 'Lưỡi Kiếm Vụn',
-    slug: 'luoi-kiem-vun',
-    author: 'nguyen_author',
-    authorEmail: 'nguyen.author@gmail.com',
-    origin: 'author',
-    status: 'ongoing',
-    chapters: 12,
-    reads: 318,
-    updatedAt: '2026-07-16T09:15:00',
-    thumbnail: 'https://img.otruyenapi.com/uploads/comics/blue-lock-thumb.jpg',
-  },
-];
-
-const statusLabels: Record<MangaManagementItem['status'], string> = {
+const statusLabels: Record<AdminMangaItem['status'], string> = {
   ongoing: 'Phát hành',
   completed: 'Hoàn thành',
   hidden: 'Bị ẩn',
 };
 
-const originLabels: Record<MangaOrigin, string> = {
+const originLabels: Record<AdminMangaOrigin, string> = {
   crawl: 'Crawl',
   author: 'Tác giả đăng',
 };
 
 interface MangaVisibilityModalProps {
-  manga: MangaManagementItem;
+  manga: AdminMangaItem;
   reason: string;
   setReason: (reason: string) => void;
-  notifyAuthor: boolean;
-  setNotifyAuthor: (notifyAuthor: boolean) => void;
   onConfirm: () => void;
   onClose: () => void;
 }
@@ -121,8 +45,6 @@ function MangaVisibilityModal({
   manga,
   reason,
   setReason,
-  notifyAuthor,
-  setNotifyAuthor,
   onConfirm,
   onClose,
 }: MangaVisibilityModalProps) {
@@ -170,31 +92,6 @@ function MangaVisibilityModal({
             </div>
           )}
 
-          {!willShow && isAuthorManga && (
-            <div className={styles.notifyPanel}>
-              <label className={styles.notifyToggle}>
-                <input
-                  type="checkbox"
-                  checked={notifyAuthor}
-                  onChange={(event) => setNotifyAuthor(event.target.checked)}
-                />
-                <span>Gửi email thông báo cho tác giả</span>
-              </label>
-              {notifyAuthor && (
-                <div className={styles.notifyPreview}>
-                  <div>
-                    <span>Người nhận</span>
-                    <strong>{manga.authorEmail || '-'}</strong>
-                  </div>
-                  <div>
-                    <span>Nội dung</span>
-                    <strong>Tên truyện và lý do xử lý</strong>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
           {willShow && manga.hiddenReason && (
             <div className={styles.rejectBox}>
               Lý do đang lưu: {manga.hiddenReason}
@@ -222,30 +119,58 @@ export const MangaManagement: React.FC = () => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<MangaStatusFilter>('ALL');
   const [originFilter, setOriginFilter] = useState<MangaOriginFilter>('ALL');
-  const [mangaItems, setMangaItems] = useState<MangaManagementItem[]>(prototypeManga);
-  const [visibilityTarget, setVisibilityTarget] = useState<MangaManagementItem | null>(null);
+  const [mangaItems, setMangaItems] = useState<AdminMangaItem[]>([]);
+  const [mangaPage, setMangaPage] = useState<SpringPageResponse<AdminMangaItem> | null>(null);
+  const [page, setPage] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [visibilityTarget, setVisibilityTarget] = useState<AdminMangaItem | null>(null);
   const [visibilityReason, setVisibilityReason] = useState('');
-  const [notifyAuthor, setNotifyAuthor] = useState(true);
 
-  const filteredManga = useMemo(() => {
-    const normalizedSearch = search.trim().toLowerCase();
-    return mangaItems.filter((manga) => {
-      const matchesSearch = !normalizedSearch
-        || manga.title.toLowerCase().includes(normalizedSearch)
-        || manga.slug.toLowerCase().includes(normalizedSearch)
-        || manga.author.toLowerCase().includes(normalizedSearch);
-      const matchesStatus = statusFilter === 'ALL' || manga.status === statusFilter;
-      const matchesOrigin = originFilter === 'ALL' || manga.origin === originFilter;
-      return matchesSearch && matchesStatus && matchesOrigin;
-    });
-  }, [mangaItems, originFilter, search, statusFilter]);
+  const getErrorMessage = (error: unknown) => {
+    if (axios.isAxiosError(error)) {
+      const responseData = error.response?.data;
+      if (typeof responseData === 'string') return responseData;
+      if (responseData?.message) return responseData.message;
+      if (responseData?.error) return responseData.error;
+    }
+    return 'Có lỗi xảy ra';
+  };
+
+  const fetchManga = useCallback(async (nextPage = page) => {
+    setLoading(true);
+    setErrorMessage('');
+    try {
+      const response = await adminMangaApi.getManga({
+        status: statusFilter === 'ALL' ? undefined : statusFilter,
+        origin: originFilter === 'ALL' ? undefined : originFilter,
+        search: search || undefined,
+        page: nextPage,
+        size: MANGA_TABLE_PAGE_SIZE,
+      });
+      setMangaItems(response.data.content);
+      setMangaPage(response.data);
+    } catch (error) {
+      console.error('Lỗi khi tải danh sách truyện:', error);
+      setMangaItems([]);
+      setMangaPage(null);
+      setErrorMessage(getErrorMessage(error));
+    } finally {
+      setLoading(false);
+    }
+  }, [originFilter, page, search, statusFilter]);
+
+  useEffect(() => {
+    Promise.resolve().then(() => fetchManga());
+  }, [fetchManga]);
 
   const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setPage(0);
     setSearch(searchInput);
   };
 
-  const toggleHidden = (id: number) => {
+  const toggleHidden = async (id: number) => {
     const target = mangaItems.find((manga) => manga.id === id);
     if (!target) return;
     if (target.status !== 'hidden' && !visibilityReason.trim()) {
@@ -253,27 +178,32 @@ export const MangaManagement: React.FC = () => {
       return;
     }
 
-    setMangaItems((current) => current.map((manga) => (
-      manga.id === id
-        ? {
-            ...manga,
-            status: manga.status === 'hidden' ? 'ongoing' : 'hidden',
-            hiddenReason: manga.status === 'hidden' ? undefined : visibilityReason.trim(),
-          }
-        : manga
-    )));
-    setVisibilityTarget(null);
-    setVisibilityReason('');
-    setNotifyAuthor(true);
+    try {
+      const response = await adminMangaApi.toggleVisibility(id, visibilityReason.trim() || undefined);
+      setMangaItems((current) => current.map((manga) => (
+        manga.id === id ? response.data : manga
+      )));
+      setVisibilityTarget(null);
+      setVisibilityReason('');
+      await fetchManga(page);
+    } catch (error) {
+      console.error('Lỗi khi cập nhật trạng thái truyện:', error);
+      alert(getErrorMessage(error));
+    }
   };
 
-  const openVisibilityModal = (manga: MangaManagementItem) => {
+  const openVisibilityModal = (manga: AdminMangaItem) => {
     setVisibilityTarget(manga);
     setVisibilityReason('');
-    setNotifyAuthor(manga.origin === 'author');
+  };
+
+  const goToPage = (nextPage: number) => {
+    setPage(nextPage);
   };
 
   const formatNumber = (value: number) => value.toLocaleString('vi-VN');
+  const canGoPrevious = Boolean(mangaPage && !mangaPage.first);
+  const canGoNext = Boolean(mangaPage && !mangaPage.last);
 
   return (
     <div className={styles.adminPage}>
@@ -291,6 +221,9 @@ export const MangaManagement: React.FC = () => {
             </button>
             <button className={`${styles.adminNavItem} ${styles.active}`} onClick={() => navigate('/admin/manga')}>
               <BookOpen size={16} /> Quản lý Truyện
+            </button>
+            <button className={styles.adminNavItem} onClick={() => navigate('/admin/content-moderation')}>
+              <FileCheck size={16} /> Kiểm duyệt nội dung
             </button>
             <button className={styles.adminNavItem} onClick={() => navigate('/admin/chapter-reports')}>
               <AlertTriangle size={16} /> Báo cáo lỗi chương
@@ -332,7 +265,10 @@ export const MangaManagement: React.FC = () => {
 
                 <select
                   value={statusFilter}
-                  onChange={(event) => setStatusFilter(event.target.value as MangaStatusFilter)}
+                  onChange={(event) => {
+                    setPage(0);
+                    setStatusFilter(event.target.value as MangaStatusFilter);
+                  }}
                   className={`${styles.formInput} ${styles.authorStatusSelect}`}
                 >
                   <option value="ALL">Tất cả trạng thái</option>
@@ -343,7 +279,10 @@ export const MangaManagement: React.FC = () => {
 
                 <select
                   value={originFilter}
-                  onChange={(event) => setOriginFilter(event.target.value as MangaOriginFilter)}
+                  onChange={(event) => {
+                    setPage(0);
+                    setOriginFilter(event.target.value as MangaOriginFilter);
+                  }}
                   className={`${styles.formInput} ${styles.authorStatusSelect}`}
                 >
                   <option value="ALL">Tất cả nguồn</option>
@@ -353,7 +292,7 @@ export const MangaManagement: React.FC = () => {
               </div>
             </div>
 
-            <div className={styles.userTablePanel}>
+            <div className={`${styles.userTablePanel} ${styles.mangaTablePanel}`}>
               <div className={styles.tableFrame}>
                 <table className={`${styles.historyTable} ${styles.mangaTable}`}>
                   <thead>
@@ -369,19 +308,18 @@ export const MangaManagement: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredManga.length === 0 ? (
+                    {mangaItems.length === 0 ? (
                       <tr>
                         <td colSpan={8} className={styles.emptyCell}>
-                          Không có dữ liệu hiển thị.
+                          {loading ? 'Đang tải dữ liệu...' : errorMessage || 'Không có dữ liệu hiển thị.'}
                         </td>
                       </tr>
                     ) : (
-                      filteredManga.map((manga) => (
+                      mangaItems.map((manga) => (
                         <tr key={manga.id}>
                           <td className={styles.idCell}>{manga.id}</td>
                           <td>
                             <div className={styles.mangaInfoCell}>
-                              <img src={manga.thumbnail} alt="" className={styles.mangaThumb} />
                               <div className={styles.mangaInfoText}>
                                 <span className={styles.userName}>{manga.title}</span>
                                 <span className={styles.userEmail}>{manga.slug}</span>
@@ -399,7 +337,12 @@ export const MangaManagement: React.FC = () => {
                           <td>{formatNumber(manga.reads)}</td>
                           <td>
                             <div className={styles.iconActions}>
-                              <button type="button" className={styles.iconBtn} aria-label="Xem truyện">
+                              <button
+                                type="button"
+                                className={styles.iconBtn}
+                                onClick={() => window.open(`/manga/${manga.slug}`, '_blank', 'noopener,noreferrer')}
+                                aria-label="Xem truyện"
+                              >
                                 <Eye size={15} />
                               </button>
                               <button type="button" className={styles.iconBtn} onClick={() => openVisibilityModal(manga)} aria-label="Ẩn hoặc hiện truyện">
@@ -413,6 +356,29 @@ export const MangaManagement: React.FC = () => {
                   </tbody>
                 </table>
               </div>
+              {mangaPage && mangaPage.totalPages > 1 && (
+                <div className={styles.pagination}>
+                  <button
+                    type="button"
+                    className={styles.btnPage}
+                    disabled={!canGoPrevious}
+                    onClick={() => goToPage(page - 1)}
+                  >
+                    Trước
+                  </button>
+                  <span className={styles.pageCount}>
+                    {page + 1}/{mangaPage.totalPages}
+                  </span>
+                  <button
+                    type="button"
+                    className={styles.btnPage}
+                    disabled={!canGoNext}
+                    onClick={() => goToPage(page + 1)}
+                  >
+                    Sau
+                  </button>
+                </div>
+              )}
             </div>
           </main>
         </section>
@@ -422,13 +388,10 @@ export const MangaManagement: React.FC = () => {
           manga={visibilityTarget}
           reason={visibilityReason}
           setReason={setVisibilityReason}
-          notifyAuthor={notifyAuthor}
-          setNotifyAuthor={setNotifyAuthor}
           onConfirm={() => toggleHidden(visibilityTarget.id)}
           onClose={() => {
             setVisibilityTarget(null);
             setVisibilityReason('');
-            setNotifyAuthor(true);
           }}
         />
       )}

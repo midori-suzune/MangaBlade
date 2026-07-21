@@ -29,6 +29,7 @@ export interface DashboardStatistic {
   newCommentsToday: number;
   totalAuthorRequests: number;
   pendingAuthorRequests: number;
+  pendingChapterReports: number;
 }
 
 export const dashboardApi = {
