@@ -162,6 +162,27 @@ export const authorMangaApi = {
     }
   },
 
+  cancelMangaSubmission: async (mangaId: number): Promise<ApiResponse<void>> => {
+    try {
+      const response = await axiosClient.post<ApiResponse<void>>(`/v1/author/manga/${mangaId}/cancel-submit`);
+      return response.data;
+    } catch (err) {
+      console.warn("API cancelMangaSubmission failed, writing to mock DB.", err);
+      const idx = mockMangas.findIndex(m => m.id === mangaId);
+      if (idx !== -1) {
+        mockMangas[idx].approvalStatus = "DRAFT";
+      }
+      if (mockChapters[mangaId]) {
+        mockChapters[mangaId].forEach(c => {
+          if (c.approvalStatus === "PENDING") {
+            c.approvalStatus = "DRAFT";
+          }
+        });
+      }
+      return { success: true, message: "Cancelled mock manga submission successfully", payload: null as never };
+    }
+  },
+
   deleteManga: async (mangaId: number): Promise<ApiResponse<void>> => {
     try {
       const response = await axiosClient.delete<ApiResponse<void>>(`/v1/author/manga/${mangaId}`);
@@ -405,6 +426,22 @@ export const authorMangaApi = {
         }
       }
       return { success: true, message: "Submitted mock chapter successfully", payload: null as never };
+    }
+  },
+
+  cancelChapterSubmission: async (chapterId: number): Promise<ApiResponse<void>> => {
+    try {
+      const response = await axiosClient.post<ApiResponse<void>>(`/v1/author/chapters/${chapterId}/cancel-submit`);
+      return response.data;
+    } catch (err) {
+      console.warn("API cancelChapterSubmission failed, writing to mock DB.", err);
+      for (const mId in mockChapters) {
+        const idx = mockChapters[mId].findIndex(c => c.id === chapterId);
+        if (idx !== -1) {
+          mockChapters[mId][idx].approvalStatus = "DRAFT";
+        }
+      }
+      return { success: true, message: "Cancelled mock chapter submission successfully", payload: null as never };
     }
   },
 

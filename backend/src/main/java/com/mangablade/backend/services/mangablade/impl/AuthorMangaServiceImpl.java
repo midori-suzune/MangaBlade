@@ -200,6 +200,27 @@ public class AuthorMangaServiceImpl implements AuthorMangaService {
         mangaRepository.save(manga);
     }
 
+    @Override
+    @Transactional
+    public void cancelMangaSubmission(User user, String identifier) {
+        Manga manga = findMangaByIdentifier(user, identifier);
+        if (manga.getApprovalStatus() != ApprovalStatus.PENDING) {
+            throw new IllegalArgumentException("Truyện không ở trạng thái chờ duyệt!");
+        }
+        manga.setApprovalStatus(ApprovalStatus.DRAFT);
+        manga.setUpdatedAt(Instant.now());
+        mangaRepository.save(manga);
+
+        // Đưa tất cả các chương đang chờ duyệt về bản nháp
+        List<Chapter> chapters = chapterRepository.findAllByMangaId(manga.getId());
+        for (Chapter chapter : chapters) {
+            if (chapter.getApprovalStatus() == ApprovalStatus.PENDING) {
+                chapter.setApprovalStatus(ApprovalStatus.DRAFT);
+                chapterRepository.save(chapter);
+            }
+        }
+    }
+
     // ==========================================
     // CHAPTER MANAGEMENT
     // ==========================================
@@ -302,6 +323,17 @@ public class AuthorMangaServiceImpl implements AuthorMangaService {
 
         chapter.setApprovalStatus(ApprovalStatus.PENDING);
         chapter.setSubmittedAt(Instant.now());
+        chapterRepository.save(chapter);
+    }
+
+    @Override
+    @Transactional
+    public void cancelChapterSubmission(User user, Long chapterId) {
+        Chapter chapter = findChapterAndVerifyOwner(user, chapterId);
+        if (chapter.getApprovalStatus() != ApprovalStatus.PENDING) {
+            throw new IllegalArgumentException("Chương không ở trạng thái chờ duyệt!");
+        }
+        chapter.setApprovalStatus(ApprovalStatus.DRAFT);
         chapterRepository.save(chapter);
     }
 
