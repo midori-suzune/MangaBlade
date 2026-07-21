@@ -79,25 +79,19 @@ public class SecurityConfig {
                 .build();
     }
 
-    @Value("${app.cors.allowed-origins}")
-    private String allowedOrigins;
-
     @Bean
     public CorsConfigurationSource corsConfig() {
         CorsConfiguration config = new CorsConfiguration();
-
-        List<String> origins = Arrays.stream(allowedOrigins.split(","))
-                .map(String::trim)
-                .toList();
-
-        config.setAllowedOrigins(origins);
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
+        config.setAllowedOriginPatterns(List.of(
+                "http://localhost:5173",
+                "https://mangablade.online",
+                "https://*.mangablade.online"
+        ));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         config.setAllowCredentials(true);
-
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
-
         return source;
     }
 
