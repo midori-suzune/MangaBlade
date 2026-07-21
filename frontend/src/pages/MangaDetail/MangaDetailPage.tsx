@@ -87,6 +87,188 @@ interface MangaCommentItemProps {
     user: UserInfo | null;
 }
 
+interface MangaReplyItemProps {
+    reply: MangaCommentResponse["replies"][0];
+    commentId: number;
+    getCommentAuthorName: (userId: number, username: string) => string;
+    getTimeAgo: (dateString: string) => string;
+    setReplyParentId: (id: number | null) => void;
+    setReplyContent: (content: string) => void;
+    setReplyingToUsername: (username: string | null) => void;
+    setReplyError: (error: string | null) => void;
+    canDeleteComment: (reply: MangaCommentResponse) => boolean;
+    handleDeleteComment: (commentId: number) => void;
+    deletingCommentId: number | null;
+}
+
+function MangaReplyItem({
+    reply,
+    commentId,
+    getCommentAuthorName,
+    getTimeAgo,
+    setReplyParentId,
+    setReplyContent,
+    setReplyingToUsername,
+    setReplyError,
+    canDeleteComment,
+    handleDeleteComment,
+    deletingCommentId
+}: MangaReplyItemProps) {
+    return (
+        <article className={styles.replyItem}>
+            <div className={styles.replyAvatar}>
+                {getCommentAuthorName(reply.user.id, reply.user.username).slice(0, 1).toUpperCase()}
+            </div>
+            <div className={styles.replyBody}>
+                <div className={styles.commentBubble}>
+                    <div className={styles.commentAuthorRow}>
+                        <span className={styles.commentAuthor}>
+                            {getCommentAuthorName(reply.user.id, reply.user.username)}
+                        </span>
+                        {(reply.isAuthor || reply.user?.isAuthor) && (
+                            <span 
+                                style={{ 
+                                    marginLeft: "8px", 
+                                    fontSize: "11px", 
+                                    padding: "2px 8px", 
+                                    borderRadius: "12px", 
+                                    backgroundColor: "#e0e7ff",
+                                    color: "#4f46e5",
+                                    border: "1px solid #c7d2fe",
+                                    fontWeight: "bold",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "4px",
+                                    verticalAlign: "middle"
+                                }}
+                                title="Tác giả của bộ truyện"
+                            >
+                                <PenTool size={11} /> Tác giả
+                            </span>
+                        )}
+                        {reply.user.activeTitle && (
+                            <span 
+                                style={{ 
+                                    marginLeft: "8px", 
+                                    fontSize: "10px", 
+                                    padding: "1px 6px", 
+                                    borderRadius: "3px", 
+                                    backgroundColor: `${reply.user.activeTitleColor || '#6b7280'}18`,
+                                    color: reply.user.activeTitleColor || '#6b7280',
+                                    border: `1px solid ${reply.user.activeTitleColor || '#6b7280'}`,
+                                    fontWeight: "bold",
+                                    verticalAlign: "middle"
+                                }}
+                            >
+                                {reply.user.activeTitle}
+                            </span>
+                        )}
+                    </div>
+                    <p className={styles.commentText}>
+                        <CommentText content={reply.content} />
+                    </p>
+                </div>
+                <div className={styles.commentFooter}>
+                    <span>{getTimeAgo(reply.createdAt)}</span>
+                    <button type="button">Thích</button>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setReplyParentId(commentId);
+                            setReplyContent("");
+                            setReplyingToUsername(getCommentAuthorName(reply.user.id, reply.user.username));
+                            setReplyError(null);
+                        }}
+                    >
+                        Trả lời
+                    </button>
+                    {canDeleteComment(reply) && (
+                        <button
+                            type="button"
+                            onClick={() => void handleDeleteComment(reply.id)}
+                            disabled={deletingCommentId === reply.id}
+                        >
+                            {deletingCommentId === reply.id ? "Đang gỡ..." : "Gỡ"}
+                        </button>
+                    )}
+                </div>
+            </div>
+        </article>
+    );
+}
+
+interface MangaReplyInputProps {
+    comment: MangaCommentResponse;
+    replyingToUsername: string | null;
+    getCommentAuthorName: (userId: number, username: string) => string;
+    replyContent: string;
+    setReplyContent: (content: string) => void;
+    setReplyParentId: (id: number | null) => void;
+    setReplyingToUsername: (username: string | null) => void;
+    setReplyError: (error: string | null) => void;
+    handleSubmitReply: (parentId: number) => void;
+    submittingReplyParentId: number | null;
+    replyError: string | null;
+    user: UserInfo | null;
+}
+
+function MangaReplyInput({
+    comment,
+    replyingToUsername,
+    getCommentAuthorName,
+    replyContent,
+    setReplyContent,
+    setReplyParentId,
+    setReplyingToUsername,
+    setReplyError,
+    handleSubmitReply,
+    submittingReplyParentId,
+    replyError,
+    user
+}: MangaReplyInputProps) {
+    return (
+        <div className={styles.replyInputBox}>
+            <div className={styles.replyAvatar}>
+                {user?.username?.slice(0, 1).toUpperCase() ?? "U"}
+            </div>
+            <div className={styles.commentInputWrapper}>
+                <CommentEditor
+                    placeholder={`Trả lời ${replyingToUsername ?? getCommentAuthorName(comment.user.id, comment.user.username)}...`}
+                    minRows={2}
+                    value={replyContent}
+                    onChange={setReplyContent}
+                />
+                <div className={styles.replyActions}>
+                    <CommentEmojiPicker />
+                    <div className={styles.replyButtonGroup}>
+                        <button
+                            className={styles.cancelReplyButton}
+                            type="button"
+                            onClick={() => {
+                                setReplyParentId(null);
+                                setReplyContent("");
+                                setReplyingToUsername(null);
+                                setReplyError(null);
+                            }}
+                        >
+                            Hủy
+                        </button>
+                        <button
+                            className={styles.submitCommentButton}
+                            type="button"
+                            onClick={() => handleSubmitReply(comment.id)}
+                            disabled={submittingReplyParentId === comment.id}
+                        >
+                            {submittingReplyParentId === comment.id ? "Đang gửi..." : "Gửi trả lời"}
+                        </button>
+                    </div>
+                </div>
+                {replyError && <p className={styles.commentErrorText}>{replyError}</p>}
+            </div>
+        </div>
+    );
+}
+
 function MangaCommentItem({
     comment,
     expandedReplyParentIds,
@@ -199,128 +381,38 @@ function MangaCommentItem({
                 {comment.replies?.length > 0 && isRepliesExpanded && (
                     <div className={styles.replyList}>
                         {comment.replies.map((reply) => (
-                            <article className={styles.replyItem} key={reply.id}>
-                                <div className={styles.replyAvatar}>
-                                    {getCommentAuthorName(reply.user.id, reply.user.username).slice(0, 1).toUpperCase()}
-                                </div>
-                                <div className={styles.replyBody}>
-                                    <div className={styles.commentBubble}>
-                                        <div className={styles.commentAuthorRow}>
-                                            <span className={styles.commentAuthor}>
-                                                {getCommentAuthorName(reply.user.id, reply.user.username)}
-                                            </span>
-                                            {(reply.isAuthor || reply.user?.isAuthor) && (
-                                                <span 
-                                                    style={{ 
-                                                        marginLeft: "8px", 
-                                                        fontSize: "11px", 
-                                                        padding: "2px 8px", 
-                                                        borderRadius: "12px", 
-                                                        backgroundColor: "#e0e7ff",
-                                                        color: "#4f46e5",
-                                                        border: "1px solid #c7d2fe",
-                                                        fontWeight: "bold",
-                                                        display: "inline-flex",
-                                                        alignItems: "center",
-                                                        gap: "4px",
-                                                        verticalAlign: "middle"
-                                                    }}
-                                                    title="Tác giả của bộ truyện"
-                                                >
-                                                    <PenTool size={11} /> Tác giả
-                                                </span>
-                                            )}
-                                            {reply.user.activeTitle && (
-                                                <span 
-                                                    style={{ 
-                                                        marginLeft: "8px", 
-                                                        fontSize: "10px", 
-                                                        padding: "1px 6px", 
-                                                        borderRadius: "3px", 
-                                                        backgroundColor: `${reply.user.activeTitleColor || '#6b7280'}18`,
-                                                        color: reply.user.activeTitleColor || '#6b7280',
-                                                        border: `1px solid ${reply.user.activeTitleColor || '#6b7280'}`,
-                                                        fontWeight: "bold",
-                                                        verticalAlign: "middle"
-                                                    }}
-                                                >
-                                                    {reply.user.activeTitle}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <p className={styles.commentText}>
-                                            <CommentText content={reply.content} />
-                                        </p>
-                                    </div>
-                                    <div className={styles.commentFooter}>
-                                        <span>{getTimeAgo(reply.createdAt)}</span>
-                                        <button type="button">Thích</button>
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                setReplyParentId(comment.id);
-                                                setReplyContent("");
-                                                setReplyingToUsername(getCommentAuthorName(reply.user.id, reply.user.username));
-                                                setReplyError(null);
-                                            }}
-                                        >
-                                            Trả lời
-                                        </button>
-                                        {canDeleteComment(reply) && (
-                                            <button
-                                                type="button"
-                                                onClick={() => void handleDeleteComment(reply.id)}
-                                                disabled={deletingCommentId === reply.id}
-                                            >
-                                                {deletingCommentId === reply.id ? "Đang gỡ..." : "Gỡ"}
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            </article>
+                            <MangaReplyItem
+                                key={reply.id}
+                                reply={reply}
+                                commentId={comment.id}
+                                getCommentAuthorName={getCommentAuthorName}
+                                getTimeAgo={getTimeAgo}
+                                setReplyParentId={setReplyParentId}
+                                setReplyContent={setReplyContent}
+                                setReplyingToUsername={setReplyingToUsername}
+                                setReplyError={setReplyError}
+                                canDeleteComment={canDeleteComment}
+                                handleDeleteComment={handleDeleteComment}
+                                deletingCommentId={deletingCommentId}
+                            />
                         ))}
                     </div>
                 )}
                 {replyParentId === comment.id && (
-                    <div className={styles.replyInputBox}>
-                        <div className={styles.replyAvatar}>
-                            {user?.username?.slice(0, 1).toUpperCase() ?? "U"}
-                        </div>
-                        <div className={styles.commentInputWrapper}>
-                            <CommentEditor
-                                placeholder={`Trả lời ${replyingToUsername ?? getCommentAuthorName(comment.user.id, comment.user.username)}...`}
-                                minRows={2}
-                                value={replyContent}
-                                onChange={setReplyContent}
-                            />
-                            <div className={styles.replyActions}>
-                                <CommentEmojiPicker />
-                                <div className={styles.replyButtonGroup}>
-                                    <button
-                                        className={styles.cancelReplyButton}
-                                        type="button"
-                                        onClick={() => {
-                                            setReplyParentId(null);
-                                            setReplyContent("");
-                                            setReplyingToUsername(null);
-                                            setReplyError(null);
-                                        }}
-                                    >
-                                        Hủy
-                                    </button>
-                                    <button
-                                        className={styles.submitCommentButton}
-                                        type="button"
-                                        onClick={() => handleSubmitReply(comment.id)}
-                                        disabled={submittingReplyParentId === comment.id}
-                                    >
-                                        {submittingReplyParentId === comment.id ? "Đang gửi..." : "Gửi trả lời"}
-                                    </button>
-                                </div>
-                            </div>
-                            {replyError && <p className={styles.commentErrorText}>{replyError}</p>}
-                        </div>
-                    </div>
+                    <MangaReplyInput
+                        comment={comment}
+                        replyingToUsername={replyingToUsername}
+                        getCommentAuthorName={getCommentAuthorName}
+                        replyContent={replyContent}
+                        setReplyContent={setReplyContent}
+                        setReplyParentId={setReplyParentId}
+                        setReplyingToUsername={setReplyingToUsername}
+                        setReplyError={setReplyError}
+                        handleSubmitReply={handleSubmitReply}
+                        submittingReplyParentId={submittingReplyParentId}
+                        replyError={replyError}
+                        user={user}
+                    />
                 )}
             </div>
         </article>

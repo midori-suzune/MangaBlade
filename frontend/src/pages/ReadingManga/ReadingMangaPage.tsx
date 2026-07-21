@@ -101,6 +101,140 @@ function CommentItem({
     );
 }
 
+interface BreadcrumbProps {
+    className: string;
+    slug: string;
+    title: string;
+    chapterLabel: string;
+}
+
+function Breadcrumb({ className, slug, title, chapterLabel }: BreadcrumbProps) {
+    return (
+        <nav className={className} aria-label="Breadcrumb">
+            <Link to="/">Trang Chủ</Link>
+            <span>/</span>
+            <Link to={`/manga/${slug}`}>{title}</Link>
+            <span>/</span>
+            <strong>{chapterLabel}</strong>
+        </nav>
+    );
+}
+
+interface ChapterNavigationProps {
+    className: string;
+    hasPrevChapter: boolean;
+    hasNextChapter: boolean;
+    prevChapterPage: () => void;
+    nextChapterPage: () => void;
+}
+
+function ChapterNavigation({
+    className,
+    hasPrevChapter,
+    hasNextChapter,
+    prevChapterPage,
+    nextChapterPage
+}: ChapterNavigationProps) {
+    return (
+        <div className={className}>
+            <button
+                className={`${styles.btnNav} ${!hasPrevChapter ? styles.disabled : ""}`}
+                type="button"
+                onClick={prevChapterPage}
+                disabled={!hasPrevChapter}
+            >
+                <ArrowLeft aria-hidden="true" />
+                Chap trước
+            </button>
+            <button
+                className={`${styles.btnNav} ${!hasNextChapter ? styles.disabled : ""}`}
+                type="button"
+                onClick={nextChapterPage}
+                disabled={!hasNextChapter}
+            >
+                Chap sau
+                <ArrowRight aria-hidden="true" />
+            </button>
+        </div>
+    );
+}
+
+interface ReportPanelProps {
+    title: string;
+    chapterLabel: string;
+    reportType: ChapterReportType;
+    setReportType: (type: ChapterReportType) => void;
+    reportPage: string;
+    setReportPage: (page: string) => void;
+    reportDescription: string;
+    setReportDescription: (desc: string) => void;
+    reportMessage: string;
+    reportSubmitting: boolean;
+    handleSubmitReport: () => void;
+}
+
+function ReportPanel({
+    title,
+    chapterLabel,
+    reportType,
+    setReportType,
+    reportPage,
+    setReportPage,
+    reportDescription,
+    setReportDescription,
+    reportMessage,
+    reportSubmitting,
+    handleSubmitReport
+}: ReportPanelProps) {
+    return (
+        <div className={styles.reportPanel}>
+            <div className={styles.reportIntro}>
+                <strong>{title || "Truyện đang đọc"}</strong>
+                <span>{chapterLabel}</span>
+            </div>
+            <div className={styles.reportGrid}>
+                <label className={styles.reportField}>
+                    <span>Loại lỗi</span>
+                    <select value={reportType} onChange={(event) => setReportType(event.target.value as ChapterReportType)}>
+                        <option value="IMAGE_BROKEN">Ảnh bị lỗi / không tải được</option>
+                        <option value="MISSING_PAGE">Thiếu trang</option>
+                        <option value="WRONG_ORDER">Sai thứ tự trang</option>
+                        <option value="DUPLICATE_CHAPTER">Trùng chapter</option>
+                    </select>
+                </label>
+                <label className={styles.reportField}>
+                    <span>Trang liên quan</span>
+                    <input
+                        type="text"
+                        value={reportPage}
+                        onChange={(event) => setReportPage(event.target.value)}
+                        placeholder="Ví dụ: 3, 7-9"
+                    />
+                </label>
+            </div>
+            <label className={styles.reportField}>
+                <span>Mô tả lỗi</span>
+                <textarea
+                    value={reportDescription}
+                    onChange={(event) => setReportDescription(event.target.value)}
+                    placeholder="Mô tả ngắn lỗi bạn gặp trong chương này..."
+                />
+            </label>
+            <div className={styles.reportActions}>
+                {reportMessage && <p className={styles.reportMessage}>{reportMessage}</p>}
+                <button
+                    type="button"
+                    className={styles.btnSubmitComment}
+                    onClick={handleSubmitReport}
+                    disabled={reportSubmitting || !reportDescription.trim()}
+                >
+                    {reportSubmitting ? "Đang gửi..." : "Gửi báo cáo"}
+                </button>
+            </div>
+        </div>
+    );
+}
+
 export function ReadingMangaPage() {
 
 
@@ -283,39 +417,25 @@ export function ReadingMangaPage() {
         <div className={styles.readerPageBg}>
             <main className={styles.mainContainer}>
                 <section className={`${styles.cardBox} ${styles.chapterControl}`}>
-                    <nav className={styles.breadcrumbTop} aria-label="Breadcrumb">
-                        <Link to="/">Trang Chủ</Link>
-                        <span>/</span>
-                        <Link to={`/manga/${slug}`}>{title}</Link>
-                        <span>/</span>
-                        <strong>{chapterLabel}</strong>
-                    </nav>
+                    <Breadcrumb
+                        className={styles.breadcrumbTop}
+                        slug={slug || ""}
+                        title={title}
+                        chapterLabel={chapterLabel}
+                    />
 
                     <h1 className={styles.detailTitle}>
                         <Link to={`/manga/${slug}`}>{title}</Link> - {chapterLabel}
                     </h1>
                     <time className={styles.chapterTime}>Cập nhật lúc: 21:41 03/11/2021</time>
 
-                    <div className={styles.topNavBtns}>
-                        <button
-                            className={`${styles.btnNav} ${!hasPrevChapter ? styles.disabled : ""}`}
-                            type="button"
-                            onClick={prevChapterPage}
-                            disabled={!hasPrevChapter}
-                        >
-                            <ArrowLeft aria-hidden="true" />
-                            Chap trước
-                        </button>
-                        <button
-                            className={`${styles.btnNav} ${!hasNextChapter ? styles.disabled : ""}`}
-                            type="button"
-                            onClick={nextChapterPage}
-                            disabled={!hasNextChapter}
-                        >
-                            Chap sau
-                            <ArrowRight aria-hidden="true" />
-                        </button>
-                    </div>
+                    <ChapterNavigation
+                        className={styles.topNavBtns}
+                        hasPrevChapter={hasPrevChapter}
+                        hasNextChapter={hasNextChapter}
+                        prevChapterPage={prevChapterPage}
+                        nextChapterPage={nextChapterPage}
+                    />
                 </section>
 
                 <section className={styles.chapterContent} aria-label="Nội dung chương">
@@ -328,34 +448,20 @@ export function ReadingMangaPage() {
                 </section>
 
                 <section className={`${styles.cardBox} ${styles.bottomNav}`}>
-                    <div className={styles.navBtns}>
-                        <button
-                            className={`${styles.btnNav} ${!hasPrevChapter ? styles.disabled : ""}`}
-                            type="button"
-                            onClick={prevChapterPage}
-                            disabled={!hasPrevChapter}
-                        >
-                            <ArrowLeft aria-hidden="true" />
-                            Chap trước
-                        </button>
-                        <button
-                            className={`${styles.btnNav} ${!hasNextChapter ? styles.disabled : ""}`}
-                            type="button"
-                            onClick={nextChapterPage}
-                            disabled={!hasNextChapter}
-                        >
-                            Chap sau
-                            <ArrowRight aria-hidden="true" />
-                        </button>
-                    </div>
+                    <ChapterNavigation
+                        className={styles.navBtns}
+                        hasPrevChapter={hasPrevChapter}
+                        hasNextChapter={hasNextChapter}
+                        prevChapterPage={prevChapterPage}
+                        nextChapterPage={nextChapterPage}
+                    />
 
-                    <nav className={styles.breadcrumbBottom} aria-label="Breadcrumb">
-                        <Link to="/">Trang Chủ</Link>
-                        <span>/</span>
-                        <Link to={`/manga/${slug}`}>{title}</Link>
-                        <span>/</span>
-                        <strong>{chapterLabel}</strong>
-                    </nav>
+                    <Breadcrumb
+                        className={styles.breadcrumbBottom}
+                        slug={slug || ""}
+                        title={title}
+                        chapterLabel={chapterLabel}
+                    />
                 </section>
 
                 <section className={`${styles.cardBox} ${styles.commentSection}`}>
@@ -423,51 +529,19 @@ export function ReadingMangaPage() {
                             </div>
                         </>
                     ) : (
-                        <div className={styles.reportPanel}>
-                            <div className={styles.reportIntro}>
-                                <strong>{title || "Truyện đang đọc"}</strong>
-                                <span>{chapterLabel}</span>
-                            </div>
-                            <div className={styles.reportGrid}>
-                                <label className={styles.reportField}>
-                                    <span>Loại lỗi</span>
-                                    <select value={reportType} onChange={(event) => setReportType(event.target.value as ChapterReportType)}>
-                                        <option value="IMAGE_BROKEN">Ảnh bị lỗi / không tải được</option>
-                                        <option value="MISSING_PAGE">Thiếu trang</option>
-                                        <option value="WRONG_ORDER">Sai thứ tự trang</option>
-                                        <option value="DUPLICATE_CHAPTER">Trùng chapter</option>
-                                    </select>
-                                </label>
-                                <label className={styles.reportField}>
-                                    <span>Trang liên quan</span>
-                                    <input
-                                        type="text"
-                                        value={reportPage}
-                                        onChange={(event) => setReportPage(event.target.value)}
-                                        placeholder="Ví dụ: 3, 7-9"
-                                    />
-                                </label>
-                            </div>
-                            <label className={styles.reportField}>
-                                <span>Mô tả lỗi</span>
-                                <textarea
-                                    value={reportDescription}
-                                    onChange={(event) => setReportDescription(event.target.value)}
-                                    placeholder="Mô tả ngắn lỗi bạn gặp trong chương này..."
-                                />
-                            </label>
-                            <div className={styles.reportActions}>
-                                {reportMessage && <p className={styles.reportMessage}>{reportMessage}</p>}
-                                <button
-                                    type="button"
-                                    className={styles.btnSubmitComment}
-                                    onClick={handleSubmitReport}
-                                    disabled={reportSubmitting || !reportDescription.trim()}
-                                >
-                                    {reportSubmitting ? "Đang gửi..." : "Gửi báo cáo"}
-                                </button>
-                            </div>
-                        </div>
+                        <ReportPanel
+                            title={title}
+                            chapterLabel={chapterLabel}
+                            reportType={reportType}
+                            setReportType={setReportType}
+                            reportPage={reportPage}
+                            setReportPage={setReportPage}
+                            reportDescription={reportDescription}
+                            setReportDescription={setReportDescription}
+                            reportMessage={reportMessage}
+                            reportSubmitting={reportSubmitting}
+                            handleSubmitReport={handleSubmitReport}
+                        />
                     )}
                 </section>
             </main>
