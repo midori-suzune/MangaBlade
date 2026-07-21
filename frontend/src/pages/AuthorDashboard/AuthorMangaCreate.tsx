@@ -85,11 +85,11 @@ export const AuthorMangaCreate: React.FC<AuthorMangaCreateProps> = ({ standalone
       });
 
       if (mangaRes.success && mangaRes.payload) {
-        const newMangaId = mangaRes.payload.id;
+        const identifier = mangaRes.payload.slug || mangaRes.payload.id;
 
         // 2. Upload cover if selected
         if (coverFile) {
-          await authorMangaApi.uploadCover(newMangaId, coverFile);
+          await authorMangaApi.uploadCover(identifier, coverFile);
         }
 
         alert("Tạo truyện mới thành công! Truyện hiện đang ở trạng thái Bản nháp.");
