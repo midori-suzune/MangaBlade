@@ -27,6 +27,7 @@ const fallbackStatistics: DashboardStatistic = {
   newCommentsToday: 0,
   totalAuthorRequests: 0,
   pendingAuthorRequests: 0,
+  pendingChapterReports: 0,
 };
 
 const fallbackReadingStats: DashboardReadingStats = {
@@ -274,10 +275,10 @@ export const AdminDashboard: React.FC = () => {
                 </div>
                 <div className={styles.dashboardTodoList}>
                   <button type="button" onClick={() => navigate('/admin/author-requests')}>
-                    <FileText size={16} /> Duyệt 12 đơn tác giả
+                    <FileText size={16} /> Duyệt {statistics.pendingAuthorRequests.toLocaleString('vi-VN')} đơn tác giả
                   </button>
                   <button type="button" onClick={() => navigate('/admin/chapter-reports')}>
-                    <AlertTriangle size={16} /> Kiểm tra 6 báo cáo lỗi chương
+                    <AlertTriangle size={16} /> Kiểm tra {statistics.pendingChapterReports.toLocaleString('vi-VN')} báo cáo lỗi chương
                   </button>
                 </div>
               </article>

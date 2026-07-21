@@ -1,5 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import {
   AlertTriangle,
   BarChart3,
@@ -13,91 +14,16 @@ import {
   X,
 } from 'lucide-react';
 import { useAuthStore } from '../../../stores/authStore';
+import { adminChapterReportApi } from '../../../api/adminChapterReportApi';
+import type { AdminChapterReportItem, AdminChapterReportStatus, AdminChapterReportType } from '../../../api/adminChapterReportApi';
+import type { SpringPageResponse } from '../../../types/user';
 import styles from '../Admin.module.css';
 
-type ChapterReportStatus = 'PENDING' | 'CHECKING' | 'RESOLVED' | 'REJECTED';
-type ChapterReportStatusFilter = 'ALL' | ChapterReportStatus;
-type ChapterReportTypeFilter = 'ALL' | 'IMAGE_BROKEN' | 'MISSING_PAGE' | 'WRONG_ORDER' | 'DUPLICATE_CHAPTER' | 'WRONG_CONTENT';
+type ChapterReportStatusFilter = 'ALL' | AdminChapterReportStatus;
+type ChapterReportTypeFilter = 'ALL' | AdminChapterReportType;
+const REPORT_TABLE_PAGE_SIZE = 10;
 
-interface ChapterReportItem {
-  id: number;
-  mangaTitle: string;
-  mangaSlug: string;
-  chapterNumber: number;
-  chapterTitle: string;
-  type: Exclude<ChapterReportTypeFilter, 'ALL'>;
-  reporter: string;
-  description: string;
-  status: ChapterReportStatus;
-  createdAt: string;
-  rejectReason?: string;
-}
-
-const prototypeReports: ChapterReportItem[] = [
-  {
-    id: 1008,
-    mangaTitle: 'Đảo Hải Tặc',
-    mangaSlug: 'one-piece',
-    chapterNumber: 1121,
-    chapterTitle: 'Tương lai của biển cả',
-    type: 'IMAGE_BROKEN',
-    reporter: 'dinhLam728',
-    description: 'Trang 8 và trang 9 không tải được ảnh.',
-    status: 'PENDING',
-    createdAt: '2026-07-20T09:12:00',
-  },
-  {
-    id: 1007,
-    mangaTitle: 'Toàn Trí Độc Giả',
-    mangaSlug: 'toan-tri-doc-gia',
-    chapterNumber: 217,
-    chapterTitle: 'Kịch bản cuối',
-    type: 'MISSING_PAGE',
-    reporter: 'blade_reader',
-    description: 'Thiếu đoạn cuối chương, chuyển trang là sang chapter khác.',
-    status: 'CHECKING',
-    createdAt: '2026-07-20T08:40:00',
-  },
-  {
-    id: 1006,
-    mangaTitle: 'Tôi Thăng Cấp Một Mình',
-    mangaSlug: 'toi-thang-cap-mot-minh',
-    chapterNumber: 201,
-    chapterTitle: 'Kết thúc',
-    type: 'WRONG_ORDER',
-    reporter: 'vquang3246',
-    description: 'Thứ tự ảnh bị đảo từ trang 14.',
-    status: 'PENDING',
-    createdAt: '2026-07-19T21:05:00',
-  },
-  {
-    id: 1005,
-    mangaTitle: 'Hướng Dẫn Sinh Tồn Trong Học Viện',
-    mangaSlug: 'huong-dan-sinh-ton-trong-hoc-vien',
-    chapterNumber: 86,
-    chapterTitle: 'Bài kiểm tra thứ ba',
-    type: 'DUPLICATE_CHAPTER',
-    reporter: 'chuHieu457',
-    description: 'Chapter này trùng nội dung với chương 85.',
-    status: 'RESOLVED',
-    createdAt: '2026-07-19T16:22:00',
-  },
-  {
-    id: 1004,
-    mangaTitle: 'Lưỡi Kiếm Vụn',
-    mangaSlug: 'luoi-kiem-vun',
-    chapterNumber: 12,
-    chapterTitle: 'Vết nứt',
-    type: 'WRONG_CONTENT',
-    reporter: 'reader_07',
-    description: 'Nội dung không đúng với tên chương.',
-    status: 'REJECTED',
-    createdAt: '2026-07-18T11:30:00',
-    rejectReason: 'Đã kiểm tra, nội dung đúng bản tác giả gửi.',
-  },
-];
-
-const statusLabels: Record<ChapterReportStatus, string> = {
+const statusLabels: Record<AdminChapterReportStatus, string> = {
   PENDING: 'Chờ xử lý',
   CHECKING: 'Đang kiểm tra',
   RESOLVED: 'Đã xử lý',
@@ -113,10 +39,10 @@ const typeLabels: Record<Exclude<ChapterReportTypeFilter, 'ALL'>, string> = {
 };
 
 interface ReportDetailModalProps {
-  report: ChapterReportItem;
+  report: AdminChapterReportItem;
   rejectReason: string;
   setRejectReason: (value: string) => void;
-  onStatusChange: (status: ChapterReportStatus) => void;
+  onStatusChange: (status: AdminChapterReportStatus) => void;
   onClose: () => void;
 }
 
@@ -195,60 +121,101 @@ function ReportDetailModal({ report, rejectReason, setRejectReason, onStatusChan
 export const ChapterReports: React.FC = () => {
   const navigate = useNavigate();
   const { displayName } = useAuthStore();
-  const [reports, setReports] = useState<ChapterReportItem[]>(prototypeReports);
+  const [reports, setReports] = useState<AdminChapterReportItem[]>([]);
+  const [reportPage, setReportPage] = useState<SpringPageResponse<AdminChapterReportItem> | null>(null);
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<ChapterReportStatusFilter>('ALL');
   const [typeFilter, setTypeFilter] = useState<ChapterReportTypeFilter>('ALL');
-  const [selectedReport, setSelectedReport] = useState<ChapterReportItem | null>(null);
+  const [page, setPage] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [selectedReport, setSelectedReport] = useState<AdminChapterReportItem | null>(null);
   const [rejectReason, setRejectReason] = useState('');
 
-  const filteredReports = useMemo(() => {
-    const normalizedSearch = search.trim().toLowerCase();
-    return reports.filter((report) => {
-      const matchesSearch = !normalizedSearch
-        || report.mangaTitle.toLowerCase().includes(normalizedSearch)
-        || report.chapterTitle.toLowerCase().includes(normalizedSearch)
-        || report.reporter.toLowerCase().includes(normalizedSearch);
-      const matchesStatus = statusFilter === 'ALL' || report.status === statusFilter;
-      const matchesType = typeFilter === 'ALL' || report.type === typeFilter;
-      return matchesSearch && matchesStatus && matchesType;
-    });
-  }, [reports, search, statusFilter, typeFilter]);
+  const getErrorMessage = (error: unknown) => {
+    if (axios.isAxiosError(error)) {
+      const responseData = error.response?.data;
+      if (typeof responseData === 'string') return responseData;
+      if (responseData?.message) return responseData.message;
+      if (responseData?.error) return responseData.error;
+    }
+    return 'Có lỗi xảy ra';
+  };
+
+  const fetchReports = useCallback(async (nextPage = page) => {
+    setLoading(true);
+    setErrorMessage('');
+    try {
+      const response = await adminChapterReportApi.getReports({
+        status: statusFilter === 'ALL' ? undefined : statusFilter,
+        type: typeFilter === 'ALL' ? undefined : typeFilter,
+        search: search || undefined,
+        page: nextPage,
+        size: REPORT_TABLE_PAGE_SIZE,
+      });
+      setReports(response.data.content);
+      setReportPage(response.data);
+    } catch (error) {
+      console.error('Lỗi khi tải báo cáo lỗi chương:', error);
+      setReports([]);
+      setReportPage(null);
+      setErrorMessage(getErrorMessage(error));
+    } finally {
+      setLoading(false);
+    }
+  }, [page, search, statusFilter, typeFilter]);
+
+  useEffect(() => {
+    Promise.resolve().then(() => fetchReports());
+  }, [fetchReports]);
 
   const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setPage(0);
     setSearch(searchInput);
   };
 
   const formatDate = (value: string) => new Date(value).toLocaleDateString('vi-VN');
 
-  const openReport = (report: ChapterReportItem) => {
+  const openReport = (report: AdminChapterReportItem) => {
     setSelectedReport(report);
     setRejectReason(report.rejectReason || '');
   };
 
-  const updateReportStatus = (status: ChapterReportStatus) => {
+  const updateReportStatus = async (status: AdminChapterReportStatus) => {
     if (!selectedReport) return;
     if (status === 'REJECTED' && !rejectReason.trim()) {
       alert('Vui lòng nhập lý do từ chối.');
       return;
     }
 
-    const updatedReport: ChapterReportItem = {
-      ...selectedReport,
-      status,
-      rejectReason: status === 'REJECTED' ? rejectReason.trim() : undefined,
-    };
-
-    setReports((current) => current.map((report) => (
-      report.id === selectedReport.id ? updatedReport : report
-    )));
-    setSelectedReport(updatedReport);
-    if (status !== 'REJECTED') {
-      setRejectReason('');
+    try {
+      const response = await adminChapterReportApi.reviewReport(
+        selectedReport.id,
+        status,
+        status === 'REJECTED' ? rejectReason.trim() : undefined,
+      );
+      setReports((current) => current.map((report) => (
+        report.id === selectedReport.id ? response.data : report
+      )));
+      setSelectedReport(response.data);
+      if (status !== 'REJECTED') {
+        setRejectReason('');
+      }
+      await fetchReports(page);
+    } catch (error) {
+      console.error('Lỗi khi cập nhật báo cáo lỗi chương:', error);
+      alert(getErrorMessage(error));
     }
   };
+
+  const goToPage = (nextPage: number) => {
+    setPage(nextPage);
+  };
+
+  const canGoPrevious = Boolean(reportPage && !reportPage.first);
+  const canGoNext = Boolean(reportPage && !reportPage.last);
 
   return (
     <div className={styles.adminPage}>
@@ -310,7 +277,10 @@ export const ChapterReports: React.FC = () => {
 
                 <select
                   value={statusFilter}
-                  onChange={(event) => setStatusFilter(event.target.value as ChapterReportStatusFilter)}
+                  onChange={(event) => {
+                    setPage(0);
+                    setStatusFilter(event.target.value as ChapterReportStatusFilter);
+                  }}
                   className={`${styles.formInput} ${styles.authorStatusSelect}`}
                 >
                   <option value="ALL">Tất cả trạng thái</option>
@@ -322,7 +292,10 @@ export const ChapterReports: React.FC = () => {
 
                 <select
                   value={typeFilter}
-                  onChange={(event) => setTypeFilter(event.target.value as ChapterReportTypeFilter)}
+                  onChange={(event) => {
+                    setPage(0);
+                    setTypeFilter(event.target.value as ChapterReportTypeFilter);
+                  }}
                   className={`${styles.formInput} ${styles.authorStatusSelect}`}
                 >
                   <option value="ALL">Tất cả lỗi</option>
@@ -330,12 +303,11 @@ export const ChapterReports: React.FC = () => {
                   <option value="MISSING_PAGE">Thiếu trang</option>
                   <option value="WRONG_ORDER">Sai thứ tự</option>
                   <option value="DUPLICATE_CHAPTER">Trùng chương</option>
-                  <option value="WRONG_CONTENT">Nội dung sai</option>
                 </select>
               </div>
             </div>
 
-            <div className={styles.userTablePanel}>
+            <div className={`${styles.userTablePanel} ${styles.mangaTablePanel}`}>
               <div className={styles.tableFrame}>
                 <table className={styles.historyTable}>
                   <thead>
@@ -350,14 +322,14 @@ export const ChapterReports: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredReports.length === 0 ? (
+                    {reports.length === 0 ? (
                       <tr>
                         <td colSpan={7} className={styles.emptyCell}>
-                          Không có dữ liệu hiển thị.
+                          {loading ? 'Đang tải báo cáo...' : errorMessage || 'Không có dữ liệu hiển thị.'}
                         </td>
                       </tr>
                     ) : (
-                      filteredReports.map((report) => (
+                      reports.map((report) => (
                         <tr key={report.id}>
                           <td className={styles.idCell}>{report.id}</td>
                           <td>
@@ -391,6 +363,30 @@ export const ChapterReports: React.FC = () => {
                   </tbody>
                 </table>
               </div>
+
+              {reportPage && reportPage.totalPages > 1 && (
+                <div className={styles.pagination}>
+                  <button
+                    type="button"
+                    className={styles.btnPage}
+                    disabled={!canGoPrevious || loading}
+                    onClick={() => goToPage(page - 1)}
+                  >
+                    Trước
+                  </button>
+                  <span className={styles.pageCount}>
+                    {reportPage.number + 1}/{reportPage.totalPages}
+                  </span>
+                  <button
+                    type="button"
+                    className={styles.btnPage}
+                    disabled={!canGoNext || loading}
+                    onClick={() => goToPage(page + 1)}
+                  >
+                    Sau
+                  </button>
+                </div>
+              )}
             </div>
           </main>
         </section>

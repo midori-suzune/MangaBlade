@@ -57,6 +57,8 @@ public class SecurityConfig {
             "/api/v1/admin/dashboard/statistics",
             "/api/v1/admin/manga",
             "/api/v1/admin/manga/{id}/visibility",
+            "/api/v1/admin/chapter-reports",
+            "/api/v1/admin/chapter-reports/{id}/review",
             "/api/v1/admin/author-requests",
             "/api/v1/admin/author-requests/{id}/review"
     };
