@@ -2,19 +2,24 @@ package com.mangablade.backend.controllers;
 
 import com.mangablade.backend.dtos.request.AdminUserUpdateRequest;
 import com.mangablade.backend.dtos.request.AdminChapterReportReviewRequest;
+import com.mangablade.backend.dtos.request.AdminContentReviewRequest;
 import com.mangablade.backend.dtos.request.AdminMangaVisibilityRequest;
 import com.mangablade.backend.dtos.response.AdminChapterReportResponse;
 import com.mangablade.backend.dtos.response.AdminMangaResponse;
+import com.mangablade.backend.dtos.response.AdminModerationChapterResponse;
+import com.mangablade.backend.dtos.response.AdminModerationMangaResponse;
 import com.mangablade.backend.dtos.response.AdminUserResponse;
 import com.mangablade.backend.dtos.response.ApiResponse;
 import com.mangablade.backend.dtos.response.DashboardReadingStatsResponse;
 import com.mangablade.backend.dtos.response.DashboardStatisticResponse;
 import com.mangablade.backend.dtos.response.PageResponse;
 import com.mangablade.backend.entities.User;
+import com.mangablade.backend.enums.ApprovalStatus;
 import com.mangablade.backend.enums.ChapterReportStatus;
 import com.mangablade.backend.enums.ChapterReportType;
 import com.mangablade.backend.enums.UserRole;
 import com.mangablade.backend.services.mangablade.AdminDashboardService;
+import com.mangablade.backend.services.mangablade.AdminContentModerationService;
 import com.mangablade.backend.services.mangablade.AdminMangaService;
 import com.mangablade.backend.services.mangablade.ChapterReportService;
 import com.mangablade.backend.services.mangablade.UserService;
@@ -34,6 +39,7 @@ import org.springframework.web.bind.annotation.*;
 public class AdminController {
     private final UserService userService;
     private final AdminDashboardService adminDashboardService;
+    private final AdminContentModerationService adminContentModerationService;
     private final AdminMangaService adminMangaService;
     private final ChapterReportService chapterReportService;
 
@@ -188,6 +194,86 @@ public class AdminController {
                         .success(true)
                         .message("Cập nhật báo cáo lỗi chương thành công")
                         .payload(report)
+                        .build()
+        );
+    }
+
+    @GetMapping("/content-moderation/manga")
+    public ResponseEntity<ApiResponse<PageResponse<AdminModerationMangaResponse>>> getModerationManga(
+            @RequestParam(required = false) ApprovalStatus status,
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Page<AdminModerationMangaResponse> manga = adminContentModerationService.findManga(
+                status,
+                normalizeSearch(search),
+                PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "submittedAt"))
+        );
+
+        return ResponseEntity.ok(
+                ApiResponse.<PageResponse<AdminModerationMangaResponse>>builder()
+                        .success(true)
+                        .message("Lấy danh sách truyện cần kiểm duyệt thành công")
+                        .payload(PageResponse.from(manga))
+                        .build()
+        );
+    }
+
+    @PatchMapping("/content-moderation/manga/{id}/review")
+    public ResponseEntity<ApiResponse<AdminModerationMangaResponse>> reviewModerationManga(
+            @PathVariable Long id,
+            @Valid @RequestBody AdminContentReviewRequest request,
+            @AuthenticationPrincipal User currentAdmin
+    ) {
+        Long adminId = currentAdmin == null ? null : currentAdmin.getId();
+        AdminModerationMangaResponse manga = adminContentModerationService.reviewManga(id, request, adminId);
+
+        return ResponseEntity.ok(
+                ApiResponse.<AdminModerationMangaResponse>builder()
+                        .success(true)
+                        .message("Cập nhật kiểm duyệt truyện thành công")
+                        .payload(manga)
+                        .build()
+        );
+    }
+
+    @GetMapping("/content-moderation/chapters")
+    public ResponseEntity<ApiResponse<PageResponse<AdminModerationChapterResponse>>> getModerationChapters(
+            @RequestParam(required = false) ApprovalStatus status,
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Page<AdminModerationChapterResponse> chapters = adminContentModerationService.findChapters(
+                status,
+                normalizeSearch(search),
+                PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "submittedAt"))
+        );
+
+        return ResponseEntity.ok(
+                ApiResponse.<PageResponse<AdminModerationChapterResponse>>builder()
+                        .success(true)
+                        .message("Lấy danh sách chapter cần kiểm duyệt thành công")
+                        .payload(PageResponse.from(chapters))
+                        .build()
+        );
+    }
+
+    @PatchMapping("/content-moderation/chapters/{id}/review")
+    public ResponseEntity<ApiResponse<AdminModerationChapterResponse>> reviewModerationChapter(
+            @PathVariable Long id,
+            @Valid @RequestBody AdminContentReviewRequest request,
+            @AuthenticationPrincipal User currentAdmin
+    ) {
+        Long adminId = currentAdmin == null ? null : currentAdmin.getId();
+        AdminModerationChapterResponse chapter = adminContentModerationService.reviewChapter(id, request, adminId);
+
+        return ResponseEntity.ok(
+                ApiResponse.<AdminModerationChapterResponse>builder()
+                        .success(true)
+                        .message("Cập nhật kiểm duyệt chapter thành công")
+                        .payload(chapter)
                         .build()
         );
     }

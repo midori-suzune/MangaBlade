@@ -2,6 +2,7 @@ package com.mangablade.backend.repositories;
 
 import com.mangablade.backend.dtos.response.MangaRankingProjection;
 import com.mangablade.backend.entities.Manga;
+import com.mangablade.backend.enums.ApprovalStatus;
 import com.mangablade.backend.enums.MangaSourceType;
 import com.mangablade.backend.utils.querysql.MangaQuery;
 
@@ -74,6 +75,41 @@ public interface MangaRepository extends JpaRepository<Manga, Long> {
             @Param("status") String status,
             @Param("sourceType") MangaSourceType sourceType,
             @Param("hidden") Boolean hidden,
+            Pageable pageable
+    );
+
+    @EntityGraph(attributePaths = {"owner"})
+    @Query(
+            value = """
+                    SELECT m
+                    FROM Manga m
+                    LEFT JOIN m.owner owner
+                    WHERE m.deletedAt IS NULL
+                    AND m.ownerUserId IS NOT NULL
+                    AND (:status IS NULL OR m.approvalStatus = :status)
+                    AND (:search IS NULL
+                        OR LOWER(m.title) LIKE LOWER(CONCAT('%', :search, '%'))
+                        OR LOWER(m.slug) LIKE LOWER(CONCAT('%', :search, '%'))
+                        OR LOWER(owner.username) LIKE LOWER(CONCAT('%', :search, '%'))
+                        OR LOWER(owner.email) LIKE LOWER(CONCAT('%', :search, '%')))
+                    """,
+            countQuery = """
+                    SELECT COUNT(m)
+                    FROM Manga m
+                    LEFT JOIN m.owner owner
+                    WHERE m.deletedAt IS NULL
+                    AND m.ownerUserId IS NOT NULL
+                    AND (:status IS NULL OR m.approvalStatus = :status)
+                    AND (:search IS NULL
+                        OR LOWER(m.title) LIKE LOWER(CONCAT('%', :search, '%'))
+                        OR LOWER(m.slug) LIKE LOWER(CONCAT('%', :search, '%'))
+                        OR LOWER(owner.username) LIKE LOWER(CONCAT('%', :search, '%'))
+                        OR LOWER(owner.email) LIKE LOWER(CONCAT('%', :search, '%')))
+                    """
+    )
+    Page<Manga> findModerationManga(
+            @Param("status") ApprovalStatus status,
+            @Param("search") String search,
             Pageable pageable
     );
 
