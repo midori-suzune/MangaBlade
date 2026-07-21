@@ -5,6 +5,60 @@ import { Feather, CheckCircle, Clock, BookOpen, BarChart3, MessageSquare, AlertC
 import { authorRequestApi, type AuthorRequestResponse } from "../../../api/authorRequestApi";
 import styles from "../UserProfile.module.css";
 
+interface RegistrationFormValues {
+  penName: string;
+  phone: string;
+  socialLink: string;
+}
+
+interface RegistrationFormErrors {
+  penNameError: string;
+  phoneError: string;
+  socialLinkError: string;
+  hasError: boolean;
+}
+
+function validateRegistrationForm({ penName, phone, socialLink }: RegistrationFormValues): RegistrationFormErrors {
+  let penNameError = "";
+  let phoneError = "";
+  let socialLinkError = "";
+  let hasError = false;
+
+  if (!penName.trim()) {
+    penNameError = "Vui lòng điền bút danh tác giả!";
+    hasError = true;
+  }
+
+  if (!phone.trim()) {
+    phoneError = "Vui lòng điền số điện thoại!";
+    hasError = true;
+  } else {
+    const phoneRegex = /^(0|\+84)[35789]\d{8}$/;
+    if (!phoneRegex.test(phone.trim())) {
+      phoneError = "Số điện thoại không hợp lệ! Vui lòng nhập 10 chữ số di động VN.";
+      hasError = true;
+    }
+  }
+
+  if (!socialLink.trim()) {
+    socialLinkError = "Vui lòng điền link portfolio hoặc trang sáng tác!";
+    hasError = true;
+  } else {
+    const urlRegex = /^https?:\/\/.+$/i;
+    if (!urlRegex.test(socialLink.trim())) {
+      socialLinkError = "Đường dẫn portfolio không hợp lệ! Phải bắt đầu bằng http:// hoặc https://";
+      hasError = true;
+    }
+  }
+
+  return {
+    penNameError,
+    phoneError,
+    socialLinkError,
+    hasError
+  };
+}
+
 interface AuthorRegistrationTabProps {
   userRole: string;
 }
@@ -493,41 +547,12 @@ export function AuthorRegistrationTab({ userRole }: AuthorRegistrationTabProps) 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Reset errors
-    setPenNameError("");
-    setPhoneError("");
-    setSocialLinkError("");
+    const errors = validateRegistrationForm({ penName, phone, socialLink });
+    setPenNameError(errors.penNameError);
+    setPhoneError(errors.phoneError);
+    setSocialLinkError(errors.socialLinkError);
 
-    let hasError = false;
-
-    if (!penName.trim()) {
-      setPenNameError("Vui lòng điền bút danh tác giả!");
-      hasError = true;
-    }
-
-    if (!phone.trim()) {
-      setPhoneError("Vui lòng điền số điện thoại!");
-      hasError = true;
-    } else {
-      const phoneRegex = /^(0|\+84)[35789]\d{8}$/;
-      if (!phoneRegex.test(phone.trim())) {
-        setPhoneError("Số điện thoại không hợp lệ! Vui lòng nhập 10 chữ số di động VN.");
-        hasError = true;
-      }
-    }
-
-    if (!socialLink.trim()) {
-      setSocialLinkError("Vui lòng điền link portfolio hoặc trang sáng tác!");
-      hasError = true;
-    } else {
-      const urlRegex = /^https?:\/\/.+$/i;
-      if (!urlRegex.test(socialLink.trim())) {
-        setSocialLinkError("Đường dẫn portfolio không hợp lệ! Phải bắt đầu bằng http:// hoặc https://");
-        hasError = true;
-      }
-    }
-
-    if (hasError) {
+    if (errors.hasError) {
       return;
     }
 

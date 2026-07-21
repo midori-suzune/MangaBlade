@@ -76,6 +76,111 @@ function TabContent({ activeTab, showAuthorTab, userRole }: TabContentProps) {
     }
 }
 
+interface ProfileSidebarProps {
+    displayName: string;
+    activeTab: string;
+    showAuthorTab: boolean;
+    userRole: string;
+    handleTabChange: (tabName: string) => void;
+    logout: () => void;
+}
+
+function ProfileSidebar({
+    displayName,
+    activeTab,
+    showAuthorTab,
+    userRole,
+    handleTabChange,
+    logout
+}: ProfileSidebarProps) {
+    return (
+        <aside className={styles.profileSidebar}>
+            <div className={styles.sidebarUserCard}>
+                <div className={styles.sidebarUserMeta}>
+                    <span className={styles.sidebarUserTitleLabel}>Tài khoản của</span>
+                    <span className={styles.sidebarUserName}>{displayName}</span>
+                </div>
+            </div>
+
+            <nav className={styles.sidebarNav}>
+                <button 
+                    className={`${styles.sidebarNavItem} ${activeTab === "settings" ? styles.sidebarActiveItem : ""}`}
+                    onClick={() => handleTabChange("settings")}
+                >
+                    <User size={16} /> Thông tin tài khoản
+                </button>
+                
+                <button 
+                    className={`${styles.sidebarNavItem} ${activeTab === "manga" ? styles.sidebarActiveItem : ""}`}
+                    onClick={() => handleTabChange("manga")}
+                >
+                    <BookOpen size={16} /> Truyện theo dõi
+                </button>
+                
+                <button 
+                    className={`${styles.sidebarNavItem} ${activeTab === "history" ? styles.sidebarActiveItem : ""}`}
+                    onClick={() => handleTabChange("history")}
+                >
+                    <Clock size={16} /> Lịch sử đọc
+                </button>
+
+                <button 
+                    className={`${styles.sidebarNavItem} ${activeTab === "tasks" ? styles.sidebarActiveItem : ""}`}
+                    onClick={() => handleTabChange("tasks")}
+                >
+                    <CalendarCheck size={16} /> Nhiệm vụ hàng ngày
+                </button>
+
+                <button 
+                    className={`${styles.sidebarNavItem} ${activeTab === "password" ? styles.sidebarActiveItem : ""}`}
+                    onClick={() => handleTabChange("password")}
+                >
+                    <Key size={16} /> Đổi mật khẩu
+                </button>
+                
+                {showAuthorTab && userRole !== 'AUTHOR' && (
+                    <button 
+                        className={`${styles.sidebarNavItem} ${activeTab === "author" ? styles.sidebarActiveItem : ""}`}
+                        onClick={() => handleTabChange("author")}
+                    >
+                        <Feather size={16} /> Đăng ký Tác giả
+                    </button>
+                )}
+
+                {userRole === 'AUTHOR' && (
+                    <>
+                        <button 
+                            className={`${styles.sidebarNavItem} ${["author-manga", "author-manga-edit", "author-chapters", "author-chapter-upload"].includes(activeTab) ? styles.sidebarActiveItem : ""}`}
+                            onClick={() => handleTabChange("author-manga")}
+                        >
+                            <BookOpen size={16} /> Truyện của tôi
+                        </button>
+                        <button 
+                            className={`${styles.sidebarNavItem} ${activeTab === "author-manga-create" ? styles.sidebarActiveItem : ""}`}
+                            onClick={() => handleTabChange("author-manga-create")}
+                        >
+                            <PlusCircle size={16} /> Đăng truyện mới
+                        </button>
+                        <button 
+                            className={`${styles.sidebarNavItem} ${activeTab === "author-statistics" ? styles.sidebarActiveItem : ""}`}
+                            onClick={() => handleTabChange("author-statistics")}
+                        >
+                            <BarChart3 size={16} /> Thống kê tác phẩm
+                        </button>
+                    </>
+                )}
+
+                <button 
+                    className={`${styles.sidebarNavItem} ${styles.sidebarLogoutItem}`}
+                    onClick={() => logout()}
+                >
+                    <LogOut size={16} /> Đăng xuất
+                </button>
+            </nav>
+        </aside>
+    );
+}
+
 export function UserProfile() {
     const { isAuthenticated, user, openAuthModal, logout, displayName, fetchProfile } = useAuthStore();
     const [searchParams, setSearchParams] = useSearchParams();
@@ -103,90 +208,14 @@ export function UserProfile() {
         <div className={styles.profilePage}>
             <div className={styles.pageContainer}>
                 <div className={styles.profileLayoutContainer}>
-                    <aside className={styles.profileSidebar}>
-                        <div className={styles.sidebarUserCard}>
-                            <div className={styles.sidebarUserMeta}>
-                                <span className={styles.sidebarUserTitleLabel}>Tài khoản của</span>
-                                <span className={styles.sidebarUserName}>{displayName}</span>
-                            </div>
-                        </div>
-
-                        <nav className={styles.sidebarNav}>
-                            <button 
-                                className={`${styles.sidebarNavItem} ${activeTab === "settings" ? styles.sidebarActiveItem : ""}`}
-                                onClick={() => handleTabChange("settings")}
-                            >
-                                <User size={16} /> Thông tin tài khoản
-                            </button>
-                            
-                            <button 
-                                className={`${styles.sidebarNavItem} ${activeTab === "manga" ? styles.sidebarActiveItem : ""}`}
-                                onClick={() => handleTabChange("manga")}
-                            >
-                                <BookOpen size={16} /> Truyện theo dõi
-                            </button>
-                            
-                            <button 
-                                className={`${styles.sidebarNavItem} ${activeTab === "history" ? styles.sidebarActiveItem : ""}`}
-                                onClick={() => handleTabChange("history")}
-                            >
-                                <Clock size={16} /> Lịch sử đọc
-                            </button>
-
-                            <button 
-                                className={`${styles.sidebarNavItem} ${activeTab === "tasks" ? styles.sidebarActiveItem : ""}`}
-                                onClick={() => handleTabChange("tasks")}
-                            >
-                                <CalendarCheck size={16} /> Nhiệm vụ hàng ngày
-                            </button>
-
-                            <button 
-                                className={`${styles.sidebarNavItem} ${activeTab === "password" ? styles.sidebarActiveItem : ""}`}
-                                onClick={() => handleTabChange("password")}
-                            >
-                                <Key size={16} /> Đổi mật khẩu
-                            </button>
-                            
-                            {showAuthorTab && user.role !== 'AUTHOR' && (
-                                <button 
-                                    className={`${styles.sidebarNavItem} ${activeTab === "author" ? styles.sidebarActiveItem : ""}`}
-                                    onClick={() => handleTabChange("author")}
-                                >
-                                    <Feather size={16} /> Đăng ký Tác giả
-                                </button>
-                            )}
-
-                            {user.role === 'AUTHOR' && (
-                                <>
-                                    <button 
-                                        className={`${styles.sidebarNavItem} ${["author-manga", "author-manga-edit", "author-chapters", "author-chapter-upload"].includes(activeTab) ? styles.sidebarActiveItem : ""}`}
-                                        onClick={() => handleTabChange("author-manga")}
-                                    >
-                                        <BookOpen size={16} /> Truyện của tôi
-                                    </button>
-                                    <button 
-                                        className={`${styles.sidebarNavItem} ${activeTab === "author-manga-create" ? styles.sidebarActiveItem : ""}`}
-                                        onClick={() => handleTabChange("author-manga-create")}
-                                    >
-                                        <PlusCircle size={16} /> Đăng truyện mới
-                                    </button>
-                                    <button 
-                                        className={`${styles.sidebarNavItem} ${activeTab === "author-statistics" ? styles.sidebarActiveItem : ""}`}
-                                        onClick={() => handleTabChange("author-statistics")}
-                                    >
-                                        <BarChart3 size={16} /> Thống kê tác phẩm
-                                    </button>
-                                </>
-                            )}
-
-                            <button 
-                                className={`${styles.sidebarNavItem} ${styles.sidebarLogoutItem}`}
-                                onClick={() => logout()}
-                            >
-                                <LogOut size={16} /> Đăng xuất
-                            </button>
-                        </nav>
-                    </aside>
+                    <ProfileSidebar
+                        displayName={displayName}
+                        activeTab={activeTab}
+                        showAuthorTab={showAuthorTab}
+                        userRole={user.role}
+                        handleTabChange={handleTabChange}
+                        logout={logout}
+                    />
 
                     <main className={styles.profileMainContent}>
                         <div className={styles.profileCard}>

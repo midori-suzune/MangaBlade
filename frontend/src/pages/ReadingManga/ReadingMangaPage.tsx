@@ -10,6 +10,97 @@ import {CommentEditor} from "../../components/CommentEmojiPicker/CommentEditor.t
 import {CommentEmojiPicker} from "../../components/CommentEmojiPicker/CommentEmojiPicker.tsx";
 import {CommentText} from "../../components/CommentEmojiPicker/CommentText.tsx";
 
+interface CommentItemProps {
+    comment: MangaCommentResponse;
+    chapterLabel: string;
+    deletingCommentId: number | null;
+    getAvatarLabel: (username?: string) => string;
+    getCommentAuthorName: (userId: number, username: string) => string;
+    canDeleteComment: (comment: MangaCommentResponse) => boolean;
+    handleDeleteComment: (commentId: number) => void;
+}
+
+function CommentItem({
+    comment,
+    chapterLabel,
+    deletingCommentId,
+    getAvatarLabel,
+    getCommentAuthorName,
+    canDeleteComment,
+    handleDeleteComment
+}: CommentItemProps) {
+    return (
+        <article className={styles.commentItem}>
+            <div className={`${styles.commentAvatar} ${styles.sampleAvatar}`}>
+                {getAvatarLabel(getCommentAuthorName(comment.user.id, comment.user.username))}
+            </div>
+            <div className={styles.commentBody}>
+                <div className={styles.commentBubble}>
+                    <div className={styles.commentAuthorRow}>
+                        <span className={styles.commentAuthor}>{getCommentAuthorName(comment.user.id, comment.user.username)}</span>
+                        {(comment.isAuthor || comment.user?.isAuthor) && (
+                            <span 
+                                style={{ 
+                                    marginLeft: "8px", 
+                                    fontSize: "11px", 
+                                    padding: "2px 8px", 
+                                    borderRadius: "12px", 
+                                    backgroundColor: "#e0e7ff",
+                                    color: "#4f46e5",
+                                    border: "1px solid #c7d2fe",
+                                    fontWeight: "bold",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "4px",
+                                    verticalAlign: "middle"
+                                }}
+                                title="Tác giả của bộ truyện"
+                            >
+                                <PenTool size={11} /> Tác giả
+                            </span>
+                        )}
+                        {comment.user.activeTitle && (
+                            <span 
+                                style={{ 
+                                    marginLeft: "8px", 
+                                    fontSize: "10px", 
+                                    padding: "1px 6px", 
+                                    borderRadius: "3px", 
+                                    backgroundColor: `${comment.user.activeTitleColor || '#6b7280'}18`,
+                                    color: comment.user.activeTitleColor || '#6b7280',
+                                    border: `1px solid ${comment.user.activeTitleColor || '#6b7280'}`,
+                                    fontWeight: "bold",
+                                    verticalAlign: "middle"
+                                }}
+                            >
+                                {comment.user.activeTitle}
+                            </span>
+                        )}
+                        <span className={styles.commentBadge}>{chapterLabel}</span>
+                    </div>
+                    <p className={styles.commentText}>
+                        <CommentText content={comment.content} />
+                    </p>
+                </div>
+                <div className={styles.commentFooterActions}>
+                    <span>{new Date(comment.createdAt).toLocaleDateString("vi-VN")}</span>
+                    <button type="button">Thích</button>
+                    <button type="button">Trả lời</button>
+                    {canDeleteComment(comment) && (
+                        <button
+                            type="button"
+                            onClick={() => void handleDeleteComment(comment.id)}
+                            disabled={deletingCommentId === comment.id}
+                        >
+                            {deletingCommentId === comment.id ? "Đang gỡ..." : "Gỡ"}
+                        </button>
+                    )}
+                </div>
+            </div>
+        </article>
+    );
+}
+
 export function ReadingMangaPage() {
 
 
@@ -315,53 +406,16 @@ export function ReadingMangaPage() {
 
                             <div className={styles.detailComments}>
                                 {comments.map((comment) => (
-                                    <article className={styles.commentItem} key={comment.id}>
-                                        <div className={`${styles.commentAvatar} ${styles.sampleAvatar}`}>
-                                            {getAvatarLabel(getCommentAuthorName(comment.user.id, comment.user.username))}
-                                        </div>
-                                        <div className={styles.commentBody}>
-                                            <div className={styles.commentBubble}>
-                                                <div className={styles.commentAuthorRow}>
-                                                    <span className={styles.commentAuthor}>{getCommentAuthorName(comment.user.id, comment.user.username)}</span>
-                                                    {comment.user.activeTitle && (
-                                                        <span 
-                                                            style={{ 
-                                                                marginLeft: "8px", 
-                                                                fontSize: "10px", 
-                                                                padding: "1px 6px", 
-                                                                borderRadius: "3px", 
-                                                                backgroundColor: `${comment.user.activeTitleColor || '#6b7280'}18`,
-                                                                color: comment.user.activeTitleColor || '#6b7280',
-                                                                border: `1px solid ${comment.user.activeTitleColor || '#6b7280'}`,
-                                                                fontWeight: "bold",
-                                                                verticalAlign: "middle"
-                                                            }}
-                                                        >
-                                                            {comment.user.activeTitle}
-                                                        </span>
-                                                    )}
-                                                    <span className={styles.commentBadge}>{chapterLabel}</span>
-                                                </div>
-                                                <p className={styles.commentText}>
-                                                    <CommentText content={comment.content} />
-                                                </p>
-                                            </div>
-                                            <div className={styles.commentFooterActions}>
-                                                <span>{new Date(comment.createdAt).toLocaleDateString("vi-VN")}</span>
-                                                <button type="button">Thích</button>
-                                                <button type="button">Trả lời</button>
-                                                {canDeleteComment(comment) && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => void handleDeleteComment(comment.id)}
-                                                        disabled={deletingCommentId === comment.id}
-                                                    >
-                                                        {deletingCommentId === comment.id ? "Đang gỡ..." : "Gỡ"}
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </article>
+                                    <CommentItem
+                                        key={comment.id}
+                                        comment={comment}
+                                        chapterLabel={chapterLabel}
+                                        deletingCommentId={deletingCommentId}
+                                        getAvatarLabel={getAvatarLabel}
+                                        getCommentAuthorName={getCommentAuthorName}
+                                        canDeleteComment={canDeleteComment}
+                                        handleDeleteComment={handleDeleteComment}
+                                    />
                                 ))}
                                 {comments.length === 0 && (
                                     <p className={styles.emptyComments}>Chưa có bình luận nào cho chương này.</p>
@@ -415,82 +469,6 @@ export function ReadingMangaPage() {
                             </div>
                         </div>
                     )}
-
-                    <div className={styles.detailComments}>
-                        {comments.map((comment) => (
-                            <article className={styles.commentItem} key={comment.id}>
-                                <div className={`${styles.commentAvatar} ${styles.sampleAvatar}`}>
-                                    {getAvatarLabel(getCommentAuthorName(comment.user.id, comment.user.username))}
-                                </div>
-                                <div className={styles.commentBody}>
-                                    <div className={styles.commentBubble}>
-                                        <div className={styles.commentAuthorRow}>
-                                            <span className={styles.commentAuthor}>{getCommentAuthorName(comment.user.id, comment.user.username)}</span>
-                                            {(comment.isAuthor || comment.user?.isAuthor) && (
-                                                <span 
-                                                    style={{ 
-                                                        marginLeft: "8px", 
-                                                        fontSize: "11px", 
-                                                        padding: "2px 8px", 
-                                                        borderRadius: "12px", 
-                                                        backgroundColor: "#e0e7ff",
-                                                        color: "#4f46e5",
-                                                        border: "1px solid #c7d2fe",
-                                                        fontWeight: "bold",
-                                                        display: "inline-flex",
-                                                        alignItems: "center",
-                                                        gap: "4px",
-                                                        verticalAlign: "middle"
-                                                    }}
-                                                    title="Tác giả của bộ truyện"
-                                                >
-                                                    <PenTool size={11} /> Tác giả
-                                                </span>
-                                            )}
-                                            {comment.user.activeTitle && (
-                                                <span 
-                                                    style={{ 
-                                                        marginLeft: "8px", 
-                                                        fontSize: "10px", 
-                                                        padding: "1px 6px", 
-                                                        borderRadius: "3px", 
-                                                        backgroundColor: `${comment.user.activeTitleColor || '#6b7280'}18`,
-                                                        color: comment.user.activeTitleColor || '#6b7280',
-                                                        border: `1px solid ${comment.user.activeTitleColor || '#6b7280'}`,
-                                                        fontWeight: "bold",
-                                                        verticalAlign: "middle"
-                                                    }}
-                                                >
-                                                    {comment.user.activeTitle}
-                                                </span>
-                                            )}
-                                            <span className={styles.commentBadge}>{chapterLabel}</span>
-                                        </div>
-                                        <p className={styles.commentText}>
-                                            <CommentText content={comment.content} />
-                                        </p>
-                                    </div>
-                                    <div className={styles.commentFooterActions}>
-                                        <span>{new Date(comment.createdAt).toLocaleDateString("vi-VN")}</span>
-                                        <button type="button">Thích</button>
-                                        <button type="button">Trả lời</button>
-                                        {canDeleteComment(comment) && (
-                                            <button
-                                                type="button"
-                                                onClick={() => void handleDeleteComment(comment.id)}
-                                                disabled={deletingCommentId === comment.id}
-                                            >
-                                                {deletingCommentId === comment.id ? "Đang gỡ..." : "Gỡ"}
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            </article>
-                        ))}
-                        {comments.length === 0 && (
-                            <p className={styles.emptyComments}>Chưa có bình luận nào cho chương này.</p>
-                        )}
-                    </div>
                 </section>
             </main>
         </div>
