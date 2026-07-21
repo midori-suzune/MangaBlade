@@ -16,6 +16,7 @@ import {
     toggleMangaFollow
 } from "../../api/mangaApi.ts";
 import {useAuthStore} from "../../stores/authStore.ts";
+import { PenTool } from "lucide-react";
 
 function getPlainTextFromHtml(html?: string) {
     if (!html) return "";
@@ -509,6 +510,27 @@ export function MangaDetailPage() {
                                                         <div className={styles.commentAuthorRow}>
                                                             <span
                                                                 className={styles.commentAuthor}>{getCommentAuthorName(comment.user.id, comment.user.username)}</span>
+                                                            {(comment.isAuthor || comment.user?.isAuthor) && (
+                                                                <span 
+                                                                    style={{ 
+                                                                        marginLeft: "8px", 
+                                                                        fontSize: "11px", 
+                                                                        padding: "2px 8px", 
+                                                                        borderRadius: "12px", 
+                                                                        backgroundColor: "#e0e7ff",
+                                                                        color: "#4f46e5",
+                                                                        border: "1px solid #c7d2fe",
+                                                                        fontWeight: "bold",
+                                                                        display: "inline-flex",
+                                                                        alignItems: "center",
+                                                                        gap: "4px",
+                                                                        verticalAlign: "middle"
+                                                                    }}
+                                                                    title="Tác giả của bộ truyện"
+                                                                >
+                                                                    <PenTool size={11} /> Tác giả
+                                                                </span>
+                                                            )}
                                                             {comment.user.activeTitle && (
                                                                 <span 
                                                                     style={{ 
@@ -577,6 +599,27 @@ export function MangaDetailPage() {
                                                                     <span className={styles.commentAuthor}>
                                                                         {getCommentAuthorName(reply.user.id, reply.user.username)}
                                                                     </span>
+                                                                    {(reply.isAuthor || reply.user?.isAuthor) && (
+                                                                        <span 
+                                                                            style={{ 
+                                                                                marginLeft: "8px", 
+                                                                                fontSize: "11px", 
+                                                                                padding: "2px 8px", 
+                                                                                borderRadius: "12px", 
+                                                                                backgroundColor: "#e0e7ff",
+                                                                                color: "#4f46e5",
+                                                                                border: "1px solid #c7d2fe",
+                                                                                fontWeight: "bold",
+                                                                                display: "inline-flex",
+                                                                                alignItems: "center",
+                                                                                gap: "4px",
+                                                                                verticalAlign: "middle"
+                                                                            }}
+                                                                            title="Tác giả của bộ truyện"
+                                                                        >
+                                                                            <PenTool size={11} /> Tác giả
+                                                                        </span>
+                                                                    )}
                                                                     {reply.user.activeTitle && (
                                                                         <span 
                                                                             style={{ 

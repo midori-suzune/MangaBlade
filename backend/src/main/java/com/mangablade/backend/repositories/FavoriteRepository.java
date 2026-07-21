@@ -20,6 +20,8 @@ public interface FavoriteRepository extends JpaRepository<Favorite, FavoriteId> 
 
     long countByUserId(Long userId);
 
+    long countByMangaId(Long mangaId);
+
     @Query("""
             select f
             from Favorite f

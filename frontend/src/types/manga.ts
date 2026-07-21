@@ -93,11 +93,13 @@ export type MangaCommentResponse = {
     id: number,
     content: string,
     createdAt: string,
+    isAuthor?: boolean | null,
     user: {
         id: number,
         username: string,
         activeTitle?: string | null,
         activeTitleColor?: string | null,
+        isAuthor?: boolean | null,
     },
     replies: MangaCommentResponse[],
 }

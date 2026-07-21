@@ -60,6 +60,10 @@ public class User implements UserDetails {
     @Column(name = "avatar_url", length = 1000)
     private String avatarUrl;
 
+    @Size(max = 100)
+    @Column(name = "display_name", length = 100)
+    private String displayName;
+
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
