@@ -497,7 +497,7 @@ export function AuthorRegistrationTab({ userRole }: AuthorRegistrationTabProps) 
           setView('pending');
         } else if (res.payload.status === 'REJECTED') {
           setView('rejected');
-        } else if (res.payload.status === 'APPROVED') {
+        } else if (res.payload.status === 'APPROVED' && userRole === 'AUTHOR') {
           setView('author');
         } else {
           setView('intro');
@@ -508,7 +508,7 @@ export function AuthorRegistrationTab({ userRole }: AuthorRegistrationTabProps) 
     } catch {
       setView('intro');
     }
-  }, []);
+  }, [userRole]);
 
   useEffect(() => {
     if (userRole === 'AUTHOR') {
