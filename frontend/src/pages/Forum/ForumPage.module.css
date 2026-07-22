@@ -217,6 +217,8 @@
 .modalField input,
 .modalField select {
     width: 100%;
+    min-height: 40px;
+    padding: 9px 12px;
     border: 1px solid var(--color-border);
     border-radius: 4px;
     background-color: var(--color-surface-soft);
@@ -225,12 +227,6 @@
     font-size: 14px;
     outline: none;
     transition: border-color 0.2s, background-color 0.2s;
-}
-
-.modalField input,
-.modalField select {
-    min-height: 40px;
-    padding: 9px 12px;
 }
 
 .modalField input:focus,

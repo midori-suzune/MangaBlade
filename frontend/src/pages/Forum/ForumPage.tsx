@@ -2,13 +2,6 @@ import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import type {FormEvent} from "react";
 import type {Client, StompSubscription} from "@stomp/stompjs";
 import {
-    MessageCircle,
-    Plus,
-    Send,
-    Users,
-    X
-} from "lucide-react";
-import {
     createForumComment,
     createForumThread,
     deleteForumComment,
@@ -18,9 +11,6 @@ import {
     toggleForumCommentLike
 } from "../../api/forumApi.ts";
 import {createForumSocketClient, subscribeForumEvent} from "../../api/forumSocket.ts";
-import {CommentEditor} from "../../components/CommentEmojiPicker/CommentEditor.tsx";
-import {CommentEmojiPicker} from "../../components/CommentEmojiPicker/CommentEmojiPicker.tsx";
-import {CommentText} from "../../components/CommentEmojiPicker/CommentText.tsx";
 import {useAuthStore} from "../../stores/authStore.ts";
 import type {
     ForumCommentDeletedPayload,
@@ -31,182 +21,18 @@ import type {
     ForumThreadDeletedPayload,
     ForumThreadResponse
 } from "../../types/forum.ts";
+import {CreateThreadModal} from "./CreateThreadModal.tsx";
+import {ForumThreadDetail} from "./ForumThreadDetail.tsx";
+import {ForumThreadPanel} from "./ForumThreadPanel.tsx";
 import styles from "./ForumPage.module.css";
-
-const threadCategories: Array<{label: string; value: ForumThreadCategory}> = [
-    {label: "Thông báo", value: "ANNOUNCEMENT"},
-    {label: "Thảo luận", value: "DISCUSSION"},
-    {label: "Tìm truyện", value: "FIND_MANGA"},
-    {label: "Góp ý", value: "FEEDBACK"}
-];
-const THREAD_TITLE_MAX_LENGTH = 150;
-
-type CategoryFilter = "ALL" | ForumThreadCategory;
-
-const categoryLabels = threadCategories.reduce<Record<ForumThreadCategory, string>>((acc, category) => {
-    acc[category.value] = category.label;
-    return acc;
-}, {} as Record<ForumThreadCategory, string>);
-
-function getInitial(name?: string | null) {
-    return (name?.trim().slice(0, 1) || "U").toUpperCase();
-}
-
-function getRoleBadge(role?: string | null) {
-    if (role === "ADMIN") return "Admin";
-    if (role === "AUTHOR") return "Author";
-    return "Member";
-}
-
-function getRoleBadgeClass(role?: string | null) {
-    if (role === "ADMIN") return `${styles.commentBadge} ${styles.adminBadge}`;
-    if (role === "AUTHOR") return `${styles.commentBadge} ${styles.authorBadge}`;
-    return `${styles.commentBadge} ${styles.memberBadge}`;
-}
-
-function formatTime(value?: string | null) {
-    if (!value) {
-        return "chưa có";
-    }
-
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) {
-        return "vừa xong";
-    }
-
-    const diffSeconds = Math.max(Math.floor((Date.now() - date.getTime()) / 1000), 0);
-    if (diffSeconds < 60) return "vừa xong";
-    if (diffSeconds < 3600) return `${Math.floor(diffSeconds / 60)} phút trước`;
-    if (diffSeconds < 86400) return `${Math.floor(diffSeconds / 3600)} giờ trước`;
-    return `${Math.floor(diffSeconds / 86400)} ngày trước`;
-}
-
-function flattenComments(comments: ForumCommentResponse[]): ForumCommentResponse[] {
-    return comments.flatMap((comment) => [comment, ...flattenComments(comment.replies ?? [])]);
-}
-
-function hasComment(comments: ForumCommentResponse[], commentId: number): boolean {
-    return flattenComments(comments).some((comment) => comment.id === commentId);
-}
-
-function appendComment(comments: ForumCommentResponse[], nextComment: ForumCommentResponse): ForumCommentResponse[] {
-    if (hasComment(comments, nextComment.id)) {
-        return comments;
-    }
-
-    if (!nextComment.replyToCommentId) {
-        return [...comments, {...nextComment, replies: nextComment.replies ?? []}];
-    }
-
-    return comments.map((comment) => {
-        if (comment.id === nextComment.replyToCommentId) {
-            return {
-                ...comment,
-                replies: [...(comment.replies ?? []), {...nextComment, replies: nextComment.replies ?? []}]
-            };
-        }
-
-        return {
-            ...comment,
-            replies: appendComment(comment.replies ?? [], nextComment)
-        };
-    });
-}
-
-function removeComment(comments: ForumCommentResponse[], commentId: number): ForumCommentResponse[] {
-    return comments
-        .filter((comment) => comment.id !== commentId)
-        .map((comment) => ({
-            ...comment,
-            replies: removeComment(comment.replies ?? [], commentId)
-        }));
-}
-
-function updateCommentLike(
-    comments: ForumCommentResponse[],
-    commentId: number,
-    likeCount: number,
-    isLiked?: boolean
-): ForumCommentResponse[] {
-    return comments.map((comment) => ({
-        ...comment,
-        likeCount: comment.id === commentId ? likeCount : comment.likeCount,
-        isLiked: comment.id === commentId && isLiked !== undefined ? isLiked : comment.isLiked,
-        replies: updateCommentLike(comment.replies ?? [], commentId, likeCount, isLiked)
-    }));
-}
-
-function upsertThread(threads: ForumThreadResponse[], nextThread: ForumThreadResponse) {
-    const filteredThreads = threads.filter((thread) => thread.id !== nextThread.id);
-    return [nextThread, ...filteredThreads];
-}
-
-function CommentItem({
-    comment,
-    currentUserId,
-    depth,
-    onDelete,
-    onLike,
-    onReply
-}: {
-    comment: ForumCommentResponse;
-    currentUserId?: number;
-    depth: number;
-    onDelete: (commentId: number) => void;
-    onLike: (commentId: number) => void;
-    onReply: (comment: ForumCommentResponse) => void;
-}) {
-    const authorName = comment.user?.username || "Người dùng";
-    const canDelete = currentUserId !== undefined && comment.user?.id === currentUserId;
-
-    return (
-        <article className={styles.commentItem} style={{marginLeft: depth ? Math.min(depth * 34, 68) : 0}}>
-            <div className={styles.commentAvatar}>{getInitial(authorName)}</div>
-            <div className={styles.commentBody}>
-                <div className={styles.commentBubble}>
-                    <div className={styles.commentAuthorRow}>
-                        <span className={styles.commentAuthor}>{authorName}</span>
-                        {comment.user?.activeTitle && (
-                            <span
-                                className={`${styles.commentBadge} ${styles.titleBadge}`}
-                                style={comment.user.activeTitleColor ? {color: comment.user.activeTitleColor} : undefined}
-                            >
-                                {comment.user.activeTitle}
-                            </span>
-                        )}
-                        {!comment.user?.activeTitle && (
-                            <span className={getRoleBadgeClass(comment.user?.role)}>{getRoleBadge(comment.user?.role)}</span>
-                        )}
-                    </div>
-                    <p className={styles.commentText}>
-                        <CommentText content={comment.content} />
-                    </p>
-                </div>
-                <div className={styles.commentFooter}>
-                    <span>{formatTime(comment.createdAt)}</span>
-                    <button type="button" onClick={() => onLike(comment.id)}>
-                        {comment.isLiked ? "Đã thích" : "Thích"} ({comment.likeCount})
-                    </button>
-                    <button type="button" onClick={() => onReply(comment)}>Trả lời</button>
-                    {canDelete && (
-                        <button type="button" onClick={() => onDelete(comment.id)}>Gỡ</button>
-                    )}
-                </div>
-                {(comment.replies ?? []).map((reply) => (
-                    <CommentItem
-                        comment={reply}
-                        currentUserId={currentUserId}
-                        depth={depth + 1}
-                        key={reply.id}
-                        onDelete={onDelete}
-                        onLike={onLike}
-                        onReply={onReply}
-                    />
-                ))}
-            </div>
-        </article>
-    );
-}
+import type {CategoryFilter} from "./forumConstants.ts";
+import {
+    appendComment,
+    flattenComments,
+    removeComment,
+    updateCommentLike,
+    upsertThread
+} from "./forumUtils.ts";
 
 export function ForumPage() {
     const {isAuthenticated, openAuthModal, user, displayName} = useAuthStore();
@@ -296,21 +122,36 @@ export function ForumPage() {
     }, [activeCategory]);
 
     useEffect(() => {
-        void loadThreads();
+        let cancelled = false;
+
+        void Promise.resolve().then(async () => {
+            if (!cancelled) {
+                await loadThreads();
+            }
+        });
+
+        return () => {
+            cancelled = true;
+        };
     }, [loadThreads]);
 
     useEffect(() => {
-        if (!activeThreadId) {
-            setActiveThreadDetail(null);
-            setComments([]);
-            return;
-        }
-
         let cancelled = false;
-        setIsLoadingComments(true);
-        setErrorMessage("");
 
         async function loadThreadData() {
+            if (!activeThreadId) {
+                if (!cancelled) {
+                    setActiveThreadDetail(null);
+                    setComments([]);
+                }
+                return;
+            }
+
+            if (!cancelled) {
+                setIsLoadingComments(true);
+                setErrorMessage("");
+            }
+
             try {
                 const [threadResponse, commentsResponse] = await Promise.all([
                     getForumThread(activeThreadId as number),
@@ -337,7 +178,7 @@ export function ForumPage() {
             }
         }
 
-        void loadThreadData();
+        void Promise.resolve().then(loadThreadData);
         return () => {
             cancelled = true;
         };
@@ -512,253 +353,54 @@ export function ForumPage() {
     return (
         <div className={styles.forumPage}>
             <div className={styles.forumShell}>
-                <section className={styles.threadPanel} aria-label="Danh sách chủ đề">
-                    <div className={styles.panelHeader}>
-                        <div>
-                            <h1 className={styles.pageTitle}>Diễn Đàn</h1>
-                        </div>
-                        <span className={styles.liveBadge}>Live</span>
-                    </div>
+                <ForumThreadPanel
+                    activeCategory={activeCategory}
+                    activeThreadId={activeThreadId}
+                    isAuthenticated={isAuthenticated}
+                    isLoadingThreads={isLoadingThreads}
+                    onlineCounts={onlineCounts}
+                    threads={threads}
+                    onCreateClick={() => isAuthenticated ? setIsCreateModalOpen(true) : openAuthModal("login")}
+                    onSelectCategory={(category) => {
+                        setActiveCategory(category);
+                        setActiveThreadId(null);
+                        setActiveThreadDetail(null);
+                        setComments([]);
+                    }}
+                    onSelectThread={setActiveThreadId}
+                />
 
-                    <div className={styles.createThreadBar}>
-                        <button type="button" onClick={() => isAuthenticated ? setIsCreateModalOpen(true) : openAuthModal("login")}>
-                            <Plus size={16} />
-                            Đăng bài
-                        </button>
-                    </div>
-
-                    <div className={styles.categoryFilters} aria-label="Lọc thread theo phân loại">
-                        {[{label: "Tất cả", value: "ALL" as const}, ...threadCategories].map((category) => (
-                            <button
-                                className={category.value === activeCategory ? styles.activeCategoryFilter : ""}
-                                key={category.value}
-                                type="button"
-                                onClick={() => {
-                                    setActiveCategory(category.value);
-                                    setActiveThreadId(null);
-                                    setActiveThreadDetail(null);
-                                    setComments([]);
-                                }}
-                            >
-                                {category.label}
-                            </button>
-                        ))}
-                    </div>
-
-                    <div className={styles.threadList}>
-                        {isLoadingThreads && <div className={styles.emptyState}>Đang tải forum...</div>}
-                        {!isLoadingThreads && threads.length === 0 && (
-                            <div className={styles.emptyState}>
-                                {activeCategory === "ALL"
-                                    ? "Chưa có thread nào."
-                                    : `Chưa có thread trong ${categoryLabels[activeCategory]}.`}
-                            </div>
-                        )}
-                        {threads.map((thread) => (
-                            <button
-                                className={`${styles.threadCard} ${thread.id === activeThreadId ? styles.activeThread : ""}`}
-                                key={thread.id}
-                                type="button"
-                                onClick={() => setActiveThreadId(thread.id)}
-                            >
-                                <span className={styles.threadCategory}>{categoryLabels[thread.category]}</span>
-                                <span className={styles.threadTitle}>{thread.title}</span>
-                                <span className={styles.threadMeta}>
-                                    <span><MessageCircle size={14} /> {thread.commentCount} bình luận</span>
-                                    <span><Users size={14} /> {onlineCounts[thread.id] ?? 0}</span>
-                                    <span>{formatTime(thread.lastCommentedAt ?? thread.createdAt)}</span>
-                                </span>
-                            </button>
-                        ))}
-                    </div>
-                </section>
-
-                <section className={styles.chatPanel} aria-label="Cuộc trò chuyện">
-                    {errorMessage && <div className={styles.errorBanner}>{errorMessage}</div>}
-                    {activeThread ? (
-                        <>
-                            <div className={styles.chatHeader}>
-                                <div className={styles.threadHero}>
-                                    <div className={styles.commentAvatar}>{getInitial(activeThread.user?.username)}</div>
-                                    <div>
-                                        <div className={styles.threadHeroAuthorRow}>
-                                            <span className={styles.chatAuthorName}>
-                                                {activeThread.user?.username || "Người dùng"}
-                                            </span>
-                                            <span
-                                                className={activeThread.user?.activeTitle
-                                                    ? `${styles.commentBadge} ${styles.titleBadge}`
-                                                    : getRoleBadgeClass(activeThread.user?.role)}
-                                                style={activeThread.user?.activeTitleColor
-                                                    ? {color: activeThread.user.activeTitleColor}
-                                                    : undefined}
-                                            >
-                                                {activeThread.user?.activeTitle || getRoleBadge(activeThread.user?.role)}
-                                            </span>
-                                        </div>
-                                        <div className={styles.threadHeroMeta}>
-                                            <span>@{activeThread.user?.username || "user"}</span>
-                                            <span>{formatTime(activeThread.createdAt)}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className={styles.threadHeroContent}>
-                                    <span className={`${styles.threadCategory} ${styles.threadHeroCategory}`}>
-                                        {categoryLabels[activeThread.category]}
-                                    </span>
-                                    <h2 className={styles.chatTitle}>{activeThread.title}</h2>
-                                    <p className={styles.threadPostText}>{activeThread.content}</p>
-                                </div>
-                                <div className={styles.chatStats}>
-                                    <span><MessageCircle size={16} /> {activeThread.commentCount}</span>
-                                    <span><Users size={16} /> {onlineCounts[activeThread.id] ?? 0}</span>
-                                </div>
-                            </div>
-
-                            <div className={styles.commentList}>
-                                {isLoadingComments && <div className={styles.emptyState}>Đang tải bình luận...</div>}
-                                {!isLoadingComments && comments.length === 0 && (
-                                    <div className={styles.emptyState}>Chưa có bình luận nào.</div>
-                                )}
-                                {comments.map((comment) => (
-                                    <CommentItem
-                                        comment={comment}
-                                        currentUserId={user?.id}
-                                        depth={0}
-                                        key={comment.id}
-                                        onDelete={handleDeleteComment}
-                                        onLike={handleToggleLike}
-                                        onReply={(nextReplyTarget) => setReplyTarget(nextReplyTarget)}
-                                    />
-                                ))}
-                            </div>
-
-                            <form className={styles.commentInputBox} onSubmit={handleSubmitComment}>
-                                <div className={styles.commentAvatar}>{getInitial(currentUsername)}</div>
-                                <div className={styles.commentInputWrapper}>
-                                    {replyTarget && (
-                                        <div className={styles.replyTarget}>
-                                            <span>Trả lời {replyTarget.user?.username || "người dùng"}</span>
-                                            <button type="button" onClick={() => setReplyTarget(null)}>Hủy</button>
-                                        </div>
-                                    )}
-                                    <CommentEditor
-                                        value={draft}
-                                        placeholder={isAuthenticated ? "Nhập bình luận..." : "Đăng nhập để bình luận..."}
-                                        minRows={3}
-                                        onChange={setDraft}
-                                    />
-                                    <div className={styles.commentActions}>
-                                        <CommentEmojiPicker />
-                                        <button className={styles.submitCommentButton} type="submit" disabled={!draft.trim()}>
-                                            <Send size={15} />
-                                            Gửi
-                                        </button>
-                                    </div>
-                                </div>
-                            </form>
-                        </>
-                    ) : (
-                        <div className={styles.noThreadState}>Chọn hoặc tạo một thread để bắt đầu.</div>
-                    )}
-                </section>
+                <ForumThreadDetail
+                    activeThread={activeThread}
+                    comments={comments}
+                    currentUsername={currentUsername}
+                    draft={draft}
+                    errorMessage={errorMessage}
+                    isAuthenticated={isAuthenticated}
+                    isLoadingComments={isLoadingComments}
+                    onlineCount={activeThread ? onlineCounts[activeThread.id] ?? 0 : 0}
+                    replyTarget={replyTarget}
+                    userId={user?.id}
+                    onCancelReply={() => setReplyTarget(null)}
+                    onDeleteComment={handleDeleteComment}
+                    onDraftChange={setDraft}
+                    onLikeComment={handleToggleLike}
+                    onReply={setReplyTarget}
+                    onSubmitComment={handleSubmitComment}
+                />
             </div>
 
             {isCreateModalOpen && (
-                <div
-                    className={styles.modalBackdrop}
-                    role="presentation"
-                    onMouseDown={(event) => {
-                        if (event.target === event.currentTarget) {
-                            setIsCreateModalOpen(false);
-                        }
-                    }}
-                >
-                    <form className={styles.createThreadModal} onSubmit={handleCreateThread}>
-                        <div className={styles.modalHeader}>
-                            <div>
-                                <h2>Tạo thread mới</h2>
-                                <p>Chọn phân loại để người đọc tìm đúng chủ đề.</p>
-                            </div>
-                            <button
-                                className={styles.modalCloseButton}
-                                type="button"
-                                aria-label="Đóng"
-                                onClick={() => setIsCreateModalOpen(false)}
-                            >
-                                <X size={18} />
-                            </button>
-                        </div>
-
-                        <label className={styles.modalField}>
-                            <span>Tiêu đề</span>
-                            <input
-                                autoFocus
-                                maxLength={THREAD_TITLE_MAX_LENGTH}
-                                value={newThreadTitle}
-                                placeholder="Nhập tiêu đề thread..."
-                                onChange={(event) => setNewThreadTitle(event.target.value)}
-                                onKeyDown={(event) => {
-                                    if (event.key === "Enter") {
-                                        event.preventDefault();
-                                    }
-                                }}
-                            />
-                            <span className={styles.fieldCounter}>
-                                {newThreadTitle.length}/{THREAD_TITLE_MAX_LENGTH}
-                            </span>
-                        </label>
-
-                        <label className={styles.modalField}>
-                            <span>Phân loại</span>
-                            <select
-                                value={newThreadCategory}
-                                onKeyDown={(event) => {
-                                    if (event.key === "Enter") {
-                                        event.preventDefault();
-                                    }
-                                }}
-                                onChange={(event) => setNewThreadCategory(event.target.value as ForumThreadCategory)}
-                            >
-                                {threadCategories.map((category) => (
-                                    <option key={category.value} value={category.value}>{category.label}</option>
-                                ))}
-                            </select>
-                        </label>
-
-                        <label className={styles.modalField}>
-                            <span>Nội dung bài viết</span>
-                            <div className={styles.postEditor}>
-                                <textarea
-                                    value={newThreadExcerpt}
-                                    maxLength={10000}
-                                    placeholder="Viết nội dung bài viết..."
-                                    rows={7}
-                                    onChange={(event) => setNewThreadExcerpt(event.target.value)}
-                                />
-                                <div className={styles.editorCounter}>{newThreadExcerpt.length}/10000</div>
-                            </div>
-                        </label>
-
-                        <div className={styles.modalActions}>
-                            <button
-                                className={styles.cancelThreadButton}
-                                type="button"
-                                onClick={() => setIsCreateModalOpen(false)}
-                            >
-                                Hủy
-                            </button>
-                            <button
-                                className={styles.createThreadButton}
-                                type="submit"
-                                disabled={!newThreadTitle.trim() || !newThreadExcerpt.trim()}
-                            >
-                                <Plus size={15} />
-                                Đăng bài
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                <CreateThreadModal
+                    category={newThreadCategory}
+                    content={newThreadExcerpt}
+                    title={newThreadTitle}
+                    onCategoryChange={setNewThreadCategory}
+                    onClose={() => setIsCreateModalOpen(false)}
+                    onContentChange={setNewThreadExcerpt}
+                    onSubmit={handleCreateThread}
+                    onTitleChange={setNewThreadTitle}
+                />
             )}
         </div>
     );
