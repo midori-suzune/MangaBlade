@@ -1,6 +1,50 @@
 package com.mangablade.backend.utils.querysql;
 
 public class MangaQuery {
+    private static final String ADMIN_MANGA_FILTERS = """
+            FROM Manga m
+            LEFT JOIN m.owner owner
+            WHERE (:search IS NULL
+                OR LOWER(m.title) LIKE LOWER(CONCAT('%', :search, '%'))
+                OR LOWER(m.slug) LIKE LOWER(CONCAT('%', :search, '%'))
+                OR LOWER(owner.username) LIKE LOWER(CONCAT('%', :search, '%'))
+                OR LOWER(owner.email) LIKE LOWER(CONCAT('%', :search, '%')))
+              AND (:sourceType IS NULL OR m.metadataSource = :sourceType)
+              AND (:hidden IS NULL
+                  OR (:hidden = TRUE AND m.deletedAt IS NOT NULL)
+                  OR (:hidden = FALSE AND m.deletedAt IS NULL))
+              AND (:status IS NULL OR m.status = :status)
+            """;
+
+    private static final String MODERATION_MANGA_FILTERS = """
+            FROM Manga m
+            LEFT JOIN m.owner owner
+            WHERE m.deletedAt IS NULL
+              AND m.ownerUserId IS NOT NULL
+              AND (:status IS NULL OR m.approvalStatus = :status)
+              AND (:search IS NULL
+                  OR LOWER(m.title) LIKE LOWER(CONCAT('%', :search, '%'))
+                  OR LOWER(m.slug) LIKE LOWER(CONCAT('%', :search, '%'))
+                  OR LOWER(owner.username) LIKE LOWER(CONCAT('%', :search, '%'))
+                  OR LOWER(owner.email) LIKE LOWER(CONCAT('%', :search, '%')))
+            """;
+
+    public static final String FIND_ADMIN_MANGA = """
+            SELECT m
+            """ + ADMIN_MANGA_FILTERS;
+
+    public static final String COUNT_ADMIN_MANGA = """
+            SELECT COUNT(m)
+            """ + ADMIN_MANGA_FILTERS;
+
+    public static final String FIND_MODERATION_MANGA = """
+            SELECT m
+            """ + MODERATION_MANGA_FILTERS;
+
+    public static final String COUNT_MODERATION_MANGA = """
+            SELECT COUNT(m)
+            """ + MODERATION_MANGA_FILTERS;
+
     private static final String FILTER_CONDITIONS = """
             where m.deletedAt is null
               and (:categorySlug is null or exists (

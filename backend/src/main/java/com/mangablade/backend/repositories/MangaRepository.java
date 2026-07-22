@@ -42,36 +42,8 @@ public interface MangaRepository extends JpaRepository<Manga, Long> {
 
     @EntityGraph(attributePaths = {"owner"})
     @Query(
-            value = """
-                    SELECT m
-                    FROM Manga m
-                    LEFT JOIN m.owner owner
-                    WHERE (:search IS NULL
-                        OR LOWER(m.title) LIKE LOWER(CONCAT('%', :search, '%'))
-                        OR LOWER(m.slug) LIKE LOWER(CONCAT('%', :search, '%'))
-                        OR LOWER(owner.username) LIKE LOWER(CONCAT('%', :search, '%'))
-                        OR LOWER(owner.email) LIKE LOWER(CONCAT('%', :search, '%')))
-                    AND (:sourceType IS NULL OR m.metadataSource = :sourceType)
-                    AND (:hidden IS NULL
-                        OR (:hidden = TRUE AND m.deletedAt IS NOT NULL)
-                        OR (:hidden = FALSE AND m.deletedAt IS NULL))
-                    AND (:status IS NULL OR m.status = :status)
-                    """,
-            countQuery = """
-                    SELECT COUNT(m)
-                    FROM Manga m
-                    LEFT JOIN m.owner owner
-                    WHERE (:search IS NULL
-                        OR LOWER(m.title) LIKE LOWER(CONCAT('%', :search, '%'))
-                        OR LOWER(m.slug) LIKE LOWER(CONCAT('%', :search, '%'))
-                        OR LOWER(owner.username) LIKE LOWER(CONCAT('%', :search, '%'))
-                        OR LOWER(owner.email) LIKE LOWER(CONCAT('%', :search, '%')))
-                    AND (:sourceType IS NULL OR m.metadataSource = :sourceType)
-                    AND (:hidden IS NULL
-                        OR (:hidden = TRUE AND m.deletedAt IS NOT NULL)
-                        OR (:hidden = FALSE AND m.deletedAt IS NULL))
-                    AND (:status IS NULL OR m.status = :status)
-                    """
+            value = MangaQuery.FIND_ADMIN_MANGA,
+            countQuery = MangaQuery.COUNT_ADMIN_MANGA
     )
     Page<Manga> findAdminManga(
             @Param("search") String search,
@@ -83,32 +55,8 @@ public interface MangaRepository extends JpaRepository<Manga, Long> {
 
     @EntityGraph(attributePaths = {"owner"})
     @Query(
-            value = """
-                    SELECT m
-                    FROM Manga m
-                    LEFT JOIN m.owner owner
-                    WHERE m.deletedAt IS NULL
-                    AND m.ownerUserId IS NOT NULL
-                    AND (:status IS NULL OR m.approvalStatus = :status)
-                    AND (:search IS NULL
-                        OR LOWER(m.title) LIKE LOWER(CONCAT('%', :search, '%'))
-                        OR LOWER(m.slug) LIKE LOWER(CONCAT('%', :search, '%'))
-                        OR LOWER(owner.username) LIKE LOWER(CONCAT('%', :search, '%'))
-                        OR LOWER(owner.email) LIKE LOWER(CONCAT('%', :search, '%')))
-                    """,
-            countQuery = """
-                    SELECT COUNT(m)
-                    FROM Manga m
-                    LEFT JOIN m.owner owner
-                    WHERE m.deletedAt IS NULL
-                    AND m.ownerUserId IS NOT NULL
-                    AND (:status IS NULL OR m.approvalStatus = :status)
-                    AND (:search IS NULL
-                        OR LOWER(m.title) LIKE LOWER(CONCAT('%', :search, '%'))
-                        OR LOWER(m.slug) LIKE LOWER(CONCAT('%', :search, '%'))
-                        OR LOWER(owner.username) LIKE LOWER(CONCAT('%', :search, '%'))
-                        OR LOWER(owner.email) LIKE LOWER(CONCAT('%', :search, '%')))
-                    """
+            value = MangaQuery.FIND_MODERATION_MANGA,
+            countQuery = MangaQuery.COUNT_MODERATION_MANGA
     )
     Page<Manga> findModerationManga(
             @Param("status") ApprovalStatus status,

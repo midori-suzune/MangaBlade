@@ -23,12 +23,7 @@ public interface ReadingHistoryRepository extends JpaRepository<ReadingHistory, 
     long countByMangaId(Long mangaId);
 
     @Modifying
-    @Query(value = """
-            INSERT INTO reading_history (user_id, manga_id, chapter_id, page_index, last_read_at)
-            VALUES (:userId, :mangaId, :chapterId, 0, :lastReadAt)
-            ON DUPLICATE KEY UPDATE
-                last_read_at = VALUES(last_read_at)
-            """, nativeQuery = true)
+    @Query(value = ReadingHistoryQuery.UPSERT_READING_HISTORY, nativeQuery = true)
     int upsertReadingHistory(
             @Param("userId") Long userId,
             @Param("mangaId") Long mangaId,

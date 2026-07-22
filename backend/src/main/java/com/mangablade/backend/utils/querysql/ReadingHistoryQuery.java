@@ -1,6 +1,13 @@
 package com.mangablade.backend.utils.querysql;
 
 public class ReadingHistoryQuery {
+    public static final String UPSERT_READING_HISTORY = """
+            INSERT INTO reading_history (user_id, manga_id, chapter_id, page_index, last_read_at)
+            VALUES (:userId, :mangaId, :chapterId, 0, :lastReadAt)
+            ON DUPLICATE KEY UPDATE
+                last_read_at = VALUES(last_read_at)
+            """;
+
     public static final String FIND_RECENT_BY_USER_ID = """
             select new com.mangablade.backend.dtos.response.ReadingHistoryResponse(
                 m.slug,

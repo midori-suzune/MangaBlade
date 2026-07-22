@@ -28,38 +28,8 @@ public interface ChapterRepository extends JpaRepository<Chapter, Long> {
 
     @EntityGraph(attributePaths = {"manga", "manga.owner"})
     @Query(
-            value = """
-                    SELECT c
-                    FROM Chapter c
-                    JOIN c.manga m
-                    LEFT JOIN m.owner owner
-                    WHERE m.deletedAt IS NULL
-                    AND m.ownerUserId IS NOT NULL
-                    AND (:status IS NULL OR c.approvalStatus = :status)
-                    AND (:search IS NULL
-                        OR LOWER(m.title) LIKE LOWER(CONCAT('%', :search, '%'))
-                        OR LOWER(m.slug) LIKE LOWER(CONCAT('%', :search, '%'))
-                        OR LOWER(c.title) LIKE LOWER(CONCAT('%', :search, '%'))
-                        OR LOWER(c.chapterNumber) LIKE LOWER(CONCAT('%', :search, '%'))
-                        OR LOWER(owner.username) LIKE LOWER(CONCAT('%', :search, '%'))
-                        OR LOWER(owner.email) LIKE LOWER(CONCAT('%', :search, '%')))
-                    """,
-            countQuery = """
-                    SELECT COUNT(c)
-                    FROM Chapter c
-                    JOIN c.manga m
-                    LEFT JOIN m.owner owner
-                    WHERE m.deletedAt IS NULL
-                    AND m.ownerUserId IS NOT NULL
-                    AND (:status IS NULL OR c.approvalStatus = :status)
-                    AND (:search IS NULL
-                        OR LOWER(m.title) LIKE LOWER(CONCAT('%', :search, '%'))
-                        OR LOWER(m.slug) LIKE LOWER(CONCAT('%', :search, '%'))
-                        OR LOWER(c.title) LIKE LOWER(CONCAT('%', :search, '%'))
-                        OR LOWER(c.chapterNumber) LIKE LOWER(CONCAT('%', :search, '%'))
-                        OR LOWER(owner.username) LIKE LOWER(CONCAT('%', :search, '%'))
-                        OR LOWER(owner.email) LIKE LOWER(CONCAT('%', :search, '%')))
-                    """
+            value = ChapterQuery.FIND_MODERATION_CHAPTERS,
+            countQuery = ChapterQuery.COUNT_MODERATION_CHAPTERS
     )
     Page<Chapter> findModerationChapters(
             @Param("status") ApprovalStatus status,

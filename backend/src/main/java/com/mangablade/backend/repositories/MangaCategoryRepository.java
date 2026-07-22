@@ -2,6 +2,7 @@ package com.mangablade.backend.repositories;
 
 import com.mangablade.backend.entities.MangaCategory;
 import com.mangablade.backend.entities.MangaCategoryId;
+import com.mangablade.backend.utils.querysql.MangaCategoryQuery;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -15,12 +16,6 @@ public interface MangaCategoryRepository extends JpaRepository<MangaCategory, Ma
 
     boolean existsByMangaIdAndCategoryId(Long mangaId, Long categoryId);
 
-    @Query("""
-            SELECT c.name
-            FROM MangaCategory mc
-            JOIN mc.category c
-            WHERE mc.mangaId = :mangaId
-            ORDER BY c.name ASC
-            """)
+    @Query(MangaCategoryQuery.FIND_CATEGORY_NAMES_BY_MANGA_ID)
     List<String> findCategoryNamesByMangaId(@Param("mangaId") Long mangaId);
 }
