@@ -276,13 +276,9 @@ export function ReadingMangaPage() {
 
     const { slug , chapterNumber} = useParams<{ slug : string ; chapterNumber : string}>();
     const navigate = useNavigate();
-    const {isAuthenticated, openAuthModal, user} = useAuthStore();
+    const {isAuthenticated, openAuthModal} = useAuthStore();
     const [error, setError] = useState<string>("");
     const [chapterPage, setChapterPage] = useState<ChapterPageResponse[] | null>();
-    const [comments, setComments] = useState<MangaCommentResponse[]>([]);
-    const [commentContent, setCommentContent] = useState("");
-    const [commentError, setCommentError] = useState("");
-    const [commentSubmitting, setCommentSubmitting] = useState(false);
     const [allChapters, setAllChapters] = useState<ChapterResponse[]>([]);
     const [isChapterModalOpen, setIsChapterModalOpen] = useState(false);
     const [chapterSearch, setChapterSearch] = useState("");
@@ -292,67 +288,6 @@ export function ReadingMangaPage() {
     const [reportDescription, setReportDescription] = useState("");
     const [reportMessage, setReportMessage] = useState("");
     const [reportSubmitting, setReportSubmitting] = useState(false);
-
-    // Comment Report & Like states
-    const [reportingComment, setReportingComment] = useState<MangaCommentResponse | null>(null);
-    const [commentReportReason, setCommentReportReason] = useState<CommentReportReason>("SPAM");
-    const [commentReportDesc, setCommentReportDesc] = useState("");
-    const [commentReportSubmitting, setCommentReportSubmitting] = useState(false);
-    const [commentReportMsg, setCommentReportMsg] = useState("");
-    const [deletingCommentId, setDeletingCommentId] = useState<number | null>(null);
-
-    async function handleToggleLike(commentId: number) {
-        if (!isAuthenticated) {
-            openAuthModal("login");
-            return;
-        }
-        try {
-            const res = await toggleCommentLike(commentId);
-            if (res.success && res.payload) {
-                const { liked, likeCount } = res.payload;
-                setComments((prev) =>
-                    prev.map((c) => (c.id === commentId ? { ...c, isLiked: liked, likeCount } : c))
-                );
-            }
-        } catch (err) {
-            console.error("Failed to toggle comment like:", err);
-        }
-    }
-
-    function handleOpenReportModal(c: MangaCommentResponse) {
-        if (!isAuthenticated) {
-            openAuthModal("login");
-            return;
-        }
-        setReportingComment(c);
-        setCommentReportReason("SPAM");
-        setCommentReportDesc("");
-        setCommentReportMsg("");
-    }
-
-    async function handleSubmitCommentReport(e: React.FormEvent) {
-        e.preventDefault();
-        if (!reportingComment) return;
-        setCommentReportSubmitting(true);
-        setCommentReportMsg("");
-        try {
-            const res = await createCommentReport(reportingComment.id, {
-                reason: commentReportReason,
-                description: commentReportDesc.trim() || undefined,
-            });
-            if (res.success) {
-                setCommentReportMsg("Gửi báo cáo bình luận thành công! Cảm ơn bạn.");
-                setTimeout(() => {
-                    setReportingComment(null);
-                    setCommentReportMsg("");
-                }, 1500);
-            }
-        } catch {
-            setCommentReportMsg("Báo cáo thất bại, vui lòng thử lại.");
-        } finally {
-            setCommentReportSubmitting(false);
-        }
-    }
 
     useEffect(() => {
         if (!slug) return;
@@ -396,22 +331,6 @@ export function ReadingMangaPage() {
         void request()
     }, [chapterPageRequest]);
 
-    useEffect(() => {
-        async function requestComments() {
-            if (!slug || !chapterNumber) return;
-
-            try {
-                const data = await getChapterComments(slug, chapterNumber);
-                setComments(data.payload);
-                setCommentError("");
-            } catch {
-                setCommentError("Không thể tải bình luận.");
-            }
-        }
-
-        void requestComments();
-    }, [slug, chapterNumber]);
-
     const title = chapterPage?.[0]?.mangaTitle ?? "";
     const chapterLabel = `Chương ${chapterPage?.[0]?.chapterNumber ?? chapterNumber ?? ""}`;
     const previousChapterNumber = chapterPage?.[0]?.previousChapterNumber;
@@ -432,56 +351,6 @@ export function ReadingMangaPage() {
     function handleSelectChapter(selectedChapterNum: string) {
         if (!slug || selectedChapterNum === (chapterPage?.[0]?.chapterNumber ?? chapterNumber)) return;
         navigate(`/manga/${slug}/c/${selectedChapterNum}`);
-    }
-
-    async function handleSubmitComment() {
-        if (!isAuthenticated) {
-            openAuthModal("login");
-            return;
-        }
-
-        const content = commentContent.trim();
-        if (!content || !slug || !chapterNumber) {
-            return;
-        }
-
-        setCommentSubmitting(true);
-        try {
-            const data = await createChapterComment(slug, chapterNumber, {content});
-            setComments((current) => [data.payload, ...current]);
-            setCommentContent("");
-            setCommentError("");
-        } catch {
-            setCommentError("Không thể gửi bình luận.");
-        } finally {
-            setCommentSubmitting(false);
-        }
-    }
-
-    function canDeleteComment(comment: MangaCommentResponse) {
-        return Boolean(user && (user.role === "ADMIN" || user.id === comment.user.id));
-    }
-
-    async function handleDeleteComment(commentId: number) {
-        if (!isAuthenticated) {
-            openAuthModal("login");
-            return;
-        }
-
-        if (!window.confirm("Bạn có chắc chắn muốn gỡ bình luận này?")) {
-            return;
-        }
-
-        setDeletingCommentId(commentId);
-        try {
-            await deleteMangaComment(commentId);
-            setComments((current) => current.filter((comment) => comment.id !== commentId));
-            setCommentError("");
-        } catch {
-            setCommentError("Không thể gỡ bình luận.");
-        } finally {
-            setDeletingCommentId(null);
-        }
     }
 
     async function handleSubmitReport() {
@@ -517,27 +386,6 @@ export function ReadingMangaPage() {
         } finally {
             setReportSubmitting(false);
         }
-    }
-
-    function getAvatarLabel(username?: string) {
-        return (username || "U").slice(0, 1).toUpperCase();
-    }
-
-    function getCommentAuthorName(userId: number, username: string) {
-        const currentUser = useAuthStore.getState().user;
-        if (currentUser && currentUser.id === userId) {
-            return useAuthStore.getState().displayName || getPublicUsername(username);
-        }
-        const cachedName = localStorage.getItem(`displayName_${userId}`);
-        return cachedName || getPublicUsername(username);
-    }
-
-    function getPublicUsername(username: string) {
-        const atIndex = username.indexOf("@");
-        if (atIndex > 0) {
-            return username.slice(0, atIndex);
-        }
-        return username;
     }
 
     return (
@@ -599,7 +447,7 @@ export function ReadingMangaPage() {
                             onClick={() => setActiveSupportTab("comments")}
                         >
                             <MessageCircle aria-hidden="true" />
-                            Bình luận ({comments.length})
+                            Bình luận
                         </button>
                         <button
                             type="button"
@@ -612,52 +460,11 @@ export function ReadingMangaPage() {
                     </div>
 
                     {activeSupportTab === "comments" ? (
-                        <>
-                            <div className={styles.commentInputBox}>
-                                <div className={styles.commentAvatar}>{getAvatarLabel(user?.username)}</div>
-                                <div className={styles.commentInputWrapper}>
-                                    <CommentEditor
-                                        placeholder="Nhập bình luận của bạn..."
-                                        minRows={3}
-                                        value={commentContent}
-                                        onChange={setCommentContent}
-                                    />
-                                    <div className={styles.commentActions}>
-                                        <CommentEmojiPicker />
-                                        <button
-                                            className={styles.btnSubmitComment}
-                                            type="button"
-                                            onClick={handleSubmitComment}
-                                            disabled={commentSubmitting || !commentContent.trim()}
-                                        >
-                                            {commentSubmitting ? "Đang gửi..." : "Gửi bình luận"}
-                                        </button>
-                                    </div>
-                                    {commentError && <p className={styles.commentError}>{commentError}</p>}
-                                </div>
-                            </div>
-
-                            <div className={styles.detailComments}>
-                                {comments.map((comment) => (
-                                    <CommentItem
-                                        key={comment.id}
-                                        comment={comment}
-                                        chapterLabel={chapterLabel}
-                                        deletingCommentId={deletingCommentId}
-                                        getAvatarLabel={getAvatarLabel}
-                                        getCommentAuthorName={getCommentAuthorName}
-                                        canDeleteComment={canDeleteComment}
-                                        handleDeleteComment={handleDeleteComment}
-                                        handleToggleLike={handleToggleLike}
-                                        handleOpenReportModal={handleOpenReportModal}
-                                        user={user}
-                                    />
-                                ))}
-                                {comments.length === 0 && (
-                                    <p className={styles.emptyComments}>Chưa có bình luận nào cho chương này.</p>
-                                )}
-                            </div>
-                        </>
+                        <CommentSectionContent
+                            slug={slug}
+                            chapterNumber={chapterNumber}
+                            chapterLabel={chapterLabel}
+                        />
                     ) : (
                         <ReportPanel
                             title={title}
@@ -698,6 +505,193 @@ export function ReadingMangaPage() {
                     onClose={() => setIsChapterModalOpen(false)}
                 />
             )}
+        </div>
+    );
+}
+
+interface CommentSectionContentProps {
+    slug?: string;
+    chapterNumber?: string;
+    chapterLabel: string;
+}
+
+function CommentSectionContent({ slug, chapterNumber, chapterLabel }: CommentSectionContentProps) {
+    const {isAuthenticated, openAuthModal, user} = useAuthStore();
+    const [comments, setComments] = useState<MangaCommentResponse[]>([]);
+    const [commentContent, setCommentContent] = useState("");
+    const [commentError, setCommentError] = useState("");
+    const [commentSubmitting, setCommentSubmitting] = useState(false);
+    const [deletingCommentId, setDeletingCommentId] = useState<number | null>(null);
+
+    // Comment Report states
+    const [reportingComment, setReportingComment] = useState<MangaCommentResponse | null>(null);
+    const [commentReportReason, setCommentReportReason] = useState<CommentReportReason>("SPAM");
+    const [commentReportDesc, setCommentReportDesc] = useState("");
+    const [commentReportSubmitting, setCommentReportSubmitting] = useState(false);
+    const [commentReportMsg, setCommentReportMsg] = useState("");
+
+    useEffect(() => {
+        async function requestComments() {
+            if (!slug || !chapterNumber) return;
+            try {
+                const data = await getChapterComments(slug, chapterNumber);
+                setComments(data.payload);
+                setCommentError("");
+            } catch {
+                setCommentError("Không thể tải bình luận.");
+            }
+        }
+        void requestComments();
+    }, [slug, chapterNumber]);
+
+    async function handleToggleLike(commentId: number) {
+        if (!isAuthenticated) { openAuthModal("login"); return; }
+        try {
+            const res = await toggleCommentLike(commentId);
+            if (res.success && res.payload) {
+                const { liked, likeCount } = res.payload;
+                setComments((prev) =>
+                    prev.map((c) => (c.id === commentId ? { ...c, isLiked: liked, likeCount } : c))
+                );
+            }
+        } catch (err) {
+            console.error("Failed to toggle comment like:", err);
+        }
+    }
+
+    function handleOpenReportModal(c: MangaCommentResponse) {
+        if (!isAuthenticated) { openAuthModal("login"); return; }
+        setReportingComment(c);
+        setCommentReportReason("SPAM");
+        setCommentReportDesc("");
+        setCommentReportMsg("");
+    }
+
+    async function handleSubmitCommentReport(e: React.FormEvent) {
+        e.preventDefault();
+        if (!reportingComment) return;
+        setCommentReportSubmitting(true);
+        setCommentReportMsg("");
+        try {
+            const res = await createCommentReport(reportingComment.id, {
+                reason: commentReportReason,
+                description: commentReportDesc.trim() || undefined,
+            });
+            if (res.success) {
+                setCommentReportMsg("Gửi báo cáo bình luận thành công! Cảm ơn bạn.");
+                setTimeout(() => {
+                    setReportingComment(null);
+                    setCommentReportMsg("");
+                }, 1500);
+            }
+        } catch {
+            setCommentReportMsg("Báo cáo thất bại, vui lòng thử lại.");
+        } finally {
+            setCommentReportSubmitting(false);
+        }
+    }
+
+    async function handleSubmitComment() {
+        if (!isAuthenticated) { openAuthModal("login"); return; }
+        const content = commentContent.trim();
+        if (!content || !slug || !chapterNumber) return;
+        setCommentSubmitting(true);
+        try {
+            const data = await createChapterComment(slug, chapterNumber, {content});
+            setComments((current) => [data.payload, ...current]);
+            setCommentContent("");
+            setCommentError("");
+        } catch {
+            setCommentError("Không thể gửi bình luận.");
+        } finally {
+            setCommentSubmitting(false);
+        }
+    }
+
+    function canDeleteComment(comment: MangaCommentResponse) {
+        return Boolean(user && (user.role === "ADMIN" || user.id === comment.user.id));
+    }
+
+    async function handleDeleteComment(commentId: number) {
+        if (!isAuthenticated) { openAuthModal("login"); return; }
+        if (!window.confirm("Bạn có chắc chắn muốn gỡ bình luận này?")) return;
+        setDeletingCommentId(commentId);
+        try {
+            await deleteMangaComment(commentId);
+            setComments((current) => current.filter((comment) => comment.id !== commentId));
+            setCommentError("");
+        } catch {
+            setCommentError("Không thể gỡ bình luận.");
+        } finally {
+            setDeletingCommentId(null);
+        }
+    }
+
+    function getAvatarLabel(username?: string) {
+        return (username || "U").slice(0, 1).toUpperCase();
+    }
+
+    function getCommentAuthorName(userId: number, username: string) {
+        const currentUser = useAuthStore.getState().user;
+        if (currentUser && currentUser.id === userId) {
+            return useAuthStore.getState().displayName || getPublicUsername(username);
+        }
+        const cachedName = localStorage.getItem(`displayName_${userId}`);
+        return cachedName || getPublicUsername(username);
+    }
+
+    function getPublicUsername(username: string) {
+        const atIndex = username.indexOf("@");
+        if (atIndex > 0) return username.slice(0, atIndex);
+        return username;
+    }
+
+    return (
+        <>
+            <div className={styles.commentInputBox}>
+                <div className={styles.commentAvatar}>{getAvatarLabel(user?.username)}</div>
+                <div className={styles.commentInputWrapper}>
+                    <CommentEditor
+                        placeholder="Nhập bình luận của bạn..."
+                        minRows={3}
+                        value={commentContent}
+                        onChange={setCommentContent}
+                    />
+                    <div className={styles.commentActions}>
+                        <CommentEmojiPicker />
+                        <button
+                            className={styles.btnSubmitComment}
+                            type="button"
+                            onClick={handleSubmitComment}
+                            disabled={commentSubmitting || !commentContent.trim()}
+                        >
+                            {commentSubmitting ? "Đang gửi..." : "Gửi bình luận"}
+                        </button>
+                    </div>
+                    {commentError && <p className={styles.commentError}>{commentError}</p>}
+                </div>
+            </div>
+
+            <div className={styles.detailComments}>
+                {comments.map((comment) => (
+                    <CommentItem
+                        key={comment.id}
+                        comment={comment}
+                        chapterLabel={chapterLabel}
+                        deletingCommentId={deletingCommentId}
+                        getAvatarLabel={getAvatarLabel}
+                        getCommentAuthorName={getCommentAuthorName}
+                        canDeleteComment={canDeleteComment}
+                        handleDeleteComment={handleDeleteComment}
+                        handleToggleLike={handleToggleLike}
+                        handleOpenReportModal={handleOpenReportModal}
+                        user={user}
+                    />
+                ))}
+                {comments.length === 0 && (
+                    <p className={styles.emptyComments}>Chưa có bình luận nào cho chương này.</p>
+                )}
+            </div>
 
             {/* Modal Báo cáo Bình luận */}
             {reportingComment && (
@@ -712,7 +706,7 @@ export function ReadingMangaPage() {
                     onSubmit={handleSubmitCommentReport}
                 />
             )}
-        </div>
+        </>
     );
 }
 
