@@ -50,7 +50,7 @@ public class ForumService {
     public PageResponse<ForumThreadResponse> findThreads(ForumThreadCategory category, int page, int size) {
         var pageable = PageRequest.of(
                 Math.max(page, 0),
-                Math.min(Math.max(size, 1), 50),
+                Math.clamp(size, 1, 50),
                 Sort.by(Sort.Order.desc("lastCommentedAt"), Sort.Order.desc("createdAt"))
         );
 
