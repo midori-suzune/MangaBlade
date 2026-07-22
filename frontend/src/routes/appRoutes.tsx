@@ -18,6 +18,7 @@ import {ContentModeration} from "../pages/Admin/ContentModeration/ContentModerat
 import {ReadingHistory} from "../pages/ReadingHistory/ReadingHistory.tsx";
 import {FollowedManga} from "../pages/FollowedManga/FollowedManga.tsx";
 import {RouteError} from "./RouteError.tsx";
+import {ForumPrototype} from "../pages/ForumPrototype.tsx";
 
 import { AuthorMangaList } from "../pages/AuthorDashboard/AuthorMangaList.tsx";
 import { AuthorMangaCreate } from "../pages/AuthorDashboard/AuthorMangaCreate.tsx";
@@ -63,6 +64,10 @@ export const appRoutes: RouteObject[] = [
             {
                 path: "followed-manga",
                 element: <FollowedManga />
+            },
+            {
+                path: "forum",
+                element: <ForumPrototype />
             }
         ]
     },
