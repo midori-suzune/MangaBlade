@@ -298,6 +298,139 @@ function MangaReplyInput({
     );
 }
 
+interface CommentBubbleProps {
+    comment: MangaCommentResponse;
+    getCommentAuthorName: (userId: number, username: string) => string;
+    getTimeAgo: (value: string) => string;
+    setReplyParentId: (v: number | null) => void;
+    setReplyContent: (v: string) => void;
+    setReplyingToUsername: (v: string | null) => void;
+    setReplyError: (v: string | null) => void;
+    canDeleteComment: (c: MangaCommentResponse) => boolean;
+    handleDeleteComment: (id: number) => void;
+    deletingCommentId: number | null;
+    user: UserInfo | null;
+    handleToggleLike: (id: number) => void;
+    handleOpenReportModal: (c: MangaCommentResponse) => void;
+}
+
+function CommentBubble({
+    comment,
+    getCommentAuthorName,
+    getTimeAgo,
+    setReplyParentId,
+    setReplyContent,
+    setReplyingToUsername,
+    setReplyError,
+    canDeleteComment,
+    handleDeleteComment,
+    deletingCommentId,
+    user,
+    handleToggleLike,
+    handleOpenReportModal
+}: CommentBubbleProps) {
+    return (
+        <>
+            <div className={styles.commentBubble}>
+                <div className={styles.commentAuthorRow}>
+                    <span className={styles.commentAuthor}>
+                        {getCommentAuthorName(comment.user.id, comment.user.username)}
+                    </span>
+                    {(comment.isAuthor || comment.user?.isAuthor) && (
+                        <span 
+                            style={{ 
+                                marginLeft: "8px", 
+                                fontSize: "11px", 
+                                padding: "2px 8px", 
+                                borderRadius: "12px", 
+                                backgroundColor: "#e0e7ff",
+                                color: "#4f46e5",
+                                border: "1px solid #c7d2fe",
+                                fontWeight: "bold",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "4px",
+                                verticalAlign: "middle"
+                            }}
+                            title="Tác giả của bộ truyện"
+                        >
+                            <PenTool size={11} /> Tác giả
+                        </span>
+                    )}
+                    {comment.user.activeTitle && (
+                        <span 
+                            style={{ 
+                                marginLeft: "8px", 
+                                fontSize: "10px", 
+                                padding: "1px 6px", 
+                                borderRadius: "3px", 
+                                backgroundColor: `${comment.user.activeTitleColor || '#6b7280'}18`,
+                                color: comment.user.activeTitleColor || '#6b7280',
+                                border: `1px solid ${comment.user.activeTitleColor || '#6b7280'}`,
+                                fontWeight: "bold",
+                                verticalAlign: "middle"
+                            }}
+                        >
+                            {comment.user.activeTitle}
+                        </span>
+                    )}
+                </div>
+                <p className={styles.commentText}>
+                    <CommentText content={comment.content} />
+                </p>
+            </div>
+            <div className={styles.commentFooter}>
+                <span>{getTimeAgo(comment.createdAt)}</span>
+                <button
+                    type="button"
+                    onClick={() => handleToggleLike(comment.id)}
+                    style={{
+                        color: comment.isLiked ? "#3b82f6" : "inherit",
+                        fontWeight: comment.isLiked ? "bold" : "normal",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "4px"
+                    }}
+                >
+                    <ThumbsUp size={13} fill={comment.isLiked ? "#3b82f6" : "none"} color={comment.isLiked ? "#3b82f6" : "currentColor"} />
+                    {comment.likeCount && comment.likeCount > 0 ? comment.likeCount : "Thích"}
+                </button>
+                <button
+                    type="button"
+                    onClick={() => {
+                        setReplyParentId(comment.id);
+                        setReplyContent("");
+                        setReplyingToUsername(getCommentAuthorName(comment.user.id, comment.user.username));
+                        setReplyError(null);
+                    }}
+                    style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}
+                >
+                    <MessageSquare size={12} /> Trả lời
+                </button>
+                {user && user.id !== comment.user.id && (
+                    <button
+                        type="button"
+                        onClick={() => handleOpenReportModal(comment)}
+                        title="Báo cáo bình luận vi phạm"
+                        style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}
+                    >
+                        <Flag size={12} /> Báo cáo
+                    </button>
+                )}
+                {canDeleteComment(comment) && (
+                    <button
+                        type="button"
+                        onClick={() => void handleDeleteComment(comment.id)}
+                        disabled={deletingCommentId === comment.id}
+                    >
+                        {deletingCommentId === comment.id ? "Đang gỡ..." : "Gỡ"}
+                    </button>
+                )}
+            </div>
+        </>
+    );
+}
+
 function MangaCommentItem({
     comment,
     expandedReplyParentIds,
@@ -328,102 +461,21 @@ function MangaCommentItem({
                 {getCommentAuthorName(comment.user.id, comment.user.username).slice(0, 1).toUpperCase()}
             </div>
             <div className={styles.commentBody}>
-                <div className={styles.commentBubble}>
-                    <div className={styles.commentAuthorRow}>
-                        <span className={styles.commentAuthor}>
-                            {getCommentAuthorName(comment.user.id, comment.user.username)}
-                        </span>
-                        {(comment.isAuthor || comment.user?.isAuthor) && (
-                            <span 
-                                style={{ 
-                                    marginLeft: "8px", 
-                                    fontSize: "11px", 
-                                    padding: "2px 8px", 
-                                    borderRadius: "12px", 
-                                    backgroundColor: "#e0e7ff",
-                                    color: "#4f46e5",
-                                    border: "1px solid #c7d2fe",
-                                    fontWeight: "bold",
-                                    display: "inline-flex",
-                                    alignItems: "center",
-                                    gap: "4px",
-                                    verticalAlign: "middle"
-                                }}
-                                title="Tác giả của bộ truyện"
-                            >
-                                <PenTool size={11} /> Tác giả
-                            </span>
-                        )}
-                        {comment.user.activeTitle && (
-                            <span 
-                                style={{ 
-                                    marginLeft: "8px", 
-                                    fontSize: "10px", 
-                                    padding: "1px 6px", 
-                                    borderRadius: "3px", 
-                                    backgroundColor: `${comment.user.activeTitleColor || '#6b7280'}18`,
-                                    color: comment.user.activeTitleColor || '#6b7280',
-                                    border: `1px solid ${comment.user.activeTitleColor || '#6b7280'}`,
-                                    fontWeight: "bold",
-                                    verticalAlign: "middle"
-                                }}
-                            >
-                                {comment.user.activeTitle}
-                            </span>
-                        )}
-                    </div>
-                    <p className={styles.commentText}>
-                        <CommentText content={comment.content} />
-                    </p>
-                </div>
-                <div className={styles.commentFooter}>
-                    <span>{getTimeAgo(comment.createdAt)}</span>
-                    <button
-                        type="button"
-                        onClick={() => handleToggleLike(comment.id)}
-                        style={{
-                            color: comment.isLiked ? "#3b82f6" : "inherit",
-                            fontWeight: comment.isLiked ? "bold" : "normal",
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "4px"
-                        }}
-                    >
-                        <ThumbsUp size={13} fill={comment.isLiked ? "#3b82f6" : "none"} color={comment.isLiked ? "#3b82f6" : "currentColor"} />
-                        {comment.likeCount && comment.likeCount > 0 ? comment.likeCount : "Thích"}
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => {
-                            setReplyParentId(comment.id);
-                            setReplyContent("");
-                            setReplyingToUsername(getCommentAuthorName(comment.user.id, comment.user.username));
-                            setReplyError(null);
-                        }}
-                        style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}
-                    >
-                        <MessageSquare size={12} /> Trả lời
-                    </button>
-                    {user && user.id !== comment.user.id && (
-                        <button
-                            type="button"
-                            onClick={() => handleOpenReportModal(comment)}
-                            title="Báo cáo bình luận vi phạm"
-                            style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}
-                        >
-                            <Flag size={12} /> Báo cáo
-                        </button>
-                    )}
-                    {canDeleteComment(comment) && (
-                        <button
-                            type="button"
-                            onClick={() => void handleDeleteComment(comment.id)}
-                            disabled={deletingCommentId === comment.id}
-                        >
-                            {deletingCommentId === comment.id ? "Đang gỡ..." : "Gỡ"}
-                        </button>
-                    )}
-                </div>
+                <CommentBubble
+                    comment={comment}
+                    getCommentAuthorName={getCommentAuthorName}
+                    getTimeAgo={getTimeAgo}
+                    setReplyParentId={setReplyParentId}
+                    setReplyContent={setReplyContent}
+                    setReplyingToUsername={setReplyingToUsername}
+                    setReplyError={setReplyError}
+                    canDeleteComment={canDeleteComment}
+                    handleDeleteComment={handleDeleteComment}
+                    deletingCommentId={deletingCommentId}
+                    user={user}
+                    handleToggleLike={handleToggleLike}
+                    handleOpenReportModal={handleOpenReportModal}
+                />
                 {comment.replies?.length > 0 && (
                     <button
                         className={styles.replyCountButton}

@@ -777,101 +777,136 @@ export function ReadingMangaPage() {
 
             {/* Modal Báo cáo Bình luận */}
             {reportingComment && (
+                <CommentReportModal
+                    onClose={() => setReportingComment(null)}
+                    commentReportReason={commentReportReason}
+                    setCommentReportReason={setCommentReportReason}
+                    commentReportDesc={commentReportDesc}
+                    setCommentReportDesc={setCommentReportDesc}
+                    commentReportMsg={commentReportMsg}
+                    commentReportSubmitting={commentReportSubmitting}
+                    onSubmit={handleSubmitCommentReport}
+                />
+            )}
+        </div>
+    );
+}
+
+interface CommentReportModalProps {
+    onClose: () => void;
+    commentReportReason: CommentReportReason;
+    setCommentReportReason: (r: CommentReportReason) => void;
+    commentReportDesc: string;
+    setCommentReportDesc: (d: string) => void;
+    commentReportMsg: string;
+    commentReportSubmitting: boolean;
+    onSubmit: (e: React.FormEvent) => void;
+}
+
+function CommentReportModal({
+    onClose,
+    commentReportReason,
+    setCommentReportReason,
+    commentReportDesc,
+    setCommentReportDesc,
+    commentReportMsg,
+    commentReportSubmitting,
+    onSubmit
+}: CommentReportModalProps) {
+    return (
+        <div style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(15, 23, 42, 0.45)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
+            backdropFilter: "blur(4px)"
+        }} onClick={onClose}>
+            <div style={{
+                backgroundColor: "#ffffff",
+                borderRadius: "16px",
+                width: "90%",
+                maxWidth: "440px",
+                border: "1px solid #e2e8f0",
+                overflow: "hidden",
+                boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+            }} onClick={(e) => e.stopPropagation()}>
                 <div style={{
-                    position: "fixed",
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    backgroundColor: "rgba(15, 23, 42, 0.45)",
+                    padding: "16px 20px",
+                    borderBottom: "1px solid #f1f5f9",
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "center",
-                    zIndex: 9999,
-                    backdropFilter: "blur(4px)"
-                }} onClick={() => setReportingComment(null)}>
-                    <div style={{
-                        backgroundColor: "#ffffff",
-                        borderRadius: "16px",
-                        width: "90%",
-                        maxWidth: "440px",
-                        border: "1px solid #e2e8f0",
-                        overflow: "hidden",
-                        boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
-                    }} onClick={(e) => e.stopPropagation()}>
-                        <div style={{
-                            padding: "16px 20px",
-                            borderBottom: "1px solid #f1f5f9",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between"
-                        }}>
-                            <h3 style={{ margin: 0, color: "#0f172a", fontSize: "16px", fontWeight: 700 }}>Báo cáo bình luận</h3>
-                            <button
-                                type="button"
-                                onClick={() => setReportingComment(null)}
-                                style={{ background: "none", border: "none", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: "4px" }}
-                            >
-                                <X size={18} />
-                            </button>
-                        </div>
-                        <form onSubmit={handleSubmitCommentReport} style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
-                            <div>
-                                <label style={{ display: "block", fontSize: "13px", color: "#334155", fontWeight: 600, marginBottom: "6px" }}>
-                                    Lý do báo cáo:
-                                </label>
-                                <select
-                                    value={commentReportReason}
-                                    onChange={(e) => setCommentReportReason(e.target.value as CommentReportReason)}
-                                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", backgroundColor: "#ffffff", border: "1px solid #cbd5e1", color: "#0f172a", fontSize: "13px", outline: "none" }}
-                                >
-                                    <option value="SPAM">Spam / Quảng cáo rác</option>
-                                    <option value="HARASSMENT">Ngôn từ xúc phạm / Độc hại</option>
-                                    <option value="SPOILER">Tiết lộ nội dung / Spoiler</option>
-                                    <option value="HATE_SPEECH">Phát ngôn thù ghét</option>
-                                    <option value="OTHER">Lý do khác</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label style={{ display: "block", fontSize: "13px", color: "#334155", fontWeight: 600, marginBottom: "6px" }}>
-                                    Mô tả thêm (Không bắt buộc):
-                                </label>
-                                <textarea
-                                    rows={3}
-                                    placeholder="Chi tiết lý do báo cáo..."
-                                    value={commentReportDesc}
-                                    onChange={(e) => setCommentReportDesc(e.target.value)}
-                                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", backgroundColor: "#ffffff", border: "1px solid #cbd5e1", color: "#0f172a", fontSize: "13px", resize: "none", outline: "none" }}
-                                />
-                            </div>
-
-                            {commentReportMsg && (
-                                <p style={{ margin: 0, fontSize: "13px", color: commentReportMsg.includes("thành công") ? "#10b981" : "#ef4444" }}>
-                                    {commentReportMsg}
-                                </p>
-                            )}
-
-                            <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "8px" }}>
-                                <button
-                                    type="button"
-                                    onClick={() => setReportingComment(null)}
-                                    style={{ padding: "8px 16px", borderRadius: "8px", border: "1px solid #cbd5e1", backgroundColor: "#ffffff", color: "#475569", fontSize: "13px", fontWeight: 500, cursor: "pointer" }}
-                                >
-                                    Hủy
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={commentReportSubmitting}
-                                    style={{ padding: "8px 16px", borderRadius: "8px", border: "none", backgroundColor: "var(--color-accent)", color: "#ffffff", fontWeight: 600, fontSize: "13px", cursor: "pointer" }}
-                                >
-                                    {commentReportSubmitting ? "Đang gửi..." : "Gửi báo cáo"}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                    justifyContent: "space-between"
+                }}>
+                    <h3 style={{ margin: 0, color: "#0f172a", fontSize: "16px", fontWeight: 700 }}>Báo cáo bình luận</h3>
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        style={{ background: "none", border: "none", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: "4px" }}
+                    >
+                        <X size={18} />
+                    </button>
                 </div>
-            )}
+                <form onSubmit={onSubmit} style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
+                    <div>
+                        <label style={{ display: "block", fontSize: "13px", color: "#334155", fontWeight: 600, marginBottom: "6px" }}>
+                            Lý do báo cáo:
+                        </label>
+                        <select
+                            value={commentReportReason}
+                            onChange={(e) => setCommentReportReason(e.target.value as CommentReportReason)}
+                            style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", backgroundColor: "#ffffff", border: "1px solid #cbd5e1", color: "#0f172a", fontSize: "13px", outline: "none" }}
+                        >
+                            <option value="SPAM">Spam / Quảng cáo rác</option>
+                            <option value="HARASSMENT">Ngôn từ xúc phạm / Độc hại</option>
+                            <option value="SPOILER">Tiết lộ nội dung / Spoiler</option>
+                            <option value="HATE_SPEECH">Phát ngôn thù ghét</option>
+                            <option value="OTHER">Lý do khác</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label style={{ display: "block", fontSize: "13px", color: "#334155", fontWeight: 600, marginBottom: "6px" }}>
+                            Mô tả thêm (Không bắt buộc):
+                        </label>
+                        <textarea
+                            rows={3}
+                            placeholder="Chi tiết lý do báo cáo..."
+                            value={commentReportDesc}
+                            onChange={(e) => setCommentReportDesc(e.target.value)}
+                            style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", backgroundColor: "#ffffff", border: "1px solid #cbd5e1", color: "#0f172a", fontSize: "13px", resize: "none", outline: "none" }}
+                        />
+                    </div>
+
+                    {commentReportMsg && (
+                        <p style={{ margin: 0, fontSize: "13px", color: commentReportMsg.includes("thành công") ? "#10b981" : "#ef4444" }}>
+                            {commentReportMsg}
+                        </p>
+                    )}
+
+                    <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "8px" }}>
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            style={{ padding: "8px 16px", borderRadius: "8px", border: "1px solid #cbd5e1", backgroundColor: "#ffffff", color: "#475569", fontSize: "13px", fontWeight: 500, cursor: "pointer" }}
+                        >
+                            Hủy
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={commentReportSubmitting}
+                            style={{ padding: "8px 16px", borderRadius: "8px", border: "none", backgroundColor: "var(--color-accent)", color: "#ffffff", fontWeight: 600, fontSize: "13px", cursor: "pointer" }}
+                        >
+                            {commentReportSubmitting ? "Đang gửi..." : "Gửi báo cáo"}
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 }
