@@ -2,7 +2,8 @@ package com.mangablade.backend.utils.querysql;
 
 public class MangaQuery {
     private static final String FILTER_CONDITIONS = """
-            where (:categorySlug is null or exists (
+            where m.deletedAt is null
+              and (:categorySlug is null or exists (
                 select 1
                 from MangaCategory mc
                 join mc.category c
@@ -66,7 +67,8 @@ public class MangaQuery {
                 (select count(f) from Favorite f where f.mangaId = m.id) as followCount,
                 (select count(distinct rh.userId) from ReadingHistory rh where rh.mangaId = m.id) as viewCount
             from Manga m
-            where (select count(f) from Favorite f where f.mangaId = m.id) > 0
+            where m.deletedAt is null
+              and (select count(f) from Favorite f where f.mangaId = m.id) > 0
             order by (select count(f) from Favorite f where f.mangaId = m.id) desc,
                      m.updatedAt desc
             limit 5
@@ -80,7 +82,8 @@ public class MangaQuery {
                 (select count(f) from Favorite f where f.mangaId = m.id) as followCount,
                 (select count(distinct rh.userId) from ReadingHistory rh where rh.mangaId = m.id) as viewCount
             from Manga m
-            where (select count(distinct rh.userId) from ReadingHistory rh where rh.mangaId = m.id) > 0
+            where m.deletedAt is null
+              and (select count(distinct rh.userId) from ReadingHistory rh where rh.mangaId = m.id) > 0
             order by (select count(distinct rh.userId) from ReadingHistory rh where rh.mangaId = m.id) desc,
                      m.updatedAt desc
             limit 5
@@ -88,7 +91,8 @@ public class MangaQuery {
 
     public static final String FIND_FOLLOWED_MANGA_BY_USER_ID = """
             select m from Manga m
-            where exists (select f from Favorite f where f.mangaId = m.id and f.userId = :userId)
+            where m.deletedAt is null
+              and exists (select f from Favorite f where f.mangaId = m.id and f.userId = :userId)
             order by m.updatedAt desc
             """;
 }

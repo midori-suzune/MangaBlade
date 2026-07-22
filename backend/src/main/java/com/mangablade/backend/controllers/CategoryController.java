@@ -12,9 +12,11 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 @RequestMapping("api/v1/categories")
 public class CategoryController {
 
@@ -22,7 +24,9 @@ public class CategoryController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<CategoryResponse>>> getCategories() {
+        log.info("Category list request received");
         var categories = categoryService.fetchAllCategories();
+        log.info("Category list response: count={}", categories.size());
         return ResponseEntity.ok(
                 ApiResponse.<List<CategoryResponse>>builder()
                         .success(true)

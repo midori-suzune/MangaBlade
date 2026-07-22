@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import {
   AlertTriangle,
   BarChart3,
@@ -17,11 +18,19 @@ import {
   X,
 } from 'lucide-react';
 import { useAuthStore } from '../../../stores/authStore';
+import {
+  adminContentModerationApi,
+  type AdminModerationChapter,
+  type AdminModerationManga,
+  type ModerationStatus,
+} from '../../../api/adminContentModerationApi';
 import styles from '../Admin.module.css';
 
-type ReviewStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+type ReviewStatus = ModerationStatus;
 type ReviewStatusFilter = 'ALL' | ReviewStatus;
 type ReviewScope = 'manga' | 'chapter';
+const MODERATION_PAGE_SIZE = 50;
+const FALLBACK_COVER = 'https://via.placeholder.com/150x200?text=No+Cover';
 
 interface ReviewChapter {
   id: number;
@@ -60,135 +69,6 @@ interface ChapterReviewItem extends ReviewChapter {
   authorName: string;
   thumbnail: string;
 }
-
-const prototypeMangaReviews: ReviewManga[] = [
-  {
-    id: 801,
-    title: 'Lưỡi Kiếm Vụn',
-    slug: 'luoi-kiem-vun',
-    originName: 'Broken Blade Edge',
-    description: 'Một kiếm sĩ mất linh lực cố gắng phục dựng thanh kiếm gia truyền sau trận chiến biên giới.',
-    authorName: 'nguyen_author',
-    authorEmail: 'author@demo.com',
-    status: 'Đang tiến hành',
-    approvalStatus: 'PENDING',
-    categoryNames: ['Action', 'Fantasy', 'Drama'],
-    chapterCount: 3,
-    submittedAt: '2026-07-20T09:30:00',
-    reviewedAt: null,
-    thumbnail: 'https://img.otruyenapi.com/uploads/comics/blue-lock-thumb.jpg',
-    chapters: [
-      {
-        id: 9101,
-        chapterNumber: '1',
-        title: 'Vết nứt đầu tiên',
-        pageCount: 4,
-        approvalStatus: 'PENDING',
-        submittedAt: '2026-07-20T09:35:00',
-        previewPages: [
-          'https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?auto=format&fit=crop&w=500&q=80',
-          'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=500&q=80',
-          'https://images.unsplash.com/photo-1613376023733-0a73315d9b06?auto=format&fit=crop&w=500&q=80',
-        ],
-      },
-      {
-        id: 9102,
-        chapterNumber: '2',
-        title: 'Người canh cổng',
-        pageCount: 2,
-        approvalStatus: 'PENDING',
-        submittedAt: '2026-07-20T10:12:00',
-        previewPages: [
-          'https://images.unsplash.com/photo-1621351183012-e2f9972dd9bf?auto=format&fit=crop&w=500&q=80',
-          'https://images.unsplash.com/photo-1612198188060-c7c2a3b66eae?auto=format&fit=crop&w=500&q=80',
-        ],
-      },
-      {
-        id: 9103,
-        chapterNumber: '3',
-        title: 'Lời thề',
-        pageCount: 0,
-        approvalStatus: 'REJECTED',
-        submittedAt: '2026-07-20T10:45:00',
-        rejectionReason: 'Chương chưa có trang ảnh.',
-        previewPages: [],
-      },
-    ],
-  },
-  {
-    id: 802,
-    title: 'Thành Phố Sau Mưa',
-    slug: 'thanh-pho-sau-mua',
-    originName: null,
-    description: 'Một nhóm học sinh điều tra chuỗi dị tượng xuất hiện sau cơn mưa tím kéo dài bảy ngày.',
-    authorName: 'lam_writer',
-    authorEmail: 'lam.writer@demo.com',
-    status: 'Tạm ngưng',
-    approvalStatus: 'APPROVED',
-    categoryNames: ['Mystery', 'School Life'],
-    chapterCount: 2,
-    submittedAt: '2026-07-18T15:15:00',
-    reviewedAt: '2026-07-19T08:20:00',
-    thumbnail: 'https://images.unsplash.com/photo-1519791883288-dc8bd696e667?auto=format&fit=crop&w=500&q=80',
-    chapters: [
-      {
-        id: 9201,
-        chapterNumber: '1',
-        title: 'Ngày thứ tám',
-        pageCount: 5,
-        approvalStatus: 'APPROVED',
-        submittedAt: '2026-07-18T15:30:00',
-        previewPages: [
-          'https://images.unsplash.com/photo-1494883759339-0b042055a4ee?auto=format&fit=crop&w=500&q=80',
-          'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=500&q=80',
-        ],
-      },
-      {
-        id: 9202,
-        chapterNumber: '2',
-        title: 'Bản đồ dưới sân trường',
-        pageCount: 4,
-        approvalStatus: 'PENDING',
-        submittedAt: '2026-07-20T06:05:00',
-        previewPages: [
-          'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=500&q=80',
-          'https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=500&q=80',
-        ],
-      },
-    ],
-  },
-  {
-    id: 803,
-    title: 'Bếp Trưởng Dị Giới',
-    slug: 'bep-truong-di-gioi',
-    originName: 'Isekai Chef',
-    description: 'Đầu bếp trẻ mở quán ăn giữa thành phố mạo hiểm giả và dùng món ăn để giải lời nguyền.',
-    authorName: 'novel_kid',
-    authorEmail: 'novel@demo.com',
-    status: 'Đang tiến hành',
-    approvalStatus: 'REJECTED',
-    categoryNames: ['Comedy', 'Fantasy'],
-    chapterCount: 1,
-    submittedAt: '2026-07-17T11:00:00',
-    reviewedAt: '2026-07-17T14:15:00',
-    rejectionReason: 'Ảnh bìa chưa đúng tỷ lệ và mô tả quá ngắn.',
-    thumbnail: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=500&q=80',
-    chapters: [
-      {
-        id: 9301,
-        chapterNumber: '1',
-        title: 'Nồi súp đầu tiên',
-        pageCount: 3,
-        approvalStatus: 'APPROVED',
-        submittedAt: '2026-07-17T11:30:00',
-        previewPages: [
-          'https://images.unsplash.com/photo-1543353071-873f17a7a088?auto=format&fit=crop&w=500&q=80',
-          'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=500&q=80',
-        ],
-      },
-    ],
-  },
-];
 
 const statusLabels: Record<ReviewStatus, string> = {
   PENDING: 'Chờ duyệt',
@@ -236,15 +116,12 @@ function MangaReviewModal({ manga, rejectReason, setRejectReason, onReview, onOp
                 {statusLabels[manga.approvalStatus]}
               </span>
               <h4>{manga.title}</h4>
-              <span>{manga.slug}</span>
               <p>{manga.description}</p>
             </div>
           </div>
           <div className={styles.detailGrid}>
             <span className={styles.detailLabel}>Tác giả:</span>
-            <span className={styles.detailValue}>{manga.authorName} - {manga.authorEmail}</span>
-            <span className={styles.detailLabel}>Tên khác:</span>
-            <span className={styles.detailValue}>{manga.originName || '-'}</span>
+            <span className={styles.detailValue}>{manga.authorName}</span>
             <span className={styles.detailLabel}>Trạng thái truyện:</span>
             <span className={styles.detailValue}>{manga.status}</span>
             <span className={styles.detailLabel}>Thể loại:</span>
@@ -474,21 +351,95 @@ export const ContentModeration: React.FC = () => {
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<ReviewStatusFilter>('PENDING');
-  const [mangaReviews, setMangaReviews] = useState<ReviewManga[]>(prototypeMangaReviews);
+  const [mangaReviews, setMangaReviews] = useState<ReviewManga[]>([]);
+  const [chapterReviews, setChapterReviews] = useState<ChapterReviewItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [pendingMangaCount, setPendingMangaCount] = useState(0);
+  const [pendingChapterCount, setPendingChapterCount] = useState(0);
+  const [approvedContentCount, setApprovedContentCount] = useState(0);
   const [selectedManga, setSelectedManga] = useState<ReviewManga | null>(null);
   const [selectedChapter, setSelectedChapter] = useState<ChapterReviewItem | null>(null);
   const [rejectReason, setRejectReason] = useState('');
 
-  const chapterReviews = useMemo<ChapterReviewItem[]>(() => (
-    mangaReviews.flatMap((manga) => manga.chapters.map((chapter) => ({
-      ...chapter,
-      mangaId: manga.id,
-      mangaTitle: manga.title,
-      mangaSlug: manga.slug,
-      authorName: manga.authorName,
-      thumbnail: manga.thumbnail,
-    })))
-  ), [mangaReviews]);
+  const getErrorMessage = (error: unknown) => {
+    if (axios.isAxiosError(error)) {
+      const responseData = error.response?.data;
+      if (typeof responseData === 'string') return responseData;
+      if (responseData?.message) return responseData.message;
+      if (responseData?.error) return responseData.error;
+    }
+    return 'Có lỗi xảy ra';
+  };
+
+  const mapChapter = (chapter: AdminModerationChapter): ChapterReviewItem => ({
+    ...chapter,
+    title: chapter.title || '',
+    rejectionReason: chapter.rejectionReason || undefined,
+    thumbnail: chapter.thumbnail || FALLBACK_COVER,
+  });
+
+  const mapManga = (manga: AdminModerationManga): ReviewManga => ({
+    ...manga,
+    description: manga.description || '',
+    rejectionReason: manga.rejectionReason || undefined,
+    thumbnail: manga.thumbnail || FALLBACK_COVER,
+    chapters: manga.chapters.map(mapChapter),
+  });
+
+  const loadSummary = useCallback(async () => {
+    try {
+      const [pendingManga, pendingChapters, approvedManga, approvedChapters] = await Promise.all([
+        adminContentModerationApi.getManga({ status: 'PENDING', page: 0, size: 1 }),
+        adminContentModerationApi.getChapters({ status: 'PENDING', page: 0, size: 1 }),
+        adminContentModerationApi.getManga({ status: 'APPROVED', page: 0, size: 1 }),
+        adminContentModerationApi.getChapters({ status: 'APPROVED', page: 0, size: 1 }),
+      ]);
+
+      setPendingMangaCount(pendingManga.data.totalElements);
+      setPendingChapterCount(pendingChapters.data.totalElements);
+      setApprovedContentCount(approvedManga.data.totalElements + approvedChapters.data.totalElements);
+    } catch (error) {
+      console.error('Lỗi khi tải thống kê kiểm duyệt:', error);
+    }
+  }, []);
+
+  const loadReviews = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = {
+        status: statusFilter === 'ALL' ? undefined : statusFilter,
+        search: search || undefined,
+        page: 0,
+        size: MODERATION_PAGE_SIZE,
+      };
+
+      if (scope === 'manga') {
+        const response = await adminContentModerationApi.getManga(params);
+        setMangaReviews(response.data.content.map(mapManga));
+      } else {
+        const response = await adminContentModerationApi.getChapters(params);
+        setChapterReviews(response.data.content.map(mapChapter));
+      }
+    } catch (error) {
+      console.error('Lỗi khi tải nội dung kiểm duyệt:', error);
+      alert(getErrorMessage(error));
+      if (scope === 'manga') {
+        setMangaReviews([]);
+      } else {
+        setChapterReviews([]);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [scope, search, statusFilter]);
+
+  useEffect(() => {
+    Promise.resolve().then(() => loadSummary());
+  }, [loadSummary]);
+
+  useEffect(() => {
+    Promise.resolve().then(() => loadReviews());
+  }, [loadReviews]);
 
   const filteredManga = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
@@ -514,68 +465,73 @@ export const ContentModeration: React.FC = () => {
     });
   }, [chapterReviews, search, statusFilter]);
 
-  const pendingMangaCount = mangaReviews.filter((manga) => manga.approvalStatus === 'PENDING').length;
-  const pendingChapterCount = chapterReviews.filter((chapter) => chapter.approvalStatus === 'PENDING').length;
-  const approvedContentCount = mangaReviews.filter((manga) => manga.approvalStatus === 'APPROVED').length
-    + chapterReviews.filter((chapter) => chapter.approvalStatus === 'APPROVED').length;
-
   const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setSearch(searchInput);
   };
 
-  const reviewManga = (status: ReviewStatus) => {
+  const reviewManga = async (status: ReviewStatus) => {
     if (!selectedManga) return;
     if (status === 'REJECTED' && !rejectReason.trim()) {
       alert('Vui lòng nhập lý do từ chối truyện.');
       return;
     }
 
-    const updatedManga: ReviewManga = {
-      ...selectedManga,
-      approvalStatus: status,
-      reviewedAt: new Date().toISOString(),
-      rejectionReason: status === 'REJECTED' ? rejectReason.trim() : undefined,
-    };
+    try {
+      const response = await adminContentModerationApi.reviewManga(
+        selectedManga.id,
+        status,
+        status === 'REJECTED' ? rejectReason.trim() : undefined,
+      );
+      const updatedManga = mapManga(response.data);
 
-    setMangaReviews((current) => current.map((manga) => (
-      manga.id === selectedManga.id ? updatedManga : manga
-    )));
-    setSelectedManga(updatedManga);
-    if (status !== 'REJECTED') setRejectReason('');
+      setMangaReviews((current) => current.map((manga) => (
+        manga.id === selectedManga.id ? updatedManga : manga
+      )));
+      setSelectedManga(updatedManga);
+      if (status !== 'REJECTED') setRejectReason('');
+      await loadSummary();
+    } catch (error) {
+      console.error('Lỗi khi kiểm duyệt truyện:', error);
+      alert(getErrorMessage(error));
+    }
   };
 
-  const reviewChapter = (status: ReviewStatus) => {
+  const reviewChapter = async (status: ReviewStatus) => {
     if (!selectedChapter) return;
     if (status === 'REJECTED' && !rejectReason.trim()) {
       alert('Vui lòng nhập lý do từ chối chapter.');
       return;
     }
 
-    const updatedChapter: ChapterReviewItem = {
-      ...selectedChapter,
-      approvalStatus: status,
-      rejectionReason: status === 'REJECTED' ? rejectReason.trim() : undefined,
-    };
+    try {
+      const response = await adminContentModerationApi.reviewChapter(
+        selectedChapter.id,
+        status,
+        status === 'REJECTED' ? rejectReason.trim() : undefined,
+      );
+      const updatedChapter = mapChapter(response.data);
 
-    setMangaReviews((current) => current.map((manga) => (
-      manga.id !== selectedChapter.mangaId
-        ? manga
-        : {
-            ...manga,
-            chapters: manga.chapters.map((chapter) => (
-              chapter.id === selectedChapter.id
-                ? {
-                    ...chapter,
-                    approvalStatus: status,
-                    rejectionReason: status === 'REJECTED' ? rejectReason.trim() : undefined,
-                  }
-                : chapter
-            )),
-          }
-    )));
-    setSelectedChapter(updatedChapter);
-    if (status !== 'REJECTED') setRejectReason('');
+      setChapterReviews((current) => current.map((chapter) => (
+        chapter.id === selectedChapter.id ? updatedChapter : chapter
+      )));
+      setMangaReviews((current) => current.map((manga) => (
+        manga.id !== selectedChapter.mangaId
+          ? manga
+          : {
+              ...manga,
+              chapters: manga.chapters.map((chapter) => (
+                chapter.id === selectedChapter.id ? updatedChapter : chapter
+              )),
+            }
+      )));
+      setSelectedChapter(updatedChapter);
+      if (status !== 'REJECTED') setRejectReason('');
+      await loadSummary();
+    } catch (error) {
+      console.error('Lỗi khi kiểm duyệt chapter:', error);
+      alert(getErrorMessage(error));
+    }
   };
 
   const openManga = (manga: ReviewManga) => {
@@ -704,7 +660,9 @@ export const ContentModeration: React.FC = () => {
                     <tbody>
                       {filteredManga.length === 0 ? (
                         <tr>
-                          <td colSpan={8} className={styles.emptyCell}>Không có dữ liệu hiển thị.</td>
+                          <td colSpan={8} className={styles.emptyCell}>
+                            {loading ? 'Đang tải dữ liệu kiểm duyệt...' : 'Không có dữ liệu hiển thị.'}
+                          </td>
                         </tr>
                       ) : (
                         filteredManga.map((manga) => (
@@ -712,7 +670,6 @@ export const ContentModeration: React.FC = () => {
                             <td className={styles.idCell}>{manga.id}</td>
                             <td>
                               <div className={styles.mangaInfoCell}>
-                                <img src={manga.thumbnail} alt="" className={styles.mangaThumb} />
                                 <div className={styles.mangaInfoText}>
                                   <span className={styles.userName}>{manga.title}</span>
                                   <span className={styles.userEmail}>{manga.slug}</span>
@@ -756,7 +713,9 @@ export const ContentModeration: React.FC = () => {
                     <tbody>
                       {filteredChapters.length === 0 ? (
                         <tr>
-                          <td colSpan={7} className={styles.emptyCell}>Không có dữ liệu hiển thị.</td>
+                          <td colSpan={7} className={styles.emptyCell}>
+                            {loading ? 'Đang tải dữ liệu kiểm duyệt...' : 'Không có dữ liệu hiển thị.'}
+                          </td>
                         </tr>
                       ) : (
                         filteredChapters.map((chapter) => (

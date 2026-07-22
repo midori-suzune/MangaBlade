@@ -276,8 +276,7 @@ export const AdminDashboard: React.FC = () => {
               <article className={styles.dashboardPanel}>
                 <div className={styles.dashboardPanelHeader}>
                   <div>
-                    <h3 className={styles.dashboardPanelTitle}>Tác vụ hôm nay</h3>
-                    <p className={styles.dashboardPanelSubtitle}>Các điểm cần admin xử lý.</p>
+                    <h3 className={styles.dashboardPanelTitle}>Thông Báo</h3>
                   </div>
                 </div>
                 <div className={styles.dashboardTodoList}>

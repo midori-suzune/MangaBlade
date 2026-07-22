@@ -66,7 +66,7 @@ const MangaHeaderCard: React.FC<MangaHeaderCardProps> = ({
           title="Thao tác truyện"
           aria-label="Thao tác truyện"
           style={{
-            backgroundColor: '#ffffff',
+            backgroundColor: 'var(--color-surface)',
             border: '1px solid var(--color-border)',
             color: 'var(--color-text-main)',
             padding: '6px 8px',
@@ -342,7 +342,7 @@ const ChapterRow: React.FC<ChapterRowProps> = ({
             title="Thao tác"
             aria-label="Thao tác"
             style={{
-              backgroundColor: '#ffffff',
+              backgroundColor: 'var(--color-surface)',
               border: '1px solid var(--color-border)',
               color: 'var(--color-text-main)',
               padding: '6px 8px',

@@ -165,7 +165,7 @@ export function AccountSettingsTab() {
                         value={displayName}
                         onChange={(e) => setDisplayName(e.target.value)}
                         disabled={user.role === 'AUTHOR'}
-                        style={user.role === 'AUTHOR' ? { backgroundColor: '#f1f5f9', cursor: 'not-allowed', color: '#475569' } : {}}
+                        style={user.role === 'AUTHOR' ? { backgroundColor: 'var(--color-surface-muted, #f1f5f9)', cursor: 'not-allowed', color: 'var(--color-text-muted)' } : {}}
                     />
                     {user.role === 'AUTHOR' && (
                         <small style={{ color: '#64748b', fontSize: '12px', marginTop: '4px', display: 'block' }}>
@@ -185,7 +185,7 @@ export function AccountSettingsTab() {
                         value={user.email}
                         readOnly
                         disabled
-                        style={{ backgroundColor: "#f8fafc", cursor: "not-allowed", color: "#64748b" }}
+                        style={{ backgroundColor: 'var(--color-surface-muted, #f8fafc)', cursor: 'not-allowed', color: 'var(--color-text-muted)' }}
                     />
                 </div>
             </div>
@@ -216,7 +216,7 @@ export function AccountSettingsTab() {
                         value={user.username}
                         readOnly
                         disabled
-                        style={{ backgroundColor: "#f8fafc", cursor: "not-allowed", color: "#64748b" }}
+                        style={{ backgroundColor: 'var(--color-surface-muted, #f8fafc)', cursor: 'not-allowed', color: 'var(--color-text-muted)' }}
                     />
                 </div>
             </div>

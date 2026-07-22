@@ -13,6 +13,7 @@ public class ReadingHistoryQuery {
             join rh.manga m
             join rh.chapter c
             where rh.userId = :userId
+              and m.deletedAt IS NULL
               and (:query is null
                    or lower(m.title) like lower(concat('%', :query, '%'))
                    or lower(m.slug) like lower(concat('%', :query, '%')))
@@ -38,6 +39,7 @@ public class ReadingHistoryQuery {
             join rh.chapter c
             where rh.userId = :userId
               and m.slug = :slug
+              and m.deletedAt IS NULL
             order by rh.lastReadAt desc
             limit 1
             """;
