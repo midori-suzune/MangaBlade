@@ -5,7 +5,10 @@ import styles from "../UserProfile.module.css";
 import axios from "axios";
 import type { ApiResponse } from "../../../types/auth";
 
-function validatePassword(newPassword: string, confirmPassword: string): string | null {
+function validatePassword(currentPassword: string, newPassword: string, confirmPassword: string): string | null {
+    if (currentPassword && currentPassword === newPassword) {
+        return "Mật khẩu mới không được trùng với mật khẩu hiện tại!";
+    }
     if (newPassword.length < 8) {
         return "Mật khẩu mới phải có tối thiểu 8 ký tự!";
     }
@@ -29,6 +32,9 @@ function getChangePasswordErrorMessage(err: unknown): string {
         const data = err.response.data as ApiResponse<void>;
         if (data.message === "Incorrect current password") {
             return "Mật khẩu hiện tại không chính xác!";
+        }
+        if (data.message === "New password cannot be the same as current password") {
+            return "Mật khẩu mới không được trùng với mật khẩu hiện tại!";
         }
         if (data.message === "Google accounts do not support local password changes") {
             return "Tài khoản đăng nhập bằng Google không hỗ trợ đổi mật khẩu trực tiếp!";
@@ -56,7 +62,7 @@ export function ChangePasswordTab() {
         setSuccessMessage(null);
         setErrorMessage(null);
 
-        const error = validatePassword(newPassword, confirmPassword);
+        const error = validatePassword(currentPassword, newPassword, confirmPassword);
         if (error) {
             setErrorMessage(error);
             return;

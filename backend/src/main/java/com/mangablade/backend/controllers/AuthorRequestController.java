@@ -56,12 +56,14 @@ public class AuthorRequestController {
     @GetMapping("/admin/author-requests")
     public ResponseEntity<ApiResponse<PageResponse<AuthorRequestResponse>>> getAllRequests(
             @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "search", required = false) String search,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "10") int size) {
         
         Page<AuthorRequestResponse> response = authorRequestService.getAllRequests(
                 status,
-                PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"))
+                search,
+                PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id"))
         );
         return ResponseEntity.ok(
                 ApiResponse.<PageResponse<AuthorRequestResponse>>builder()

@@ -23,8 +23,18 @@ services:
       DB_URL: jdbc:mysql://mysql:3306/MangaBlade?createDatabaseIfNotExist=true&serverTimezone=UTC
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
+      ELASTICSEARCH_URL: http://elasticsearch:9200
     depends_on:
       - mysql
+      - elasticsearch
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.4.1
+    container_name: mangablade-elasticsearch
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
 
   mysql:
     image: mysql:latest
@@ -34,6 +44,5 @@ services:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
     volumes:
       - mysql_data:/var/lib/mysql
-
 volumes:
   mysql_data:

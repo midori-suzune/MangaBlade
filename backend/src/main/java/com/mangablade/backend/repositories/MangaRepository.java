@@ -2,6 +2,7 @@ package com.mangablade.backend.repositories;
 
 import com.mangablade.backend.dtos.response.MangaRankingProjection;
 import com.mangablade.backend.entities.Manga;
+import com.mangablade.backend.enums.ApprovalStatus;
 import com.mangablade.backend.enums.MangaSourceType;
 import com.mangablade.backend.utils.querysql.MangaQuery;
 
@@ -24,6 +25,15 @@ public interface MangaRepository extends JpaRepository<Manga, Long> {
 
     Optional<Manga> findBySlug(String slug);
 
+    Optional<Manga> findBySlugAndDeletedAtIsNull(String slug);
+
+    @Query("SELECT m FROM Manga m WHERE m.deletedAt IS NULL")
+    List<Manga> findAllVisible();
+
+    boolean existsBySlug(String slug);
+
+    org.springframework.data.domain.Page<Manga> findByOwnerUserIdAndDeletedAtIsNull(Long ownerUserId, Pageable pageable);
+
     long countByCreatedAtGreaterThanEqualAndCreatedAtLessThan(Instant startAt, Instant endAt);
 
     long countByStatus(String status);
@@ -32,42 +42,25 @@ public interface MangaRepository extends JpaRepository<Manga, Long> {
 
     @EntityGraph(attributePaths = {"owner"})
     @Query(
-            value = """
-                    SELECT m
-                    FROM Manga m
-                    LEFT JOIN m.owner owner
-                    WHERE (:search IS NULL
-                        OR LOWER(m.title) LIKE LOWER(CONCAT('%', :search, '%'))
-                        OR LOWER(m.slug) LIKE LOWER(CONCAT('%', :search, '%'))
-                        OR LOWER(owner.username) LIKE LOWER(CONCAT('%', :search, '%'))
-                        OR LOWER(owner.email) LIKE LOWER(CONCAT('%', :search, '%')))
-                    AND (:sourceType IS NULL OR m.metadataSource = :sourceType)
-                    AND (:hidden IS NULL
-                        OR (:hidden = TRUE AND m.deletedAt IS NOT NULL)
-                        OR (:hidden = FALSE AND m.deletedAt IS NULL))
-                    AND (:status IS NULL OR m.status = :status)
-                    """,
-            countQuery = """
-                    SELECT COUNT(m)
-                    FROM Manga m
-                    LEFT JOIN m.owner owner
-                    WHERE (:search IS NULL
-                        OR LOWER(m.title) LIKE LOWER(CONCAT('%', :search, '%'))
-                        OR LOWER(m.slug) LIKE LOWER(CONCAT('%', :search, '%'))
-                        OR LOWER(owner.username) LIKE LOWER(CONCAT('%', :search, '%'))
-                        OR LOWER(owner.email) LIKE LOWER(CONCAT('%', :search, '%')))
-                    AND (:sourceType IS NULL OR m.metadataSource = :sourceType)
-                    AND (:hidden IS NULL
-                        OR (:hidden = TRUE AND m.deletedAt IS NOT NULL)
-                        OR (:hidden = FALSE AND m.deletedAt IS NULL))
-                    AND (:status IS NULL OR m.status = :status)
-                    """
+            value = MangaQuery.FIND_ADMIN_MANGA,
+            countQuery = MangaQuery.COUNT_ADMIN_MANGA
     )
     Page<Manga> findAdminManga(
             @Param("search") String search,
             @Param("status") String status,
             @Param("sourceType") MangaSourceType sourceType,
             @Param("hidden") Boolean hidden,
+            Pageable pageable
+    );
+
+    @EntityGraph(attributePaths = {"owner"})
+    @Query(
+            value = MangaQuery.FIND_MODERATION_MANGA,
+            countQuery = MangaQuery.COUNT_MODERATION_MANGA
+    )
+    Page<Manga> findModerationManga(
+            @Param("status") ApprovalStatus status,
+            @Param("search") String search,
             Pageable pageable
     );
 

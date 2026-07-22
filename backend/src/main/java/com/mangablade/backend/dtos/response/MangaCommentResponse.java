@@ -19,7 +19,10 @@ public class MangaCommentResponse {
     private Long id;
     private String content;
     private Instant createdAt;
+    private Boolean isAuthor;
     private User user;
+    private Long likeCount;
+    private Boolean isLiked;
     @Builder.Default
     private List<MangaCommentResponse> replies = new ArrayList<>();
 
@@ -33,5 +36,6 @@ public class MangaCommentResponse {
         private String username;
         private String activeTitle;
         private String activeTitleColor;
+        private Boolean isAuthor;
     }
 }

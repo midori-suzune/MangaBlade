@@ -1,6 +1,7 @@
 .profilePage {
   --color-bg: #f8fafc;
   --color-surface: #ffffff;
+  --color-surface-soft: #f8fafc;
   --color-surface-hover: #f1f5f9;
   --color-border: #e2e8f0;
   --color-text-main: #0f172a;
@@ -25,6 +26,25 @@
   flex-direction: column;
   min-height: calc(100vh - 120px);
   background-color: var(--color-bg);
+}
+
+:global(:root[data-theme="dark"]) .profilePage {
+  --color-bg: #18191a;
+  --color-surface: #242526;
+  --color-surface-soft: #2f3031;
+  --color-surface-hover: #2f3031;
+  --color-border: #3e4042;
+  --color-text-main: #f1f5f9;
+  --color-text-muted: #cbd5e1;
+  --color-accent: #818cf8;
+  --color-accent-bg: rgba(129, 140, 248, 0.12);
+  --color-accent-hover: #6366f1;
+  --color-red: #f87171;
+  --color-red-bg: rgba(248, 113, 113, 0.1);
+  --color-green: #4ade80;
+  --color-green-bg: rgba(74, 222, 128, 0.1);
+  --color-amber: #fbbf24;
+  --color-amber-bg: rgba(251, 191, 36, 0.1);
 }
 
 .pageContainer {
@@ -314,7 +334,7 @@
 }
 
 .table th {
-  background-color: #f8fafc;
+  background-color: var(--color-surface-soft);
   padding: 14px 20px;
   font-size: 13px;
   font-weight: 600;
@@ -410,7 +430,7 @@
   padding: 16px;
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius-sm);
-  background-color: #f8fafc;
+  background-color: var(--color-surface-soft);
 }
 
 .categoryCheckboxLabel {
@@ -429,7 +449,7 @@
   border-radius: var(--border-radius-md);
   padding: 40px 20px;
   text-align: center;
-  background-color: #f8fafc;
+  background-color: var(--color-surface-soft);
   cursor: pointer;
   transition: var(--transition-smooth);
 }
@@ -487,7 +507,7 @@
   font-size: 11px;
   font-weight: 600;
   text-align: center;
-  background-color: #f8fafc;
+  background-color: var(--color-surface-soft);
   border-top: 1px solid var(--color-border);
 }
 

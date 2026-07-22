@@ -1,6 +1,30 @@
 package com.mangablade.backend.utils.querysql;
 
 public class ChapterQuery {
+    private static final String MODERATION_CHAPTER_FILTERS = """
+            FROM Chapter c
+            JOIN c.manga m
+            LEFT JOIN m.owner owner
+            WHERE m.deletedAt IS NULL
+              AND m.ownerUserId IS NOT NULL
+              AND (:status IS NULL OR c.approvalStatus = :status)
+              AND (:search IS NULL
+                  OR LOWER(m.title) LIKE LOWER(CONCAT('%', :search, '%'))
+                  OR LOWER(m.slug) LIKE LOWER(CONCAT('%', :search, '%'))
+                  OR LOWER(c.title) LIKE LOWER(CONCAT('%', :search, '%'))
+                  OR LOWER(c.chapterNumber) LIKE LOWER(CONCAT('%', :search, '%'))
+                  OR LOWER(owner.username) LIKE LOWER(CONCAT('%', :search, '%'))
+                  OR LOWER(owner.email) LIKE LOWER(CONCAT('%', :search, '%')))
+            """;
+
+    public static final String FIND_MODERATION_CHAPTERS = """
+            SELECT c
+            """ + MODERATION_CHAPTER_FILTERS;
+
+    public static final String COUNT_MODERATION_CHAPTERS = """
+            SELECT COUNT(c)
+            """ + MODERATION_CHAPTER_FILTERS;
+
     public static final String FIND_BY_MANGA_SLUG_AND_CHAPTER_NUMBER = """
             select c
             from Chapter c

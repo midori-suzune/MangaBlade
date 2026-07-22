@@ -8,6 +8,7 @@ import {
   ChevronDown,
   FileCheck,
   FileText,
+  MessageSquare,
   TrendingUp,
   Users,
 } from 'lucide-react';
@@ -171,6 +172,12 @@ export const AdminDashboard: React.FC = () => {
             </button>
             <button
               className={styles.adminNavItem}
+              onClick={() => navigate('/admin/comment-reports')}
+            >
+              <MessageSquare size={16} /> Báo cáo bình luận
+            </button>
+            <button
+              className={styles.adminNavItem}
               onClick={() => navigate('/admin/author-requests')}
             >
               <FileText size={16} /> Đơn đăng ký Tác giả
@@ -269,8 +276,7 @@ export const AdminDashboard: React.FC = () => {
               <article className={styles.dashboardPanel}>
                 <div className={styles.dashboardPanelHeader}>
                   <div>
-                    <h3 className={styles.dashboardPanelTitle}>Tác vụ hôm nay</h3>
-                    <p className={styles.dashboardPanelSubtitle}>Các điểm cần admin xử lý.</p>
+                    <h3 className={styles.dashboardPanelTitle}>Thông Báo</h3>
                   </div>
                 </div>
                 <div className={styles.dashboardTodoList}>

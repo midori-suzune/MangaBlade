@@ -68,19 +68,18 @@ export function AccountSettingsTab() {
         }
     };
 
-    const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
             if (file.size > 2 * 1024 * 1024) {
                 alert("Kích thước file tối đa là 2MB!");
                 return;
             }
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const result = reader.result as string;
-                updateAvatar(result);
-            };
-            reader.readAsDataURL(file);
+            try {
+                await updateAvatar(file);
+            } catch {
+                alert("Lỗi khi tải ảnh đại diện lên Cloudinary!");
+            }
         }
     };
 
@@ -156,14 +155,23 @@ export function AccountSettingsTab() {
 
             <div className={styles.formGrid2} style={{ marginBottom: "20px" }}>
                 <div className={styles.settingsSection} style={{ marginBottom: 0 }}>
-                    <label htmlFor="display-name" className={styles.sectionLabel}>Họ tên hiển thị</label>
+                    <label htmlFor="display-name" className={styles.sectionLabel}>
+                        {user.role === 'AUTHOR' ? 'Bút danh tác giả (Cố định)' : 'Họ tên hiển thị'}
+                    </label>
                     <input
                         type="text"
                         id="display-name"
                         className={styles.formInput}
                         value={displayName}
                         onChange={(e) => setDisplayName(e.target.value)}
+                        disabled={user.role === 'AUTHOR'}
+                        style={user.role === 'AUTHOR' ? { backgroundColor: 'var(--color-surface-muted, #f1f5f9)', cursor: 'not-allowed', color: 'var(--color-text-muted)' } : {}}
                     />
+                    {user.role === 'AUTHOR' && (
+                        <small style={{ color: '#64748b', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                            * Bút danh tác giả cố định theo đơn đăng ký và không thể thay đổi.
+                        </small>
+                    )}
                 </div>
 
                 <div className={styles.settingsSection} style={{ marginBottom: 0 }}>
@@ -177,7 +185,7 @@ export function AccountSettingsTab() {
                         value={user.email}
                         readOnly
                         disabled
-                        style={{ backgroundColor: "#f8fafc", cursor: "not-allowed", color: "#64748b" }}
+                        style={{ backgroundColor: 'var(--color-surface-muted, #f8fafc)', cursor: 'not-allowed', color: 'var(--color-text-muted)' }}
                     />
                 </div>
             </div>
@@ -208,7 +216,7 @@ export function AccountSettingsTab() {
                         value={user.username}
                         readOnly
                         disabled
-                        style={{ backgroundColor: "#f8fafc", cursor: "not-allowed", color: "#64748b" }}
+                        style={{ backgroundColor: 'var(--color-surface-muted, #f8fafc)', cursor: 'not-allowed', color: 'var(--color-text-muted)' }}
                     />
                 </div>
             </div>

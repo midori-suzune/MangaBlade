@@ -1,0 +1,861 @@
+.forumPage {
+    min-height: calc(100vh - 120px);
+    background-color: var(--color-page-bg);
+}
+
+.forumShell {
+    display: grid;
+    grid-template-columns: minmax(320px, 380px) minmax(0, 1fr);
+    gap: 24px;
+    max-width: 1540px;
+    height: calc(100vh - 170px);
+    min-height: 760px;
+    max-height: 980px;
+    margin: 28px auto 0;
+    padding: 0 24px;
+}
+
+.threadPanel,
+.chatPanel {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    box-shadow: var(--shadow-surface);
+    min-height: 0;
+}
+
+.threadPanel {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+.panelHeader,
+.chatHeader {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--color-border-soft);
+}
+
+.pageTitle {
+    margin: 0;
+    color: var(--color-text-strong);
+    font-size: 24px;
+    font-weight: 900;
+    line-height: 1.2;
+}
+
+.pageSubtitle {
+    margin: 4px 0 0;
+    color: var(--color-text-muted);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.liveBadge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 26px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background-color: #dcfce7;
+    color: #15803d;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+:global(:root[data-theme="dark"]) .liveBadge {
+    background-color: rgba(74, 222, 128, 0.12);
+    color: #86efac;
+}
+
+.createThreadBar {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--color-border-soft);
+    background-color: var(--color-surface-soft);
+}
+
+.createThreadBar button {
+    display: inline-flex;
+    width: 100%;
+    min-height: 40px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: none;
+    border-radius: 4px;
+    background-color: var(--color-accent);
+    color: #ffffff;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 800;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s;
+}
+
+.createThreadBar button:active {
+    transform: scale(0.98);
+}
+
+:global(:root[data-theme="dark"]) .createThreadBar button {
+    background-color: #000000;
+}
+
+.categoryFilters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 12px 18px 14px;
+    border-bottom: 1px solid var(--color-border-soft);
+    background-color: var(--color-surface);
+}
+
+.categoryFilters button {
+    min-height: 30px;
+    padding: 0 10px;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background-color: var(--color-surface-soft);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 850;
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.categoryFilters button:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+
+.categoryFilters .activeCategoryFilter {
+    border-color: var(--color-accent);
+    background-color: rgba(99, 102, 241, 0.12);
+    color: var(--color-accent);
+}
+
+.modalBackdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background-color: rgba(15, 23, 42, 0.42);
+}
+
+.createThreadModal {
+    width: min(760px, 100%);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    background-color: var(--color-surface);
+    box-shadow: var(--shadow-dropdown);
+    padding: 22px;
+}
+
+.modalHeader {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--color-border-soft);
+}
+
+.modalHeader h2 {
+    margin: 0;
+    color: var(--color-text-strong);
+    font-size: 22px;
+    font-weight: 900;
+}
+
+.modalHeader p {
+    margin: 4px 0 0;
+    color: var(--color-text-muted);
+    font-size: 13px;
+    font-weight: 650;
+}
+
+.modalCloseButton {
+    display: inline-flex;
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 50%;
+    background-color: var(--color-surface-muted);
+    color: var(--color-text-muted);
+    cursor: pointer;
+}
+
+.modalCloseButton:hover {
+    color: var(--color-text);
+}
+
+.modalField {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin-bottom: 14px;
+}
+
+.modalField span {
+    color: var(--color-text-muted);
+    font-size: 12px;
+    font-weight: 850;
+}
+
+.modalField input,
+.modalField select {
+    width: 100%;
+    min-height: 40px;
+    padding: 9px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    background-color: var(--color-surface-soft);
+    color: var(--color-text);
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s, background-color 0.2s;
+}
+
+.modalField input:focus,
+.modalField select:focus {
+    border-color: var(--color-accent);
+    background-color: var(--color-surface);
+}
+
+.fieldCounter {
+    align-self: flex-end;
+    margin-top: -3px;
+    color: var(--color-text-soft);
+    font-size: 11px;
+    font-weight: 750;
+}
+
+.postEditor {
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background-color: var(--color-surface-soft);
+}
+
+.postEditor:focus-within {
+    border-color: var(--color-accent);
+    background-color: var(--color-surface);
+}
+
+.editorToolbar {
+    display: flex;
+    min-height: 34px;
+    align-items: center;
+    gap: 2px;
+    padding: 0 8px;
+    border-bottom: 1px solid var(--color-border-soft);
+    background-color: var(--color-surface);
+}
+
+.editorToolbar button {
+    display: inline-flex;
+    width: 26px;
+    height: 26px;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--color-text-muted);
+    cursor: pointer;
+}
+
+.editorToolbar button:hover {
+    background-color: var(--color-surface-muted);
+    color: var(--color-text);
+}
+
+.toolbarDivider {
+    width: 1px;
+    height: 16px;
+    margin: 0 4px;
+    background-color: var(--color-border);
+}
+
+.toolbarSpacer {
+    flex: 1;
+}
+
+.postEditor textarea {
+    display: block;
+    width: 100%;
+    min-height: 260px;
+    padding: 16px;
+    border: none;
+    background-color: transparent;
+    color: var(--color-text);
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.5;
+    outline: none;
+    resize: vertical;
+}
+
+.editorCounter {
+    min-height: 28px;
+    padding: 6px 10px;
+    border-top: 1px solid var(--color-border-soft);
+    color: var(--color-text-soft);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.modalActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.cancelThreadButton,
+.createThreadButton {
+    display: inline-flex;
+    min-height: 38px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 800;
+    padding: 0 16px;
+}
+
+.cancelThreadButton {
+    background-color: var(--color-surface-muted);
+    color: var(--color-text-muted);
+}
+
+.createThreadButton {
+    background-color: var(--color-accent);
+    color: #ffffff;
+}
+
+.createThreadButton:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+
+:global(:root[data-theme="dark"]) .createThreadButton {
+    background-color: #000000;
+}
+
+.threadList {
+    display: flex;
+    min-height: 0;
+    flex: 1;
+    flex-direction: column;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-text-soft) transparent;
+}
+
+.threadList::-webkit-scrollbar,
+.commentList::-webkit-scrollbar {
+    width: 8px;
+}
+
+.threadList::-webkit-scrollbar-track,
+.commentList::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.threadList::-webkit-scrollbar-thumb,
+.commentList::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background-color: var(--color-text-soft);
+}
+
+.threadCard {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    gap: 7px;
+    padding: 16px 18px;
+    border: 0;
+    border-bottom: 1px solid var(--color-border-soft);
+    background-color: transparent;
+    color: var(--color-text);
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.threadCard:last-child {
+    border-bottom: none;
+}
+
+.threadCard:hover {
+    background-color: var(--color-surface-soft);
+}
+
+.activeThread {
+    background-color: var(--color-surface-muted);
+    box-shadow: inset 3px 0 0 var(--color-accent);
+}
+
+.threadCategory {
+    color: var(--color-accent);
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.threadTitle {
+    display: -webkit-box;
+    overflow: hidden;
+    max-height: 42px;
+    color: var(--color-text-strong);
+    font-size: 15px;
+    font-weight: 850;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+    text-overflow: ellipsis;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.threadMeta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    color: var(--color-text-soft);
+    font-size: 12px;
+    font-weight: 750;
+}
+
+.threadMeta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.chatPanel {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+}
+
+.chatHeader {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 18px;
+}
+
+.chatTitle {
+    margin: 4px 0 0;
+    color: var(--color-text-strong);
+    font-size: 20px;
+    font-weight: 850;
+    line-height: 1.25;
+}
+
+.threadHero {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 12px;
+}
+
+.threadHeroAuthorRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.threadHeroMeta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+    color: var(--color-text-soft);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.threadHeroContent {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 9px;
+    padding: 18px;
+    border: 1px solid var(--color-border-soft);
+    border-top: 2px solid var(--color-accent);
+    background-color: var(--color-surface-soft);
+}
+
+.threadHeroCategory {
+    font-size: 15px;
+}
+
+.chatAuthorName {
+    color: var(--color-text-strong);
+    font-size: 14px;
+    font-weight: 850;
+    line-height: 1.25;
+}
+
+.chatStats {
+    position: absolute;
+    top: 18px;
+    right: 20px;
+    display: flex;
+    flex-shrink: 0;
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 12px;
+    color: var(--color-text-muted);
+    font-size: 13px;
+    font-weight: 750;
+}
+
+.chatStats span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.commentList {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    flex-direction: column;
+    gap: 18px;
+    overflow-y: auto;
+    padding: 22px 20px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-text-soft) transparent;
+}
+
+.threadPost {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 20px;
+    border: 1px solid var(--color-border-soft);
+    border-top: 2px solid var(--color-accent);
+    background-color: var(--color-surface-soft);
+}
+
+.threadPostText {
+    margin: 0;
+    color: var(--color-text);
+    font-size: 15px;
+    line-height: 1.65;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
+
+.threadPostImages {
+    display: grid;
+    gap: 12px;
+    justify-items: center;
+}
+
+.threadPostImages img {
+    width: 100%;
+    max-width: 760px;
+    max-height: 320px;
+    border-radius: 6px;
+    object-fit: cover;
+    background-color: var(--color-border);
+}
+
+.commentItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.commentAvatar {
+    display: flex;
+    width: 45px;
+    height: 45px;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid var(--color-border);
+    border-radius: 50%;
+    background-color: var(--color-surface-muted);
+    color: var(--color-accent);
+    font-size: 16px;
+    font-weight: 900;
+}
+
+.commentBody {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.commentBubble {
+    display: flex;
+    width: 100%;
+    max-width: 100%;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 12px 12px;
+    border-top: 1px solid #f97316;
+    border-radius: 0;
+    background-color: var(--color-surface-soft);
+}
+
+.commentAuthorRow {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.commentAuthor {
+    color: #ef4444;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.commentBadge {
+    padding: 3px 8px;
+    border-radius: 12px;
+    background-color: var(--color-surface-muted);
+    color: var(--color-text-muted);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.adminBadge {
+    background-color: rgba(239, 68, 68, 0.14);
+    color: #ef4444;
+}
+
+.authorBadge {
+    background-color: rgba(59, 130, 246, 0.15);
+    color: #3b82f6;
+}
+
+.memberBadge {
+    background-color: rgba(99, 102, 241, 0.14);
+    color: #818cf8;
+}
+
+.titleBadge {
+    background-color: rgba(245, 158, 11, 0.14);
+}
+
+.commentText {
+    margin: 0;
+    color: var(--color-text);
+    font-size: 14px;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
+
+.commentFooter {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-left: 2px;
+    color: var(--color-text-soft);
+    font-size: 13px;
+    font-weight: 650;
+}
+
+:global(:root[data-theme="dark"]) .commentFooter {
+    color: var(--color-text-muted);
+}
+
+.commentFooter button {
+    border: none;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
+}
+
+.commentFooter button:hover {
+    color: #3b82f6;
+}
+
+.emptyState,
+.noThreadState {
+    padding: 18px;
+    color: var(--color-text-muted);
+    font-size: 14px;
+    font-weight: 750;
+    text-align: center;
+}
+
+.noThreadState {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+}
+
+.errorBanner {
+    padding: 10px 18px;
+    border-bottom: 1px solid var(--color-border-soft);
+    background-color: #fef2f2;
+    color: #b91c1c;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+:global(:root[data-theme="dark"]) .errorBanner {
+    background-color: rgba(248, 113, 113, 0.12);
+    color: #fca5a5;
+}
+
+.replyTarget {
+    display: flex;
+    min-height: 32px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 6px 10px;
+    border-left: 3px solid var(--color-accent);
+    background-color: var(--color-surface-soft);
+    color: var(--color-text-muted);
+    font-size: 13px;
+    font-weight: 750;
+}
+
+.replyTarget button {
+    border: none;
+    background: transparent;
+    color: var(--color-accent);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 850;
+}
+
+.commentInputBox {
+    display: flex;
+    gap: 15px;
+    padding: 18px 20px;
+    border-top: 1px solid var(--color-border-soft);
+}
+
+.commentInputWrapper {
+    position: relative;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.commentInputWrapper :global([data-comment-editor]) {
+    font-size: 14px;
+}
+
+.commentInputWrapper :global([data-comment-editor]:focus) {
+    border-color: var(--color-accent);
+}
+
+.commentActions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.submitCommentButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 18px;
+    border: none;
+    border-radius: 0;
+    background-color: var(--color-accent);
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.submitCommentButton:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+:global(:root[data-theme="dark"]) .submitCommentButton {
+    background-color: #000000;
+    color: #ffffff;
+}
+
+@media (max-width: 920px) {
+    .forumShell {
+        grid-template-columns: 1fr;
+        height: auto;
+        min-height: 0;
+        max-height: none;
+    }
+
+    .threadPanel {
+        max-height: 560px;
+    }
+
+    .chatPanel {
+        height: 700px;
+    }
+}
+
+@media (max-width: 640px) {
+    .forumShell {
+        margin-top: 18px;
+        padding: 0 12px;
+    }
+
+    .panelHeader,
+    .chatHeader,
+    .commentList,
+    .commentInputBox {
+        padding-right: 14px;
+        padding-left: 14px;
+    }
+
+    .chatHeader {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .chatStats {
+        align-items: flex-start;
+    }
+
+    .commentInputBox {
+        gap: 10px;
+    }
+
+    .commentAvatar {
+        width: 38px;
+        height: 38px;
+        font-size: 14px;
+    }
+}

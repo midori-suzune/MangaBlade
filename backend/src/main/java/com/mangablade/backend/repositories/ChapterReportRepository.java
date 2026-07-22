@@ -13,6 +13,7 @@ import java.util.Collection;
 import com.mangablade.backend.entities.ChapterReport;
 import com.mangablade.backend.enums.ChapterReportStatus;
 import com.mangablade.backend.enums.ChapterReportType;
+import com.mangablade.backend.utils.querysql.ChapterReportQuery;
 
 @Repository
 public interface ChapterReportRepository extends JpaRepository<ChapterReport, Long> {
@@ -20,34 +21,8 @@ public interface ChapterReportRepository extends JpaRepository<ChapterReport, Lo
 
     @EntityGraph(attributePaths = {"manga", "chapter", "reporter"})
     @Query(
-            value = """
-                    SELECT r
-                    FROM ChapterReport r
-                    LEFT JOIN r.manga m
-                    LEFT JOIN r.chapter c
-                    LEFT JOIN r.reporter u
-                    WHERE (:status IS NULL OR r.status = :status)
-                    AND (:type IS NULL OR r.type = :type)
-                    AND (:search IS NULL
-                        OR LOWER(m.title) LIKE LOWER(CONCAT('%', :search, '%'))
-                        OR LOWER(c.title) LIKE LOWER(CONCAT('%', :search, '%'))
-                        OR LOWER(c.chapterNumber) LIKE LOWER(CONCAT('%', :search, '%'))
-                        OR LOWER(u.username) LIKE LOWER(CONCAT('%', :search, '%')))
-                    """,
-            countQuery = """
-                    SELECT COUNT(r)
-                    FROM ChapterReport r
-                    LEFT JOIN r.manga m
-                    LEFT JOIN r.chapter c
-                    LEFT JOIN r.reporter u
-                    WHERE (:status IS NULL OR r.status = :status)
-                    AND (:type IS NULL OR r.type = :type)
-                    AND (:search IS NULL
-                        OR LOWER(m.title) LIKE LOWER(CONCAT('%', :search, '%'))
-                        OR LOWER(c.title) LIKE LOWER(CONCAT('%', :search, '%'))
-                        OR LOWER(c.chapterNumber) LIKE LOWER(CONCAT('%', :search, '%'))
-                        OR LOWER(u.username) LIKE LOWER(CONCAT('%', :search, '%')))
-                    """
+            value = ChapterReportQuery.FIND_ADMIN_REPORTS,
+            countQuery = ChapterReportQuery.COUNT_ADMIN_REPORTS
     )
     Page<ChapterReport> findAdminReports(
             @Param("status") ChapterReportStatus status,

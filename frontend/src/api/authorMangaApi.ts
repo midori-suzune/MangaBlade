@@ -9,169 +9,9 @@ import type {
 } from '../types/author';
 
 // Mock DB State
-let mockMangas: AuthorMangaResponse[] = [
-  {
-    id: 1,
-    title: "Solo Leveling (Tôi Thăng Cấp Một Mình)",
-    slug: "solo-leveling",
-    originName: "나 혼자만 레벨업",
-    description: "Từ thợ săn yếu nhất nhân loại trở thành Hoàng Đế Bóng Tối mạnh nhất thế giới.",
-    status: "Đang tiến hành",
-    approvalStatus: "APPROVED",
-    rejectionReason: null,
-    submittedAt: "2026-07-19T10:00:00Z",
-    chapterCount: 2,
-    viewCount: 1245300,
-    followCount: 89200,
-    createdAt: "2026-01-01T00:00:00Z",
-    updatedAt: "2026-07-19T10:00:00Z",
-    categories: [
-      { id: 1, name: "Action", slug: "action" },
-      { id: 2, name: "Adventure", slug: "adventure" },
-      { id: 3, name: "Fantasy", slug: "fantasy" }
-    ],
-    thumbUrl: "https://picsum.photos/id/1062/400/600",
-    localCoverUrl: "https://picsum.photos/id/1062/400/600"
-  },
-  {
-    id: 2,
-    title: "Ta Là Tà Đế (I Am The Fated Villain)",
-    slug: "ta-la-ta-de",
-    originName: "Wo Shi Xie Di",
-    description: "Hành trình chinh phạt chư thiên vạn giới của Tạ Diệm với hệ thống đúc ép.",
-    status: "Đang tiến hành",
-    approvalStatus: "PENDING",
-    rejectionReason: null,
-    submittedAt: "2026-07-20T08:00:00Z",
-    chapterCount: 1,
-    viewCount: 420000,
-    followCount: 24000,
-    createdAt: "2026-02-15T00:00:00Z",
-    updatedAt: "2026-07-20T08:00:00Z",
-    categories: [
-      { id: 1, name: "Action", slug: "action" },
-      { id: 4, name: "Comedy", slug: "comedy" }
-    ],
-    thumbUrl: "https://picsum.photos/id/1069/400/600",
-    localCoverUrl: "https://picsum.photos/id/1069/400/600"
-  },
-  {
-    id: 3,
-    title: "Đại Quản Gia Là Ma Hoàng",
-    slug: "dai-quan-gia-la-ma-hoang",
-    originName: "Mo Huang Guan Jia",
-    description: "Trác Nhất Phàm trùng sinh làm quản gia cho một gia tộc lụn bại sau khi bị đệ tử phản bội.",
-    status: "Hoàn thành",
-    approvalStatus: "REJECTED",
-    rejectionReason: "Ảnh bìa có chứa nội dung không phù hợp, vui lòng đổi ảnh khác.",
-    submittedAt: "2026-07-18T10:00:00Z",
-    chapterCount: 1,
-    viewCount: 980000,
-    followCount: 55000,
-    createdAt: "2026-03-10T00:00:00Z",
-    updatedAt: "2026-07-18T12:00:00Z",
-    categories: [
-      { id: 5, name: "Martial Arts", slug: "martial-arts" },
-      { id: 1, name: "Action", slug: "action" }
-    ],
-    thumbUrl: "https://picsum.photos/id/1025/400/600",
-    localCoverUrl: "https://picsum.photos/id/1025/400/600"
-  },
-  {
-    id: 4,
-    title: "Ta Có Một Sơn Trại (My Great Estate)",
-    slug: "ta-co-mot-son-trai",
-    originName: "Wo You Yi Ge Shan Zhai",
-    description: "Xây dựng sơn trại đệ nhất thiên hạ bằng hệ thống thần kỳ.",
-    status: "Đang tiến hành",
-    approvalStatus: "DRAFT",
-    rejectionReason: null,
-    submittedAt: null,
-    chapterCount: 0,
-    viewCount: 0,
-    followCount: 0,
-    createdAt: "2026-07-20T01:00:00Z",
-    updatedAt: "2026-07-20T01:00:00Z",
-    categories: [
-      { id: 4, name: "Comedy", slug: "comedy" },
-      { id: 6, name: "Historical", slug: "historical" }
-    ],
-    thumbUrl: "https://picsum.photos/id/1084/400/600",
-    localCoverUrl: "https://picsum.photos/id/1084/400/600"
-  }
-];
-
-const mockChapters: Record<number, AuthorChapterResponse[]> = {
-  1: [
-    {
-      id: 101,
-      mangaId: 1,
-      chapterNumber: "1",
-      title: "Cánh cổng ngục tối",
-      chapterSort: 1,
-      pageCount: 3,
-      approvalStatus: "APPROVED",
-      rejectionReason: null,
-      submittedAt: "2026-07-10T00:00:00Z",
-      createdAt: "2026-07-10T00:00:00Z"
-    },
-    {
-      id: 102,
-      mangaId: 1,
-      chapterNumber: "2",
-      title: "Thử thách bắt đầu",
-      chapterSort: 2,
-      pageCount: 0,
-      approvalStatus: "PENDING",
-      rejectionReason: null,
-      submittedAt: "2026-07-15T00:00:00Z",
-      createdAt: "2026-07-15T00:00:00Z"
-    }
-  ],
-  2: [
-    {
-      id: 201,
-      mangaId: 2,
-      chapterNumber: "1",
-      title: "Ma Tông Thiếu Chủ",
-      chapterSort: 1,
-      pageCount: 1,
-      approvalStatus: "DRAFT",
-      rejectionReason: null,
-      submittedAt: null,
-      createdAt: "2026-07-20T00:00:00Z"
-    }
-  ],
-  3: [
-    {
-      id: 301,
-      mangaId: 3,
-      chapterNumber: "1",
-      title: "Trác Nhất Phàm",
-      chapterSort: 1,
-      pageCount: 2,
-      approvalStatus: "REJECTED",
-      rejectionReason: "Dịch sai tên nhân vật chính ở trang 3.",
-      submittedAt: "2026-07-18T00:00:00Z",
-      createdAt: "2026-07-18T00:00:00Z"
-    }
-  ]
-};
-
-const mockChapterPages: Record<number, { id: number; pageNumber: number; imageUrl: string }[]> = {
-  101: [
-    { id: 1001, pageNumber: 1, imageUrl: "https://picsum.photos/id/101/600/900" },
-    { id: 1002, pageNumber: 2, imageUrl: "https://picsum.photos/id/102/600/900" },
-    { id: 1003, pageNumber: 3, imageUrl: "https://picsum.photos/id/103/600/900" }
-  ],
-  201: [
-    { id: 2001, pageNumber: 1, imageUrl: "https://picsum.photos/id/104/600/900" }
-  ],
-  301: [
-    { id: 3001, pageNumber: 1, imageUrl: "https://picsum.photos/id/106/600/900" },
-    { id: 3002, pageNumber: 2, imageUrl: "https://picsum.photos/id/107/600/900" }
-  ]
-};
+let mockMangas: AuthorMangaResponse[] = [];
+const mockChapters: Record<number, AuthorChapterResponse[]> = {};
+const mockChapterPages: Record<number, { id: number; pageNumber: number; imageUrl: string }[]> = {};
 
 export const authorMangaApi = {
   // Manga CRUD
@@ -216,13 +56,13 @@ export const authorMangaApi = {
     }
   },
 
-  getMangaDetail: async (mangaId: number): Promise<ApiResponse<AuthorMangaResponse>> => {
+  getMangaDetail: async (mangaId: number | string): Promise<ApiResponse<AuthorMangaResponse>> => {
     try {
       const response = await axiosClient.get<ApiResponse<AuthorMangaResponse>>(`/v1/author/manga/${mangaId}`);
       return response.data;
     } catch (err) {
       console.warn("API getMangaDetail failed, using mock fallback data.", err);
-      const manga = mockMangas.find(m => m.id === mangaId);
+      const manga = mockMangas.find(m => m.id === Number(mangaId) || m.slug === String(mangaId));
       if (!manga) {
         return { success: false, message: "Manga not found", payload: null as never };
       }
@@ -322,6 +162,27 @@ export const authorMangaApi = {
     }
   },
 
+  cancelMangaSubmission: async (mangaId: number): Promise<ApiResponse<void>> => {
+    try {
+      const response = await axiosClient.post<ApiResponse<void>>(`/v1/author/manga/${mangaId}/cancel-submit`);
+      return response.data;
+    } catch (err) {
+      console.warn("API cancelMangaSubmission failed, writing to mock DB.", err);
+      const idx = mockMangas.findIndex(m => m.id === mangaId);
+      if (idx !== -1) {
+        mockMangas[idx].approvalStatus = "DRAFT";
+      }
+      if (mockChapters[mangaId]) {
+        mockChapters[mangaId].forEach(c => {
+          if (c.approvalStatus === "PENDING") {
+            c.approvalStatus = "DRAFT";
+          }
+        });
+      }
+      return { success: true, message: "Cancelled mock manga submission successfully", payload: null as never };
+    }
+  },
+
   deleteManga: async (mangaId: number): Promise<ApiResponse<void>> => {
     try {
       const response = await axiosClient.delete<ApiResponse<void>>(`/v1/author/manga/${mangaId}`);
@@ -333,12 +194,12 @@ export const authorMangaApi = {
     }
   },
 
-  uploadCover: async (mangaId: number, file: File): Promise<ApiResponse<{ coverUrl: string }>> => {
+  uploadCover: async (identifier: string | number, file: File): Promise<ApiResponse<{ coverUrl: string }>> => {
     try {
       const formData = new FormData();
       formData.append('file', file);
       const response = await axiosClient.post<ApiResponse<{ coverUrl: string }>>(
-        `/v1/author/manga/${mangaId}/cover`,
+        `/v1/author/manga/${identifier}/cover`,
         formData,
         { headers: { 'Content-Type': 'multipart/form-data' } }
       );
@@ -346,7 +207,7 @@ export const authorMangaApi = {
     } catch (err) {
       console.warn("API uploadCover failed, uploading cover in mock DB.", err);
       const coverUrl = URL.createObjectURL(file);
-      const idx = mockMangas.findIndex(m => m.id === mangaId);
+      const idx = mockMangas.findIndex(m => m.id === Number(identifier) || m.slug === String(identifier));
       if (idx !== -1) {
         mockMangas[idx].localCoverUrl = coverUrl;
         mockMangas[idx].thumbUrl = coverUrl;
@@ -360,7 +221,7 @@ export const authorMangaApi = {
   },
 
   // Chapter CRUD
-  getChapters: async (mangaId: number, page = 0, size = 20): Promise<ApiResponse<SpringPageResponse<AuthorChapterResponse>>> => {
+  getChapters: async (mangaId: number | string, page = 0, size = 20): Promise<ApiResponse<SpringPageResponse<AuthorChapterResponse>>> => {
     try {
       const response = await axiosClient.get<ApiResponse<SpringPageResponse<AuthorChapterResponse>>>(
         `/v1/author/manga/${mangaId}/chapters`,
@@ -369,7 +230,7 @@ export const authorMangaApi = {
       return response.data;
     } catch (err) {
       console.warn("API getChapters failed, retrieving mock fallback.", err);
-      const list = mockChapters[mangaId] || [];
+      const list = mockChapters[Number(mangaId)] || [];
       const totalElements = list.length;
       const totalPages = Math.ceil(totalElements / size);
       const content = list.slice(page * size, (page + 1) * size);
@@ -406,7 +267,7 @@ export const authorMangaApi = {
     }
   },
 
-  createChapter: async (mangaId: number, data: {
+  createChapter: async (mangaId: number | string, data: {
     chapterNumber: string;
     title?: string;
     chapterSort?: number;
@@ -419,24 +280,25 @@ export const authorMangaApi = {
       return response.data;
     } catch (err) {
       console.warn("API createChapter failed, writing to mock DB.", err);
-      if (!mockChapters[mangaId]) mockChapters[mangaId] = [];
+      const numId = Number(mangaId) || 0;
+      if (!mockChapters[numId]) mockChapters[numId] = [];
       const newId = Math.floor(Math.random() * 100000);
       const newChapter: AuthorChapterResponse = {
         id: newId,
-        mangaId: mangaId,
+        mangaId: numId,
         chapterNumber: data.chapterNumber,
         title: data.title || "",
-        chapterSort: data.chapterSort || (mockChapters[mangaId].length + 1),
+        chapterSort: data.chapterSort || (mockChapters[numId].length + 1),
         pageCount: 0,
         approvalStatus: "DRAFT",
         rejectionReason: null,
         submittedAt: null,
         createdAt: new Date().toISOString()
       };
-      mockChapters[mangaId].push(newChapter);
+      mockChapters[numId].push(newChapter);
 
       // Increment manga chapter count
-      const mangaIdx = mockMangas.findIndex(m => m.id === mangaId);
+      const mangaIdx = mockMangas.findIndex(m => m.id === numId || m.slug === String(mangaId));
       if (mangaIdx !== -1) {
         mockMangas[mangaIdx].chapterCount += 1;
       }
@@ -567,6 +429,22 @@ export const authorMangaApi = {
     }
   },
 
+  cancelChapterSubmission: async (chapterId: number): Promise<ApiResponse<void>> => {
+    try {
+      const response = await axiosClient.post<ApiResponse<void>>(`/v1/author/chapters/${chapterId}/cancel-submit`);
+      return response.data;
+    } catch (err) {
+      console.warn("API cancelChapterSubmission failed, writing to mock DB.", err);
+      for (const mId in mockChapters) {
+        const idx = mockChapters[mId].findIndex(c => c.id === chapterId);
+        if (idx !== -1) {
+          mockChapters[mId][idx].approvalStatus = "DRAFT";
+        }
+      }
+      return { success: true, message: "Cancelled mock chapter submission successfully", payload: null as never };
+    }
+  },
+
   deleteChapter: async (chapterId: number): Promise<ApiResponse<void>> => {
     try {
       const response = await axiosClient.delete<ApiResponse<void>>(`/v1/author/chapters/${chapterId}`);
@@ -592,7 +470,7 @@ export const authorMangaApi = {
   // Statistics
   getStatsOverview: async (): Promise<ApiResponse<AuthorStatsOverview>> => {
     try {
-      const response = await axiosClient.get<ApiResponse<AuthorStatsOverview>>('/v1/author/statistics/overview');
+      const response = await axiosClient.get<ApiResponse<AuthorStatsOverview>>('/v1/author/stats/overview');
       return response.data;
     } catch (err) {
       console.warn("API getStatsOverview failed, retrieving mock fallback.", err);
@@ -612,7 +490,7 @@ export const authorMangaApi = {
   getMangaStats: async (page = 0, size = 10): Promise<ApiResponse<SpringPageResponse<AuthorMangaStats>>> => {
     try {
       const response = await axiosClient.get<ApiResponse<SpringPageResponse<AuthorMangaStats>>>(
-        '/v1/author/statistics/manga',
+        '/v1/author/stats/mangas',
         { params: { page, size } }
       );
       return response.data;

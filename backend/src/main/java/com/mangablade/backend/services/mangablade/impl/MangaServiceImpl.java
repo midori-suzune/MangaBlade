@@ -48,7 +48,7 @@ public class MangaServiceImpl implements MangaService {
 
     @Override
     public List<MangaResponse> fetchAllManga() {
-        var entity = mangaRepository.findAll();
+        var entity = mangaRepository.findAllVisible();
         return entity.stream().map(e -> {
             var latestChapter = chapterService.getLastestChapterByMangaId(e.getId());
             var response = mangaMapper.toResponse(e);

@@ -18,6 +18,7 @@ CREATE TABLE users (
     id BIGINT NOT NULL AUTO_INCREMENT,
     email VARCHAR(255) NOT NULL,
     username VARCHAR(50) NOT NULL,
+    display_name VARCHAR(100),
     password_hash VARCHAR(255),
     avatar_url VARCHAR(1000),
     role VARCHAR(20) NOT NULL DEFAULT 'USER',
@@ -369,6 +370,72 @@ CREATE TABLE user_achievements (
     PRIMARY KEY (user_id, achievement_id),
     CONSTRAINT fk_user_achievements_user FOREIGN KEY (user_id) REFERENCES users(id),
     CONSTRAINT fk_user_achievements_ach FOREIGN KEY (achievement_id) REFERENCES achievements(id)
+);
+
+CREATE TABLE comment_report (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    comment_id BIGINT NOT NULL,
+    reporter_id BIGINT NOT NULL,
+    reason VARCHAR(50) NOT NULL,
+    description TEXT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    resolved_at DATETIME(3) NULL,
+    resolved_by BIGINT NULL,
+    reject_reason TEXT NULL,
+
+    PRIMARY KEY (id),
+    CONSTRAINT fk_comment_report_comment FOREIGN KEY (comment_id) REFERENCES comment(id) ON DELETE CASCADE,
+    CONSTRAINT fk_comment_report_reporter FOREIGN KEY (reporter_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_comment_report_resolved_by FOREIGN KEY (resolved_by) REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE TABLE forum_thread (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    category VARCHAR(20) NOT NULL,
+    title VARCHAR(150) NOT NULL,
+    content TEXT NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'VISIBLE',
+    view_count INT NOT NULL DEFAULT 0,
+    comment_count INT NOT NULL DEFAULT 0,
+    last_commented_at DATETIME(3),
+    created_at DATETIME(3) NOT NULL,
+    updated_at DATETIME(3) NOT NULL,
+    deleted_at DATETIME(3),
+
+    PRIMARY KEY (id),
+    CONSTRAINT fk_forum_thread_user FOREIGN KEY (user_id) REFERENCES users(id),
+    CONSTRAINT chk_forum_thread_category CHECK (category IN ('ANNOUNCEMENT', 'DISCUSSION', 'FIND_MANGA', 'FEEDBACK')),
+    CONSTRAINT chk_forum_thread_status CHECK (status IN ('VISIBLE', 'HIDDEN', 'DELETED', 'LOCKED'))
+);
+
+CREATE TABLE forum_comment (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    thread_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    reply_to_comment_id BIGINT,
+    content TEXT NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'VISIBLE',
+    created_at DATETIME(3) NOT NULL,
+    updated_at DATETIME(3) NOT NULL,
+    deleted_at DATETIME(3),
+
+    PRIMARY KEY (id),
+    CONSTRAINT fk_forum_comment_thread FOREIGN KEY (thread_id) REFERENCES forum_thread(id),
+    CONSTRAINT fk_forum_comment_user FOREIGN KEY (user_id) REFERENCES users(id),
+    CONSTRAINT fk_forum_comment_reply_to FOREIGN KEY (reply_to_comment_id) REFERENCES forum_comment(id),
+    CONSTRAINT chk_forum_comment_status CHECK (status IN ('VISIBLE', 'HIDDEN', 'DELETED'))
+);
+
+CREATE TABLE forum_comment_like (
+    user_id BIGINT NOT NULL,
+    comment_id BIGINT NOT NULL,
+    created_at DATETIME(3) NOT NULL,
+
+    PRIMARY KEY (user_id, comment_id),
+    CONSTRAINT fk_forum_comment_like_user FOREIGN KEY (user_id) REFERENCES users(id),
+    CONSTRAINT fk_forum_comment_like_comment FOREIGN KEY (comment_id) REFERENCES forum_comment(id)
 );
 
 INSERT INTO otruyen_import_target (

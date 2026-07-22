@@ -5,6 +5,60 @@ import { Feather, CheckCircle, Clock, BookOpen, BarChart3, MessageSquare, AlertC
 import { authorRequestApi, type AuthorRequestResponse } from "../../../api/authorRequestApi";
 import styles from "../UserProfile.module.css";
 
+interface RegistrationFormValues {
+  penName: string;
+  phone: string;
+  socialLink: string;
+}
+
+interface RegistrationFormErrors {
+  penNameError: string;
+  phoneError: string;
+  socialLinkError: string;
+  hasError: boolean;
+}
+
+function validateRegistrationForm({ penName, phone, socialLink }: RegistrationFormValues): RegistrationFormErrors {
+  let penNameError = "";
+  let phoneError = "";
+  let socialLinkError = "";
+  let hasError = false;
+
+  if (!penName.trim()) {
+    penNameError = "Vui lòng điền bút danh tác giả!";
+    hasError = true;
+  }
+
+  if (!phone.trim()) {
+    phoneError = "Vui lòng điền số điện thoại!";
+    hasError = true;
+  } else {
+    const phoneRegex = /^(0|\+84)[35789]\d{8}$/;
+    if (!phoneRegex.test(phone.trim())) {
+      phoneError = "Số điện thoại không hợp lệ! Vui lòng nhập 10 chữ số di động VN.";
+      hasError = true;
+    }
+  }
+
+  if (!socialLink.trim()) {
+    socialLinkError = "Vui lòng điền link portfolio hoặc trang sáng tác!";
+    hasError = true;
+  } else {
+    const urlRegex = /^https?:\/\/.+$/i;
+    if (!urlRegex.test(socialLink.trim())) {
+      socialLinkError = "Đường dẫn portfolio không hợp lệ! Phải bắt đầu bằng http:// hoặc https://";
+      hasError = true;
+    }
+  }
+
+  return {
+    penNameError,
+    phoneError,
+    socialLinkError,
+    hasError
+  };
+}
+
 interface AuthorRegistrationTabProps {
   userRole: string;
 }
@@ -237,7 +291,7 @@ function AuthorStatusView({
                 <span style={{ fontWeight: 500, color: 'var(--color-text-main)' }}>{myRequest.phone}</span>
               </div>
               <div>
-                <span style={{ color: 'var(--color-text-muted)', display: 'inline-block', width: '120px' }}>Link mạng xã hội:</span>
+                <span style={{ color: 'var(--color-text-muted)', display: 'inline-block', width: '120px' }}>Link portfolio:</span>
                 <a href={myRequest.socialLink} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-accent)', fontWeight: 500 }}>
                   {myRequest.socialLink}
                 </a>
@@ -424,6 +478,10 @@ export function AuthorRegistrationTab({ userRole }: AuthorRegistrationTabProps) 
   const [socialLink, setSocialLink] = useState("");
   const [agreedTerms, setAgreedTerms] = useState(false);
   const [phoneVerified, setPhoneVerified] = useState(false);
+
+  const [penNameError, setPenNameError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+  const [socialLinkError, setSocialLinkError] = useState("");
   
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [otpCode, setOtpCode] = useState("");
@@ -439,7 +497,7 @@ export function AuthorRegistrationTab({ userRole }: AuthorRegistrationTabProps) 
           setView('pending');
         } else if (res.payload.status === 'REJECTED') {
           setView('rejected');
-        } else if (res.payload.status === 'APPROVED') {
+        } else if (res.payload.status === 'APPROVED' && userRole === 'AUTHOR') {
           setView('author');
         } else {
           setView('intro');
@@ -450,7 +508,7 @@ export function AuthorRegistrationTab({ userRole }: AuthorRegistrationTabProps) 
     } catch {
       setView('intro');
     }
-  }, []);
+  }, [userRole]);
 
   useEffect(() => {
     if (userRole === 'AUTHOR') {
@@ -461,8 +519,14 @@ export function AuthorRegistrationTab({ userRole }: AuthorRegistrationTabProps) 
   }, [userRole, fetchMyRequest]);
 
   const handleVerifyPhone = () => {
+    setPhoneError("");
     if (!phone.trim()) {
-      alert("Vui lòng điền số điện thoại!");
+      setPhoneError("Vui lòng điền số điện thoại!");
+      return;
+    }
+    const phoneRegex = /^(0|\+84)[35789]\d{8}$/;
+    if (!phoneRegex.test(phone.trim())) {
+      setPhoneError("Số điện thoại không hợp lệ! Vui lòng nhập 10 chữ số di động VN.");
       return;
     }
     setOtpCode("");
@@ -473,6 +537,7 @@ export function AuthorRegistrationTab({ userRole }: AuthorRegistrationTabProps) 
   const handleOtpConfirm = () => {
     if (otpCode === "123456") {
       setPhoneVerified(true);
+      setPhoneError("");
       setShowOtpModal(false);
     } else {
       setOtpError("Mã xác minh không chính xác. Vui lòng nhập 123456 để thử.");
@@ -481,10 +546,16 @@ export function AuthorRegistrationTab({ userRole }: AuthorRegistrationTabProps) 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!penName.trim() || !phone.trim() || !socialLink.trim()) {
-      alert("Vui lòng điền đầy đủ các trường thông tin!");
+    
+    const errors = validateRegistrationForm({ penName, phone, socialLink });
+    setPenNameError(errors.penNameError);
+    setPhoneError(errors.phoneError);
+    setSocialLinkError(errors.socialLinkError);
+
+    if (errors.hasError) {
       return;
     }
+
     if (!phoneVerified) {
       alert("Vui lòng xác minh số điện thoại!");
       return;
@@ -545,7 +616,7 @@ export function AuthorRegistrationTab({ userRole }: AuthorRegistrationTabProps) 
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '20px' }}>
+        <form onSubmit={handleSubmit} noValidate style={{ display: 'grid', gap: '20px' }}>
           <div className={styles.formGrid2} style={{ marginBottom: 0 }}>
             <div className={styles.settingsSection} style={{ marginBottom: 0 }}>
               <label htmlFor="pen-name" className={styles.sectionLabel}>Bút danh tác giả</label>
@@ -554,10 +625,21 @@ export function AuthorRegistrationTab({ userRole }: AuthorRegistrationTabProps) 
                 id="pen-name"
                 className={styles.formInput}
                 value={penName}
-                onChange={(e) => setPenName(e.target.value)}
-                placeholder="Nhập tên bút danh hiển thị"
+                onChange={(e) => {
+                  setPenName(e.target.value);
+                  if (penNameError) setPenNameError("");
+                }}
+                placeholder="Nhập bút danh sáng tác (Bút danh cố định và không thể thay đổi sau khi được duyệt)"
                 required
               />
+              <small style={{ color: '#64748b', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                * Lưu ý: Bút danh này sẽ gắn liền với tất cả tác phẩm và không thể thay đổi sau khi Admin phê duyệt.
+              </small>
+              {penNameError && (
+                <p style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px', marginBottom: 0 }}>
+                  {penNameError}
+                </p>
+              )}
             </div>
 
             <div className={styles.settingsSection} style={{ marginBottom: 0 }}>
@@ -573,6 +655,7 @@ export function AuthorRegistrationTab({ userRole }: AuthorRegistrationTabProps) 
                   onChange={(e) => {
                     setPhone(e.target.value);
                     setPhoneVerified(false);
+                    if (phoneError) setPhoneError("");
                   }}
                   placeholder="Nhập số điện thoại"
                   required
@@ -613,20 +696,33 @@ export function AuthorRegistrationTab({ userRole }: AuthorRegistrationTabProps) 
                   </button>
                 )}
               </div>
+              {phoneError && (
+                <p style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px', marginBottom: 0 }}>
+                  {phoneError}
+                </p>
+              )}
             </div>
           </div>
 
           <div className={styles.settingsSection} style={{ marginBottom: 0 }}>
-            <label htmlFor="social-link" className={styles.sectionLabel}>Link mạng xã hội (Facebook/Zalo/LinkedIn/Portfolio)</label>
+            <label htmlFor="social-link" className={styles.sectionLabel}>Link portfolio hoặc trang sáng tác cá nhân</label>
             <input
               type="url"
               id="social-link"
               className={styles.formInput}
               value={socialLink}
-              onChange={(e) => setSocialLink(e.target.value)}
-              placeholder="https://facebook.com/username hoặc link mạng xã hội của bạn"
+              onChange={(e) => {
+                setSocialLink(e.target.value);
+                if (socialLinkError) setSocialLinkError("");
+              }}
+              placeholder="https://pixiv.net/users/... hoặc link trang sáng tác cá nhân"
               required
             />
+            {socialLinkError && (
+              <p style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px', marginBottom: 0 }}>
+                {socialLinkError}
+              </p>
+            )}
           </div>
 
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginTop: '10px' }}>

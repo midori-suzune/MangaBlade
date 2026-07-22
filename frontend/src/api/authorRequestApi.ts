@@ -50,9 +50,9 @@ export const authorRequestApi = {
     return response.data;
   },
   
-  getAll: async (status?: string, page = 0, size = 10): Promise<ApiResponse<SpringPageResponse<AuthorRequestResponse>>> => {
+  getAll: async (status?: string, search?: string, page = 0, size = 10): Promise<ApiResponse<SpringPageResponse<AuthorRequestResponse>>> => {
     const response = await axiosClient.get<ApiResponse<SpringPageResponse<AuthorRequestResponse>>>('/v1/admin/author-requests', {
-      params: { status: status || undefined, page, size }
+      params: { status: status || undefined, search: search || undefined, page, size }
     });
     return response.data;
   },

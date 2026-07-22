@@ -29,6 +29,7 @@ export function Menu() {
             <nav className={styles.navLinks} aria-label="Main navigation">
                 <NavLink to="/" className={({ isActive }) => isActive ? styles.active : ''} end>Trang chủ</NavLink>
                 <NavLink to="/category" className={({ isActive }) => isActive ? styles.active : ''}>Thể loại</NavLink>
+                <NavLink to="/forum" className={({ isActive }) => isActive ? styles.active : ''}>Diễn Đàn</NavLink>
                 <NavLink
                     to="/followed-manga"
                     className={({ isActive }) => isActive ? styles.active : ''}

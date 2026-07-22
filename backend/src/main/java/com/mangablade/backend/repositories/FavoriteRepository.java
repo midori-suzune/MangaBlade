@@ -2,6 +2,7 @@ package com.mangablade.backend.repositories;
 
 import com.mangablade.backend.entities.Favorite;
 import com.mangablade.backend.entities.FavoriteId;
+import com.mangablade.backend.utils.querysql.FavoriteQuery;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -20,22 +21,13 @@ public interface FavoriteRepository extends JpaRepository<Favorite, FavoriteId> 
 
     long countByUserId(Long userId);
 
-    @Query("""
-            select f
-            from Favorite f
-            join fetch f.manga m
-            where f.userId = :userId
-            order by m.updatedAt desc
-            """)
+    long countByMangaId(Long mangaId);
+
+    @Query(FavoriteQuery.FIND_BY_USER_ID_WITH_MANGA)
     List<Favorite> findByUserIdWithManga(@Param("userId") Long userId);
 
     @Modifying
-    @Query("""
-            update Favorite f
-            set f.lastSeenChapterNumber = :chapterNumber
-            where f.userId = :userId
-              and f.mangaId = :mangaId
-            """)
+    @Query(FavoriteQuery.UPDATE_LAST_SEEN_CHAPTER_NUMBER)
     int updateLastSeenChapterNumber(
             @Param("userId") Long userId,
             @Param("mangaId") Long mangaId,

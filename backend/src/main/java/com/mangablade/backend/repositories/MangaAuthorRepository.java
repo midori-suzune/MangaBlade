@@ -16,6 +16,8 @@ import java.util.List;
 public interface MangaAuthorRepository extends JpaRepository<MangaAuthor, MangaAuthorId> {
     boolean existsByMangaIdAndAuthorId(Long mangaId, Long authorId);
 
+    List<MangaAuthor> findByMangaId(Long mangaId);
+
     @Query(MangaAuthorQuery.FIND_AUTHORS_BY_MANGA_ID)
     List<MangaAuthorProjection> findAuthorsByMangaId(@Param("mangaId") Long mangaId);
 }
