@@ -19,7 +19,7 @@ import {ContentModeration} from "../pages/Admin/ContentModeration/ContentModerat
 import {ReadingHistory} from "../pages/ReadingHistory/ReadingHistory.tsx";
 import {FollowedManga} from "../pages/FollowedManga/FollowedManga.tsx";
 import {RouteError} from "./RouteError.tsx";
-import {ForumPrototype} from "../pages/ForumPrototype.tsx";
+import {ForumPage} from "../pages/Forum/ForumPage.tsx";
 
 import { AuthorMangaList } from "../pages/AuthorDashboard/AuthorMangaList.tsx";
 import { AuthorMangaCreate } from "../pages/AuthorDashboard/AuthorMangaCreate.tsx";
@@ -68,7 +68,7 @@ export const appRoutes: RouteObject[] = [
             },
             {
                 path: "forum",
-                element: <ForumPrototype />
+                element: <ForumPage />
             }
         ]
     },

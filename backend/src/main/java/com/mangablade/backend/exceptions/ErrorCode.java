@@ -17,6 +17,8 @@ public enum ErrorCode {
     CHAPTER_NOT_FOUND(404, "Chapter not found", HttpStatus.NOT_FOUND),
     CHAPTER_REPORT_NOT_FOUND(404, "Chapter report not found", HttpStatus.NOT_FOUND),
     COMMENT_NOT_FOUND(404, "Comment not found", HttpStatus.NOT_FOUND),
+    FORUM_THREAD_NOT_FOUND(404, "Forum thread not found", HttpStatus.NOT_FOUND),
+    FORUM_THREAD_LOCKED(400, "Forum thread is locked", HttpStatus.BAD_REQUEST),
     INVALID_REQUEST(400, "Invalid request", HttpStatus.BAD_REQUEST),
     CANNOT_REPORT_OWN_COMMENT(400, "Không thể báo cáo bình luận của chính mình", HttpStatus.BAD_REQUEST),
     UNAUTHORIZED(401, "Unauthorized", HttpStatus.UNAUTHORIZED),
