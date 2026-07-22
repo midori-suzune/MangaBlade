@@ -21,6 +21,7 @@ public enum ErrorCode {
     UNAUTHORIZED(401, "Unauthorized", HttpStatus.UNAUTHORIZED),
     FORBIDDEN(403, "Forbidden", HttpStatus.FORBIDDEN),
     WRONG_PASSWORD(400, "Incorrect current password", HttpStatus.BAD_REQUEST),
+    SAME_AS_CURRENT_PASSWORD(400, "New password cannot be the same as current password", HttpStatus.BAD_REQUEST),
     SOCIAL_USER_CANT_CHANGE_PASSWORD(400, "Google accounts do not support local password changes", HttpStatus.BAD_REQUEST),
     EMAIL_NOT_VERIFIED(400, "Email not verified. Please verify your email first.", HttpStatus.BAD_REQUEST),
     INVALID_OTP(400, "Invalid OTP code", HttpStatus.BAD_REQUEST),

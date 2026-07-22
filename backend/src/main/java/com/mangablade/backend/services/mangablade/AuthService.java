@@ -325,6 +325,10 @@ public class AuthService {
             throw new AppException(ErrorCode.SOCIAL_USER_CANT_CHANGE_PASSWORD);
         }
 
+        if (currentPassword.equals(newPassword) || (user.getPasswordHash() != null && passwordEncoder.matches(newPassword, user.getPasswordHash()))) {
+            throw new AppException(ErrorCode.SAME_AS_CURRENT_PASSWORD);
+        }
+
         if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
             throw new AppException(ErrorCode.WRONG_PASSWORD);
         }
