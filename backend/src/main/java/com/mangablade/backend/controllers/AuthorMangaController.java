@@ -167,6 +167,20 @@ public class AuthorMangaController {
         );
     }
 
+    @PostMapping("/manga/{identifier}/cancel-submit")
+    public ResponseEntity<ApiResponse<Void>> cancelMangaSubmission(
+            @AuthenticationPrincipal User user,
+            @PathVariable String identifier
+    ) {
+        authorMangaService.cancelMangaSubmission(user, identifier);
+        return ResponseEntity.ok(
+                ApiResponse.<Void>builder()
+                        .success(true)
+                        .message("Hủy yêu cầu duyệt bộ truyện thành công!")
+                        .build()
+        );
+    }
+
     // ==========================================
     // CHAPTER ENDPOINTS
     // ==========================================
@@ -258,6 +272,20 @@ public class AuthorMangaController {
                 ApiResponse.<Void>builder()
                         .success(true)
                         .message("Gửi duyệt chương thành công! Chương đang chờ Admin kiểm duyệt.")
+                        .build()
+        );
+    }
+
+    @PostMapping("/chapters/{chapterId}/cancel-submit")
+    public ResponseEntity<ApiResponse<Void>> cancelChapterSubmission(
+            @AuthenticationPrincipal User user,
+            @PathVariable Long chapterId
+    ) {
+        authorMangaService.cancelChapterSubmission(user, chapterId);
+        return ResponseEntity.ok(
+                ApiResponse.<Void>builder()
+                        .success(true)
+                        .message("Hủy yêu cầu duyệt chương thành công!")
                         .build()
         );
     }

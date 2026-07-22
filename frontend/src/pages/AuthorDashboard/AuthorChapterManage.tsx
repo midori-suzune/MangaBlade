@@ -3,7 +3,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { AuthorDashboardLayout } from './AuthorDashboardLayout';
 import { authorMangaApi } from '../../api/authorMangaApi';
 import type { AuthorChapterResponse, AuthorMangaResponse } from '../../types/author';
-import { ArrowLeft, Plus, Edit3, Image, Trash2, Send, X, Save, Menu, HelpCircle } from 'lucide-react';
+import { ArrowLeft, Plus, Edit3, Image, Trash2, Send, X, Save, Menu, HelpCircle, XCircle } from 'lucide-react';
 import styles from './AuthorDashboard.module.css';
 
 interface AuthorChapterManageProps {
@@ -31,6 +31,7 @@ interface MangaHeaderCardProps {
   setIsMangaDropdownOpen: React.Dispatch<React.SetStateAction<boolean>>;
   handleNavigate: (path: string) => void;
   handleSubmitMangaReview: (id: number) => void;
+  handleCancelMangaReview: (id: number) => void;
   handleDeleteManga: (id: number) => void;
 }
 
@@ -40,6 +41,7 @@ const MangaHeaderCard: React.FC<MangaHeaderCardProps> = ({
   setIsMangaDropdownOpen,
   handleNavigate,
   handleSubmitMangaReview,
+  handleCancelMangaReview,
   handleDeleteManga,
 }) => {
   return (
@@ -144,6 +146,30 @@ const MangaHeaderCard: React.FC<MangaHeaderCardProps> = ({
               </button>
             )}
 
+            {manga.approvalStatus === 'PENDING' && (
+              <button
+                onClick={() => {
+                  setIsMangaDropdownOpen(false);
+                  handleCancelMangaReview(manga.id);
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '8px 14px',
+                  fontSize: '13px',
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--color-danger, #ef4444)',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  width: '100%'
+                }}
+              >
+                <XCircle size={14} /> Hủy yêu cầu duyệt
+              </button>
+            )}
+
             {manga.approvalStatus === 'REJECTED' && manga.rejectionReason && (
               <button
                 onClick={() => {
@@ -175,6 +201,7 @@ const MangaHeaderCard: React.FC<MangaHeaderCardProps> = ({
                 setIsMangaDropdownOpen(false);
                 handleDeleteManga(manga.id);
               }}
+              disabled={manga.approvalStatus === 'PENDING'}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -183,11 +210,12 @@ const MangaHeaderCard: React.FC<MangaHeaderCardProps> = ({
                 fontSize: '13px',
                 background: 'none',
                 border: 'none',
-                color: '#ef4444',
+                color: manga.approvalStatus === 'PENDING' ? 'var(--color-text-muted)' : '#ef4444',
                 fontWeight: '600',
-                cursor: 'pointer',
+                cursor: manga.approvalStatus === 'PENDING' ? 'not-allowed' : 'pointer',
                 textAlign: 'left',
-                width: '100%'
+                width: '100%',
+                opacity: manga.approvalStatus === 'PENDING' ? 0.5 : 1
               }}
             >
               <Trash2 size={14} /> Gỡ truyện
@@ -273,6 +301,7 @@ interface ChapterRowProps {
   handleNavigate: (path: string) => void;
   handleOpenEditModal: (chapter: AuthorChapterResponse) => void;
   handleSubmitChapterReview: (chapterId: number) => void;
+  handleCancelChapterReview: (chapterId: number) => void;
   handleDeleteChapter: (chapterId: number) => void;
 }
 
@@ -286,6 +315,7 @@ const ChapterRow: React.FC<ChapterRowProps> = ({
   handleNavigate,
   handleOpenEditModal,
   handleSubmitChapterReview,
+  handleCancelChapterReview,
   handleDeleteChapter,
 }) => {
   const isNearBottom = index >= chaptersLength - 2;
@@ -413,6 +443,30 @@ const ChapterRow: React.FC<ChapterRowProps> = ({
                 </button>
               )}
 
+              {chapter.approvalStatus === 'PENDING' && (
+                <button
+                  onClick={() => {
+                    setActiveDropdownId(null);
+                    handleCancelChapterReview(chapter.id);
+                  }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '8px 12px',
+                    fontSize: '13px',
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--color-danger, #ef4444)',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    width: '100%'
+                  }}
+                >
+                  <XCircle size={14} /> Hủy yêu cầu duyệt
+                </button>
+              )}
+
               {chapter.approvalStatus === 'REJECTED' && chapter.rejectionReason && (
                 <button
                   onClick={() => {
@@ -444,6 +498,7 @@ const ChapterRow: React.FC<ChapterRowProps> = ({
                   setActiveDropdownId(null);
                   handleDeleteChapter(chapter.id);
                 }}
+                disabled={chapter.approvalStatus === 'PENDING'}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -452,11 +507,12 @@ const ChapterRow: React.FC<ChapterRowProps> = ({
                   fontSize: '13px',
                   background: 'none',
                   border: 'none',
-                  color: '#ef4444',
+                  color: chapter.approvalStatus === 'PENDING' ? 'var(--color-text-muted)' : '#ef4444',
                   fontWeight: '600',
-                  cursor: 'pointer',
+                  cursor: chapter.approvalStatus === 'PENDING' ? 'not-allowed' : 'pointer',
                   textAlign: 'left',
-                  width: '100%'
+                  width: '100%',
+                  opacity: chapter.approvalStatus === 'PENDING' ? 0.5 : 1
                 }}
               >
                 <Trash2 size={14} /> Gỡ chương
@@ -765,6 +821,36 @@ export const AuthorChapterManage: React.FC<AuthorChapterManageProps> = ({ standa
     }
   };
 
+  const handleCancelMangaReview = async (id: number) => {
+    if (!window.confirm("Bạn có chắc chắn muốn hủy yêu cầu duyệt truyện này? Truyện cùng tất cả các chương đang chờ duyệt của truyện này sẽ trở lại trạng thái Bản nháp.")) return;
+    try {
+      const res = await authorMangaApi.cancelMangaSubmission(id);
+      if (res.success) {
+        alert("Hủy yêu cầu duyệt truyện thành công!");
+        fetchData();
+      } else {
+        alert(res.message || "Hủy yêu cầu duyệt thất bại!");
+      }
+    } catch {
+      alert("Lỗi khi hủy yêu cầu duyệt!");
+    }
+  };
+
+  const handleCancelChapterReview = async (chapterId: number) => {
+    if (!window.confirm("Bạn có chắc chắn muốn hủy yêu cầu duyệt chương này? Chương sẽ trở lại trạng thái Bản nháp.")) return;
+    try {
+      const res = await authorMangaApi.cancelChapterSubmission(chapterId);
+      if (res.success) {
+        alert("Hủy yêu cầu duyệt chương thành công!");
+        fetchData();
+      } else {
+        alert(res.message || "Hủy yêu cầu duyệt thất bại!");
+      }
+    } catch {
+      alert("Lỗi khi hủy yêu cầu duyệt chương!");
+    }
+  };
+
   const content = (
     <>
       <div className={styles.pageTitleSection}>
@@ -784,6 +870,7 @@ export const AuthorChapterManage: React.FC<AuthorChapterManageProps> = ({ standa
           setIsMangaDropdownOpen={setIsMangaDropdownOpen}
           handleNavigate={handleNavigate}
           handleSubmitMangaReview={handleSubmitMangaReview}
+          handleCancelMangaReview={handleCancelMangaReview}
           handleDeleteManga={handleDeleteManga}
         />
       )}
@@ -846,6 +933,7 @@ export const AuthorChapterManage: React.FC<AuthorChapterManageProps> = ({ standa
                   handleNavigate={handleNavigate}
                   handleOpenEditModal={handleOpenEditModal}
                   handleSubmitChapterReview={handleSubmitChapterReview}
+                  handleCancelChapterReview={handleCancelChapterReview}
                   handleDeleteChapter={handleDeleteChapter}
                 />
               ))}

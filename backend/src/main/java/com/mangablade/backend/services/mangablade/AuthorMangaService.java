@@ -18,6 +18,7 @@ public interface AuthorMangaService {
     AuthorMangaResponse updateManga(User user, String identifier, AuthorMangaCreateRequest request);
     void deleteManga(User user, String identifier);
     void submitManga(User user, String identifier);
+    void cancelMangaSubmission(User user, String identifier);
 
     // Chapter management
     Page<AuthorChapterResponse> getChapters(User user, String identifier, Pageable pageable);
@@ -26,6 +27,7 @@ public interface AuthorMangaService {
     AuthorChapterResponse updateChapter(User user, Long chapterId, AuthorChapterCreateRequest request);
     void deleteChapter(User user, Long chapterId);
     void submitChapter(User user, Long chapterId);
+    void cancelChapterSubmission(User user, Long chapterId);
 
     // Chapter pages management
     List<AuthorChapterPageResponse> getChapterPages(User user, Long chapterId);
