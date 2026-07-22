@@ -8,7 +8,6 @@ export function getTimeAgo(updatedAt: string) {
     const diffMs = Date.now() - updatedTime;
     const diffMinutes = Math.max(0, Math.floor(diffMs / (1000 * 60)));
     const diffHours = Math.floor(diffMinutes / 60);
-    const diffDays = Math.floor(diffHours / 24);
 
     if (diffMinutes < 1) {
         return "Vừa Xong";
@@ -22,5 +21,5 @@ export function getTimeAgo(updatedAt: string) {
         return `${diffHours} Giờ Trước`;
     }
 
-    return `${diffDays} Ngày Trước`;
+    return new Date(updatedTime).toLocaleDateString('vi-VN');
 }

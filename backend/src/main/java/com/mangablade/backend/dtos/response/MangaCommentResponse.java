@@ -21,6 +21,8 @@ public class MangaCommentResponse {
     private Instant createdAt;
     private Boolean isAuthor;
     private User user;
+    private Long likeCount;
+    private Boolean isLiked;
     @Builder.Default
     private List<MangaCommentResponse> replies = new ArrayList<>();
 

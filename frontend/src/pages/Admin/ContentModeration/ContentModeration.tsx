@@ -13,6 +13,7 @@ import {
   FileCheck,
   FileText,
   Layers,
+  MessageSquare,
   Users,
   X,
 } from 'lucide-react';
@@ -566,6 +567,9 @@ export const ContentModeration: React.FC = () => {
             </button>
             <button className={styles.adminNavItem} onClick={() => navigate('/admin/chapter-reports')}>
               <AlertTriangle size={16} /> Báo cáo lỗi chương
+            </button>
+            <button className={styles.adminNavItem} onClick={() => navigate('/admin/comment-reports')}>
+              <MessageSquare size={16} /> Báo cáo bình luận
             </button>
             <button className={styles.adminNavItem} onClick={() => navigate('/admin/author-requests')}>
               <FileText size={16} /> Đơn đăng ký Tác giả

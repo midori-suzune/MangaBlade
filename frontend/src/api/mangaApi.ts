@@ -150,3 +150,23 @@ export async function createChapterReport(
   );
   return response.data;
 }
+
+export async function toggleCommentLike(
+  commentId: number
+): Promise<ApiResponse<{ liked: boolean; likeCount: number }>> {
+  const response = await axiosInstance.post<ApiResponse<{ liked: boolean; likeCount: number }>>(
+    `/v1/manga/comments/${commentId}/like`
+  );
+  return response.data;
+}
+
+export async function createCommentReport(
+  commentId: number,
+  body: { reason: string; description?: string }
+): Promise<ApiResponse<void>> {
+  const response = await axiosInstance.post<ApiResponse<void>>(
+    `/v1/manga/comments/${commentId}/reports`,
+    body
+  );
+  return response.data;
+}

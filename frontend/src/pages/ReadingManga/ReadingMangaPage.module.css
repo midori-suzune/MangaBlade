@@ -115,6 +115,60 @@
     transform: scale(0.96);
 }
 
+.chapterSelectWrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.chapterSelect {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding: 9px 38px 9px 16px;
+    border: 1.5px solid #5bc0de;
+    border-radius: 4px;
+    background-color: var(--color-surface, #ffffff);
+    color: var(--color-text-main, #1f2937);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    min-width: 145px;
+    text-align: center;
+}
+
+.chapterSelect:hover {
+    border-color: #31b0d5;
+}
+
+.chapterSelect:focus {
+    border-color: #31b0d5;
+    box-shadow: 0 0 0 2px rgba(91, 192, 222, 0.25);
+}
+
+.chapterSelectIconBox {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 32px;
+    background-color: #5bc0de;
+    border-top-right-radius: 2.5px;
+    border-bottom-right-radius: 2.5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    color: #ffffff;
+    transition: background-color 0.2s;
+}
+
+.chapterSelectWrapper:hover .chapterSelectIconBox {
+    background-color: #31b0d5;
+}
+
 .btnNav svg,
 .sectionTitleSmall svg {
     width: 16px;
@@ -126,14 +180,22 @@
     stroke-width: 2;
 }
 
-.disabled {
-    background-color: var(--color-surface-muted);
-    color: #ffffff;
-    cursor: not-allowed;
+.disabled,
+.btnNav.disabled,
+.btnNav:disabled {
+    background-color: #1e293b !important;
+    color: #94a3b8 !important;
+    border: 1px solid #334155 !important;
+    cursor: not-allowed !important;
+    opacity: 0.9 !important;
+    transform: none !important;
 }
 
-.disabled:hover {
-    background-color: var(--color-surface-muted);
+.disabled:hover,
+.btnNav.disabled:hover,
+.btnNav:disabled:hover {
+    background-color: #1e293b !important;
+    color: #94a3b8 !important;
 }
 
 .chapterContent {
@@ -528,6 +590,242 @@
 .commentFooterActions span:hover,
 .commentFooterActions button:hover {
     color: #3b82f6;
+}
+
+/* ==========================================================================
+   FLOATING BOTTOM NAVIGATION BAR (Thanh cố định phía dưới - Tham khảo hình 3, 4)
+   ========================================================================== */
+.floatingBottomBar {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: rgba(30, 41, 59, 0.94);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(91, 192, 222, 0.3);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(91, 192, 222, 0.15);
+    max-width: 92vw;
+}
+
+.floatingBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    color: #ffffff;
+    flex-shrink: 0;
+}
+
+.floatingBtnPrimary {
+    background-color: #5bc0de;
+}
+
+.floatingBtnPrimary:hover:not(:disabled) {
+    background-color: #31b0d5;
+    transform: translateY(-1px);
+}
+
+.floatingBtnMuted {
+    background-color: #334155;
+    color: #cbd5e1;
+}
+
+.floatingBtnMuted:hover:not(:disabled) {
+    background-color: #475569;
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.floatingBtnActiveFollow {
+    background-color: #ef4444;
+    color: #ffffff;
+}
+
+.floatingBtnActiveFollow:hover {
+    background-color: #dc2626;
+}
+
+.floatingBtn:disabled,
+.floatingBtn.disabled {
+    background-color: #0f172a !important;
+    color: #475569 !important;
+    border: 1px solid #1e293b !important;
+    opacity: 0.7 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+}
+
+.floatingChapterBtn {
+    height: 38px;
+    padding: 0 16px;
+    background-color: #1e293b;
+    color: #ffffff;
+    border: 1px solid #5bc0de;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.floatingChapterBtn:hover {
+    background-color: #334155;
+    border-color: #31b0d5;
+}
+
+/* ==========================================================================
+   POPUP MODAL "CHỌN CHƯƠNG" (Tham khảo hình 4)
+   ========================================================================== */
+.chapterModalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.chapterModalContent {
+    background-color: #1e293b;
+    border: 1px solid rgba(91, 192, 222, 0.3);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 360px;
+    max-height: 480px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+    overflow: hidden;
+    animation: slideUp 0.2s ease-out;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.chapterModalHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.chapterModalHeader h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.btnCloseModal {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.btnCloseModal:hover {
+    color: #ef4444;
+    background-color: rgba(239, 68, 68, 0.1);
+}
+
+.chapterSearchBox {
+    position: relative;
+    padding: 12px 20px 4px;
+}
+
+.searchIcon {
+    position: absolute;
+    left: 32px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+}
+
+.chapterSearchBox input {
+    width: 100%;
+    padding: 8px 12px 8px 34px;
+    background-color: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 13px;
+    outline: none;
+}
+
+.chapterSearchBox input:focus {
+    border-color: #5bc0de;
+}
+
+.chapterModalList {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.chapterModalItem {
+    width: 100%;
+    padding: 10px 16px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: #cbd5e1;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.chapterModalItem:hover {
+    background-color: rgba(91, 192, 222, 0.12);
+    color: #5bc0de;
+}
+
+.activeChapterItem {
+    background-color: #5bc0de !important;
+    color: #ffffff !important;
+    font-weight: 700;
 }
 
 @media (max-width: 680px) {
