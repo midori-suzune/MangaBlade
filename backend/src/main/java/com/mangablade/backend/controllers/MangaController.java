@@ -6,6 +6,7 @@ import com.mangablade.backend.dtos.request.CreateChapterReportRequest;
 import com.mangablade.backend.dtos.response.*;
 import com.mangablade.backend.entities.User;
 import com.mangablade.backend.services.mangablade.ChapterReportService;
+import com.mangablade.backend.services.mangablade.CommentReportService;
 import com.mangablade.backend.services.mangablade.CommentService;
 import com.mangablade.backend.services.mangablade.MangaSearchService;
 import com.mangablade.backend.services.mangablade.MangaService;
@@ -28,6 +29,7 @@ public class MangaController {
     private final MangaService mangaService;
     private final CommentService commentService;
     private final ChapterReportService chapterReportService;
+    private final CommentReportService commentReportService;
     private final MangaSearchService mangaSearchService;
 
     @GetMapping
@@ -161,8 +163,11 @@ public class MangaController {
     }
 
     @GetMapping("/{slug}/comments")
-    public ResponseEntity<ApiResponse<List<MangaCommentResponse>>> getComments(@PathVariable String slug) {
-        var comments = commentService.findByMangaSlug(slug);
+    public ResponseEntity<ApiResponse<List<MangaCommentResponse>>> getMangaComments(
+            @PathVariable String slug,
+            @AuthenticationPrincipal User user
+    ) {
+        var comments = commentService.findByMangaSlug(slug, user);
         return ResponseEntity.ok(
                 ApiResponse.<List<MangaCommentResponse>>builder()
                         .success(true)
@@ -173,7 +178,7 @@ public class MangaController {
     }
 
     @PostMapping("/{slug}/comments")
-    public ResponseEntity<ApiResponse<MangaCommentResponse>> createComment(
+    public ResponseEntity<ApiResponse<MangaCommentResponse>> createMangaComment(
             @PathVariable String slug,
             @Valid @RequestBody CreateCommentRequest request,
             @AuthenticationPrincipal User user
@@ -202,12 +207,43 @@ public class MangaController {
         );
     }
 
+    @PostMapping("/comments/{commentId}/like")
+    public ResponseEntity<ApiResponse<com.mangablade.backend.dtos.response.CommentLikeResponse>> toggleCommentLike(
+            @PathVariable Long commentId,
+            @AuthenticationPrincipal User user
+    ) {
+        var response = commentService.toggleLike(commentId, user);
+        return ResponseEntity.ok(
+                ApiResponse.<com.mangablade.backend.dtos.response.CommentLikeResponse>builder()
+                        .success(true)
+                        .message("success")
+                        .payload(response)
+                        .build()
+        );
+    }
+
+    @PostMapping("/comments/{commentId}/reports")
+    public ResponseEntity<ApiResponse<Void>> createCommentReport(
+            @PathVariable Long commentId,
+            @Valid @RequestBody com.mangablade.backend.dtos.request.CreateCommentReportRequest request,
+            @AuthenticationPrincipal User user
+    ) {
+        commentReportService.create(commentId, request, user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                ApiResponse.<Void>builder()
+                        .success(true)
+                        .message("Đã gửi báo cáo bình luận thành công")
+                        .build()
+        );
+    }
+
     @GetMapping("/{slug}/chapters/{chapterNumber}/comments")
     public ResponseEntity<ApiResponse<List<MangaCommentResponse>>> getChapterComments(
             @PathVariable String slug,
-            @PathVariable String chapterNumber
+            @PathVariable String chapterNumber,
+            @AuthenticationPrincipal User user
     ) {
-        var comments = commentService.findByMangaSlugAndChapterNumber(slug, chapterNumber);
+        var comments = commentService.findByMangaSlugAndChapterNumber(slug, chapterNumber, user);
         return ResponseEntity.ok(
                 ApiResponse.<List<MangaCommentResponse>>builder()
                         .success(true)

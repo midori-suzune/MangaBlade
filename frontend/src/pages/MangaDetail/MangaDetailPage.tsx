@@ -1,6 +1,6 @@
 import {Link, useParams} from "react-router-dom";
 
-import type {MangaCommentResponse, MangaDetailResponse, ReadingHistoryResponse} from "../../types/manga.ts";
+import type {CommentReportReason, MangaCommentResponse, MangaDetailResponse, ReadingHistoryResponse} from "../../types/manga.ts";
 import {getTimeAgo} from "../../utils/time.ts";
 import styles from "./MangaDetailPage.module.css";
 import {useEffect, useLayoutEffect, useMemo, useRef, useState} from "react";
@@ -8,15 +8,17 @@ import {CommentEditor} from "../../components/CommentEmojiPicker/CommentEditor.t
 import {CommentEmojiPicker} from "../../components/CommentEmojiPicker/CommentEmojiPicker.tsx";
 import {CommentText} from "../../components/CommentEmojiPicker/CommentText.tsx";
 import {
+    createCommentReport,
     createMangaComment,
     deleteMangaComment,
     getLatestReadingHistory,
     getMangaBySlug,
     getMangaComments,
+    toggleCommentLike,
     toggleMangaFollow
 } from "../../api/mangaApi.ts";
 import {useAuthStore} from "../../stores/authStore.ts";
-import { PenTool } from "lucide-react";
+import { Flag, MessageSquare, PenTool, ThumbsUp, X } from "lucide-react";
 import type { UserInfo } from "../../types/auth";
 
 function getPlainTextFromHtml(html?: string) {
@@ -29,17 +31,12 @@ function getPlainTextFromHtml(html?: string) {
 function getChapterNumbersFromStorage(key: string) {
     const value = sessionStorage.getItem(key);
     if (!value) return [];
-
     try {
-        const chapterNumbers = JSON.parse(value);
-        if (Array.isArray(chapterNumbers)) {
-            return chapterNumbers.filter((chapterNumber): chapterNumber is string => typeof chapterNumber === "string");
-        }
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed.map((item) => String(item)) : [];
     } catch {
         return [];
     }
-
-    return [];
 }
 
 function getPublicUsername(username: string) {
@@ -85,6 +82,8 @@ interface MangaCommentItemProps {
     handleSubmitReply: (parentId: number) => void;
     replyError: string | null;
     user: UserInfo | null;
+    handleToggleLike: (commentId: number) => void;
+    handleOpenReportModal: (comment: MangaCommentResponse) => void;
 }
 
 interface MangaReplyItemProps {
@@ -99,6 +98,9 @@ interface MangaReplyItemProps {
     canDeleteComment: (reply: MangaCommentResponse) => boolean;
     handleDeleteComment: (commentId: number) => void;
     deletingCommentId: number | null;
+    handleToggleLike: (commentId: number) => void;
+    handleOpenReportModal: (comment: MangaCommentResponse) => void;
+    user: UserInfo | null;
 }
 
 function MangaReplyItem({
@@ -112,7 +114,10 @@ function MangaReplyItem({
     setReplyError,
     canDeleteComment,
     handleDeleteComment,
-    deletingCommentId
+    deletingCommentId,
+    handleToggleLike,
+    handleOpenReportModal,
+    user
 }: MangaReplyItemProps) {
     return (
         <article className={styles.replyItem}>
@@ -170,7 +175,20 @@ function MangaReplyItem({
                 </div>
                 <div className={styles.commentFooter}>
                     <span>{getTimeAgo(reply.createdAt)}</span>
-                    <button type="button">Thích</button>
+                    <button
+                        type="button"
+                        onClick={() => handleToggleLike(reply.id)}
+                        style={{
+                            color: reply.isLiked ? "#3b82f6" : "inherit",
+                            fontWeight: reply.isLiked ? "bold" : "normal",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "4px"
+                        }}
+                    >
+                        <ThumbsUp size={13} fill={reply.isLiked ? "#3b82f6" : "none"} color={reply.isLiked ? "#3b82f6" : "currentColor"} />
+                        {reply.likeCount && reply.likeCount > 0 ? reply.likeCount : "Thích"}
+                    </button>
                     <button
                         type="button"
                         onClick={() => {
@@ -179,9 +197,20 @@ function MangaReplyItem({
                             setReplyingToUsername(getCommentAuthorName(reply.user.id, reply.user.username));
                             setReplyError(null);
                         }}
+                        style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}
                     >
-                        Trả lời
+                        <MessageSquare size={12} /> Trả lời
                     </button>
+                    {user && user.id !== reply.user.id && (
+                        <button
+                            type="button"
+                            onClick={() => handleOpenReportModal(reply)}
+                            title="Báo cáo bình luận vi phạm"
+                            style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}
+                        >
+                            <Flag size={12} /> Báo cáo
+                        </button>
+                    )}
                     {canDeleteComment(reply) && (
                         <button
                             type="button"
@@ -288,7 +317,9 @@ function MangaCommentItem({
     submittingReplyParentId,
     handleSubmitReply,
     replyError,
-    user
+    user,
+    handleToggleLike,
+    handleOpenReportModal
 }: MangaCommentItemProps) {
     const isRepliesExpanded = expandedReplyParentIds.includes(comment.id);
     return (
@@ -347,7 +378,20 @@ function MangaCommentItem({
                 </div>
                 <div className={styles.commentFooter}>
                     <span>{getTimeAgo(comment.createdAt)}</span>
-                    <button type="button">Thích</button>
+                    <button
+                        type="button"
+                        onClick={() => handleToggleLike(comment.id)}
+                        style={{
+                            color: comment.isLiked ? "#3b82f6" : "inherit",
+                            fontWeight: comment.isLiked ? "bold" : "normal",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "4px"
+                        }}
+                    >
+                        <ThumbsUp size={13} fill={comment.isLiked ? "#3b82f6" : "none"} color={comment.isLiked ? "#3b82f6" : "currentColor"} />
+                        {comment.likeCount && comment.likeCount > 0 ? comment.likeCount : "Thích"}
+                    </button>
                     <button
                         type="button"
                         onClick={() => {
@@ -356,9 +400,20 @@ function MangaCommentItem({
                             setReplyingToUsername(getCommentAuthorName(comment.user.id, comment.user.username));
                             setReplyError(null);
                         }}
+                        style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}
                     >
-                        Trả lời
+                        <MessageSquare size={12} /> Trả lời
                     </button>
+                    {user && user.id !== comment.user.id && (
+                        <button
+                            type="button"
+                            onClick={() => handleOpenReportModal(comment)}
+                            title="Báo cáo bình luận vi phạm"
+                            style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}
+                        >
+                            <Flag size={12} /> Báo cáo
+                        </button>
+                    )}
                     {canDeleteComment(comment) && (
                         <button
                             type="button"
@@ -394,6 +449,9 @@ function MangaCommentItem({
                                 canDeleteComment={canDeleteComment}
                                 handleDeleteComment={handleDeleteComment}
                                 deletingCommentId={deletingCommentId}
+                                handleToggleLike={handleToggleLike}
+                                handleOpenReportModal={handleOpenReportModal}
+                                user={user}
                             />
                         ))}
                     </div>
@@ -452,6 +510,75 @@ export function MangaDetailPage() {
     const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
     const user = useAuthStore((state) => state.user);
     const openAuthModal = useAuthStore((state) => state.openAuthModal);
+
+    // Comment Report & Like states
+    const [reportingComment, setReportingComment] = useState<MangaCommentResponse | null>(null);
+    const [commentReportReason, setCommentReportReason] = useState<CommentReportReason>("SPAM");
+    const [commentReportDesc, setCommentReportDesc] = useState("");
+    const [commentReportSubmitting, setCommentReportSubmitting] = useState(false);
+    const [commentReportMsg, setCommentReportMsg] = useState("");
+
+    async function handleToggleLike(commentId: number) {
+        if (!isAuthenticated) {
+            openAuthModal("login");
+            return;
+        }
+        try {
+            const res = await toggleCommentLike(commentId);
+            if (res.success && res.payload) {
+                const { liked, likeCount } = res.payload;
+                const updateLike = (list: MangaCommentResponse[]): MangaCommentResponse[] => {
+                    return list.map((item) => {
+                        if (item.id === commentId) {
+                            return { ...item, isLiked: liked, likeCount };
+                        }
+                        if (item.replies && item.replies.length > 0) {
+                            return { ...item, replies: updateLike(item.replies) };
+                        }
+                        return item;
+                    });
+                };
+                setComments((prev) => updateLike(prev));
+            }
+        } catch (err) {
+            console.error("Failed to toggle comment like:", err);
+        }
+    }
+
+    function handleOpenReportModal(c: MangaCommentResponse) {
+        if (!isAuthenticated) {
+            openAuthModal("login");
+            return;
+        }
+        setReportingComment(c);
+        setCommentReportReason("SPAM");
+        setCommentReportDesc("");
+        setCommentReportMsg("");
+    }
+
+    async function handleSubmitCommentReport(e: React.FormEvent) {
+        e.preventDefault();
+        if (!reportingComment) return;
+        setCommentReportSubmitting(true);
+        setCommentReportMsg("");
+        try {
+            const res = await createCommentReport(reportingComment.id, {
+                reason: commentReportReason,
+                description: commentReportDesc.trim() || undefined,
+            });
+            if (res.success) {
+                setCommentReportMsg("Gửi báo cáo bình luận thành công! Cảm ơn bạn.");
+                setTimeout(() => {
+                    setReportingComment(null);
+                    setCommentReportMsg("");
+                }, 1500);
+            }
+        } catch {
+            setCommentReportMsg("Báo cáo thất bại, vui lòng thử lại.");
+        } finally {
+            setCommentReportSubmitting(false);
+        }
+    }
 
     useEffect(() => {
 
@@ -872,6 +999,8 @@ export function MangaDetailPage() {
                                     handleSubmitReply={handleSubmitReply}
                                     replyError={replyError}
                                     user={user}
+                                    handleToggleLike={handleToggleLike}
+                                    handleOpenReportModal={handleOpenReportModal}
                                 />
                             ))
                         ) : (
@@ -891,6 +1020,104 @@ export function MangaDetailPage() {
                     )}
                 </section>
             </section>
+
+            {/* Modal Báo cáo Bình luận */}
+            {reportingComment && (
+                <div style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: "rgba(15, 23, 42, 0.45)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    zIndex: 9999,
+                    backdropFilter: "blur(4px)"
+                }} onClick={() => setReportingComment(null)}>
+                    <div style={{
+                        backgroundColor: "#ffffff",
+                        borderRadius: "16px",
+                        width: "90%",
+                        maxWidth: "440px",
+                        border: "1px solid #e2e8f0",
+                        overflow: "hidden",
+                        boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+                    }} onClick={(e) => e.stopPropagation()}>
+                        <div style={{
+                            padding: "16px 20px",
+                            borderBottom: "1px solid #f1f5f9",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between"
+                        }}>
+                            <h3 style={{ margin: 0, color: "#0f172a", fontSize: "16px", fontWeight: 700 }}>Báo cáo bình luận</h3>
+                            <button
+                                type="button"
+                                onClick={() => setReportingComment(null)}
+                                style={{ background: "none", border: "none", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: "4px" }}
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
+                        <form onSubmit={handleSubmitCommentReport} style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
+                            <div>
+                                <label style={{ display: "block", fontSize: "13px", color: "#334155", fontWeight: 600, marginBottom: "6px" }}>
+                                    Lý do báo cáo:
+                                </label>
+                                <select
+                                    value={commentReportReason}
+                                    onChange={(e) => setCommentReportReason(e.target.value as CommentReportReason)}
+                                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", backgroundColor: "#ffffff", border: "1px solid #cbd5e1", color: "#0f172a", fontSize: "13px", outline: "none" }}
+                                >
+                                    <option value="SPAM">Spam / Quảng cáo rác</option>
+                                    <option value="HARASSMENT">Ngôn từ xúc phạm / Độc hại</option>
+                                    <option value="SPOILER">Tiết lộ nội dung / Spoiler</option>
+                                    <option value="HATE_SPEECH">Phát ngôn thù ghét</option>
+                                    <option value="OTHER">Lý do khác</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label style={{ display: "block", fontSize: "13px", color: "#334155", fontWeight: 600, marginBottom: "6px" }}>
+                                    Mô tả thêm (Không bắt buộc):
+                                </label>
+                                <textarea
+                                    rows={3}
+                                    placeholder="Chi tiết lý do báo cáo..."
+                                    value={commentReportDesc}
+                                    onChange={(e) => setCommentReportDesc(e.target.value)}
+                                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", backgroundColor: "#ffffff", border: "1px solid #cbd5e1", color: "#0f172a", fontSize: "13px", resize: "none", outline: "none" }}
+                                />
+                            </div>
+
+                            {commentReportMsg && (
+                                <p style={{ margin: 0, fontSize: "13px", color: commentReportMsg.includes("thành công") ? "#10b981" : "#ef4444" }}>
+                                    {commentReportMsg}
+                                </p>
+                            )}
+
+                            <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "8px" }}>
+                                <button
+                                    type="button"
+                                    onClick={() => setReportingComment(null)}
+                                    style={{ padding: "8px 16px", borderRadius: "8px", border: "1px solid #cbd5e1", backgroundColor: "#ffffff", color: "#475569", fontSize: "13px", fontWeight: 500, cursor: "pointer" }}
+                                >
+                                    Hủy
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={commentReportSubmitting}
+                                    style={{ padding: "8px 16px", borderRadius: "8px", border: "none", backgroundColor: "var(--color-accent)", color: "#ffffff", fontWeight: 600, fontSize: "13px", cursor: "pointer" }}
+                                >
+                                    {commentReportSubmitting ? "Đang gửi..." : "Gửi báo cáo"}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

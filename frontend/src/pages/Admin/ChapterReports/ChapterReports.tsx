@@ -10,6 +10,7 @@ import {
   Eye,
   FileCheck,
   FileText,
+  MessageSquare,
   Users,
   X,
 } from 'lucide-react';
@@ -47,8 +48,6 @@ interface ReportDetailModalProps {
 }
 
 function ReportDetailModal({ report, rejectReason, setRejectReason, onStatusChange, onClose }: ReportDetailModalProps) {
-  const chapterPath = `/manga/${report.mangaSlug}/c/${report.chapterNumber}`;
-
   return (
     <div className={styles.modalBackdrop}>
       <div className={styles.modalCard}>
@@ -97,19 +96,33 @@ function ReportDetailModal({ report, rejectReason, setRejectReason, onStatusChan
               className={`${styles.formInput} ${styles.textarea}`}
             />
           </div>
+        </div>
 
-          <div className={styles.modalActions}>
-            <button type="button" className={styles.btnOutline} onClick={() => window.open(chapterPath, '_blank')}>
-              <Eye size={15} /> <span>Mở chương</span>
+        <div className={styles.modalFooter}>
+          <div className={styles.footerActions}>
+            <button
+              type="button"
+              className={styles.btnSecondary}
+              onClick={() => onStatusChange('CHECKING')}
+              disabled={report.status === 'CHECKING'}
+            >
+              <Eye size={14} /> Kiểm tra
             </button>
-            <button type="button" className={styles.btnOutline} onClick={() => onStatusChange('CHECKING')}>
-              <AlertTriangle size={15} /> <span>Đang kiểm tra</span>
+            <button
+              type="button"
+              className={styles.btnDanger}
+              onClick={() => onStatusChange('REJECTED')}
+              disabled={report.status === 'REJECTED'}
+            >
+              <X size={14} /> Từ chối
             </button>
-            <button type="button" className={styles.btnPrimary} onClick={() => onStatusChange('RESOLVED')}>
-              <Check size={15} /> <span>Đã xử lý</span>
-            </button>
-            <button type="button" className={styles.btnDangerOutline} onClick={() => onStatusChange('REJECTED')}>
-              <X size={15} /> <span>Từ chối</span>
+            <button
+              type="button"
+              className={styles.btnPrimary}
+              onClick={() => onStatusChange('RESOLVED')}
+              disabled={report.status === 'RESOLVED'}
+            >
+              <Check size={14} /> Duyệt
             </button>
           </div>
         </div>
@@ -121,12 +134,15 @@ function ReportDetailModal({ report, rejectReason, setRejectReason, onStatusChan
 export const ChapterReports: React.FC = () => {
   const navigate = useNavigate();
   const { displayName } = useAuthStore();
+
   const [reports, setReports] = useState<AdminChapterReportItem[]>([]);
   const [reportPage, setReportPage] = useState<SpringPageResponse<AdminChapterReportItem> | null>(null);
+  const [chapterTypeFilter, setChapterTypeFilter] = useState<ChapterReportTypeFilter>('ALL');
+
+  // Common State
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<ChapterReportStatusFilter>('ALL');
-  const [typeFilter, setTypeFilter] = useState<ChapterReportTypeFilter>('ALL');
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -149,7 +165,7 @@ export const ChapterReports: React.FC = () => {
     try {
       const response = await adminChapterReportApi.getReports({
         status: statusFilter === 'ALL' ? undefined : statusFilter,
-        type: typeFilter === 'ALL' ? undefined : typeFilter,
+        type: chapterTypeFilter === 'ALL' ? undefined : chapterTypeFilter,
         search: search || undefined,
         page: nextPage,
         size: REPORT_TABLE_PAGE_SIZE,
@@ -157,14 +173,14 @@ export const ChapterReports: React.FC = () => {
       setReports(response.data.content);
       setReportPage(response.data);
     } catch (error) {
-      console.error('Lỗi khi tải báo cáo lỗi chương:', error);
+      console.error('Lỗi khi tải danh sách báo cáo:', error);
       setReports([]);
       setReportPage(null);
       setErrorMessage(getErrorMessage(error));
     } finally {
       setLoading(false);
     }
-  }, [page, search, statusFilter, typeFilter]);
+  }, [page, search, statusFilter, chapterTypeFilter]);
 
   useEffect(() => {
     Promise.resolve().then(() => fetchReports());
@@ -186,17 +202,16 @@ export const ChapterReports: React.FC = () => {
   const updateReportStatus = async (status: AdminChapterReportStatus) => {
     if (!selectedReport) return;
     if (status === 'REJECTED' && !rejectReason.trim()) {
-      alert('Vui lòng nhập lý do từ chối.');
+      alert('Vui lòng nhập lý do từ chối!');
       return;
     }
 
     try {
-      const response = await adminChapterReportApi.reviewReport(
-        selectedReport.id,
+      const response = await adminChapterReportApi.reviewReport(selectedReport.id, {
         status,
-        status === 'REJECTED' ? rejectReason.trim() : undefined,
-      );
-      setReports((current) => current.map((report) => (
+        rejectReason: status === 'REJECTED' ? rejectReason.trim() : undefined,
+      });
+      setReports((prev) => prev.map((report) => (
         report.id === selectedReport.id ? response.data : report
       )));
       setSelectedReport(response.data);
@@ -239,6 +254,9 @@ export const ChapterReports: React.FC = () => {
             </button>
             <button className={`${styles.adminNavItem} ${styles.active}`} onClick={() => navigate('/admin/chapter-reports')}>
               <AlertTriangle size={16} /> Báo cáo lỗi chương
+            </button>
+            <button className={styles.adminNavItem} onClick={() => navigate('/admin/comment-reports')}>
+              <MessageSquare size={16} /> Báo cáo bình luận
             </button>
             <button className={styles.adminNavItem} onClick={() => navigate('/admin/author-requests')}>
               <FileText size={16} /> Đơn đăng ký Tác giả
@@ -291,10 +309,10 @@ export const ChapterReports: React.FC = () => {
                 </select>
 
                 <select
-                  value={typeFilter}
+                  value={chapterTypeFilter}
                   onChange={(event) => {
                     setPage(0);
-                    setTypeFilter(event.target.value as ChapterReportTypeFilter);
+                    setChapterTypeFilter(event.target.value as ChapterReportTypeFilter);
                   }}
                   className={`${styles.formInput} ${styles.authorStatusSelect}`}
                 >

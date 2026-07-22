@@ -14,6 +14,7 @@ import {UserManagement} from "../pages/Admin/UserManagement/UserManagement.tsx";
 import {AuthorRequests} from "../pages/Admin/AuthorRequests/AuthorRequests.tsx";
 import {MangaManagement} from "../pages/Admin/MangaManagement/MangaManagement.tsx";
 import {ChapterReports} from "../pages/Admin/ChapterReports/ChapterReports.tsx";
+import {CommentReports} from "../pages/Admin/CommentReports/CommentReports.tsx";
 import {ContentModeration} from "../pages/Admin/ContentModeration/ContentModeration.tsx";
 import {ReadingHistory} from "../pages/ReadingHistory/ReadingHistory.tsx";
 import {FollowedManga} from "../pages/FollowedManga/FollowedManga.tsx";
@@ -118,6 +119,10 @@ export const appRoutes: RouteObject[] = [
             {
                 path: "chapter-reports",
                 element: <ChapterReports />
+            },
+            {
+                path: "comment-reports",
+                element: <CommentReports />
             },
             {
                 path: "author-requests",

@@ -63,6 +63,10 @@ public class AuthService {
         );
         User user = userService.loadUserByUsername(loginRequest.getEmail());
 
+        if (user.isBanned()) {
+            throw new AppException(ErrorCode.ACCOUNT_BANNED);
+        }
+
         if (user.getAuthProvider() == AuthProvider.LOCAL && user.getEmailVerifiedAt() == null) {
             throw new AppException(ErrorCode.EMAIL_NOT_VERIFIED);
         }
@@ -194,6 +198,9 @@ public class AuthService {
             User user;
             if (userRepository.existsByEmail(email)) {
                 user = (User) userService.loadUserByUsername(email);
+                if (user.isBanned()) {
+                    throw new AppException(ErrorCode.ACCOUNT_BANNED);
+                }
                 boolean needsSave = false;
                 if (user.getAuthProvider() == AuthProvider.LOCAL) {
                     user.setProviderId(googleId);

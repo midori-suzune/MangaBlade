@@ -1,11 +1,12 @@
 import {Link, useNavigate, useParams} from "react-router-dom";
-import {AlertTriangle, ArrowLeft, ArrowRight, MessageCircle, PenTool} from "lucide-react";
+import {AlertTriangle, ArrowLeft, ArrowRight, ArrowUp, ChevronLeft, ChevronRight, Flag, List, MessageCircle, MessageSquare, PenTool, Search, ThumbsUp, X} from "lucide-react";
 
 import styles from "./ReadingMangaPage.module.css";
-import type {ChapterPageRequest, ChapterPageResponse, ChapterReportType, MangaCommentResponse} from "../../types/manga.ts";
+import type {ChapterPageRequest, ChapterPageResponse, ChapterReportType, ChapterResponse, CommentReportReason, MangaCommentResponse} from "../../types/manga.ts";
 import {useEffect, useMemo, useState} from "react";
-import {createChapterComment, createChapterReport, deleteMangaComment, getChapterComments, requestChapterPage} from "../../api/mangaApi.ts";
+import {createChapterComment, createChapterReport, createCommentReport, deleteMangaComment, getChapterComments, getMangaBySlug, requestChapterPage, toggleCommentLike} from "../../api/mangaApi.ts";
 import {useAuthStore} from "../../stores/authStore.ts";
+import type { UserInfo } from "../../types/auth";
 import {CommentEditor} from "../../components/CommentEmojiPicker/CommentEditor.tsx";
 import {CommentEmojiPicker} from "../../components/CommentEmojiPicker/CommentEmojiPicker.tsx";
 import {CommentText} from "../../components/CommentEmojiPicker/CommentText.tsx";
@@ -18,6 +19,9 @@ interface CommentItemProps {
     getCommentAuthorName: (userId: number, username: string) => string;
     canDeleteComment: (comment: MangaCommentResponse) => boolean;
     handleDeleteComment: (commentId: number) => void;
+    handleToggleLike: (commentId: number) => void;
+    handleOpenReportModal: (comment: MangaCommentResponse) => void;
+    user: UserInfo | null;
 }
 
 function CommentItem({
@@ -27,7 +31,10 @@ function CommentItem({
     getAvatarLabel,
     getCommentAuthorName,
     canDeleteComment,
-    handleDeleteComment
+    handleDeleteComment,
+    handleToggleLike,
+    handleOpenReportModal,
+    user
 }: CommentItemProps) {
     return (
         <article className={styles.commentItem}>
@@ -84,8 +91,36 @@ function CommentItem({
                 </div>
                 <div className={styles.commentFooterActions}>
                     <span>{new Date(comment.createdAt).toLocaleDateString("vi-VN")}</span>
-                    <button type="button">Thích</button>
-                    <button type="button">Trả lời</button>
+                    <button
+                        type="button"
+                        onClick={() => handleToggleLike(comment.id)}
+                        style={{
+                            color: comment.isLiked ? "#3b82f6" : "inherit",
+                            fontWeight: comment.isLiked ? "bold" : "normal",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "4px"
+                        }}
+                    >
+                        <ThumbsUp size={13} fill={comment.isLiked ? "#3b82f6" : "none"} color={comment.isLiked ? "#3b82f6" : "currentColor"} />
+                        {comment.likeCount && comment.likeCount > 0 ? comment.likeCount : "Thích"}
+                    </button>
+                    <button
+                        type="button"
+                        style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}
+                    >
+                        <MessageSquare size={12} /> Trả lời
+                    </button>
+                    {user && user.id !== comment.user.id && (
+                        <button
+                            type="button"
+                            onClick={() => handleOpenReportModal(comment)}
+                            title="Báo cáo bình luận vi phạm"
+                            style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}
+                        >
+                            <Flag size={12} /> Báo cáo
+                        </button>
+                    )}
                     {canDeleteComment(comment) && (
                         <button
                             type="button"
@@ -146,6 +181,7 @@ function ChapterNavigation({
                 <ArrowLeft aria-hidden="true" />
                 Chap trước
             </button>
+
             <button
                 className={`${styles.btnNav} ${!hasNextChapter ? styles.disabled : ""}`}
                 type="button"
@@ -247,13 +283,98 @@ export function ReadingMangaPage() {
     const [commentContent, setCommentContent] = useState("");
     const [commentError, setCommentError] = useState("");
     const [commentSubmitting, setCommentSubmitting] = useState(false);
-    const [deletingCommentId, setDeletingCommentId] = useState<number | null>(null);
+    const [allChapters, setAllChapters] = useState<ChapterResponse[]>([]);
+    const [isChapterModalOpen, setIsChapterModalOpen] = useState(false);
+    const [chapterSearch, setChapterSearch] = useState("");
     const [activeSupportTab, setActiveSupportTab] = useState<"comments" | "report">("comments");
     const [reportType, setReportType] = useState<ChapterReportType>("IMAGE_BROKEN");
     const [reportPage, setReportPage] = useState("");
     const [reportDescription, setReportDescription] = useState("");
     const [reportMessage, setReportMessage] = useState("");
     const [reportSubmitting, setReportSubmitting] = useState(false);
+
+    // Comment Report & Like states
+    const [reportingComment, setReportingComment] = useState<MangaCommentResponse | null>(null);
+    const [commentReportReason, setCommentReportReason] = useState<CommentReportReason>("SPAM");
+    const [commentReportDesc, setCommentReportDesc] = useState("");
+    const [commentReportSubmitting, setCommentReportSubmitting] = useState(false);
+    const [commentReportMsg, setCommentReportMsg] = useState("");
+
+    async function handleToggleLike(commentId: number) {
+        if (!isAuthenticated) {
+            openAuthModal("login");
+            return;
+        }
+        try {
+            const res = await toggleCommentLike(commentId);
+            if (res.success && res.payload) {
+                const { liked, likeCount } = res.payload;
+                setComments((prev) =>
+                    prev.map((c) => (c.id === commentId ? { ...c, isLiked: liked, likeCount } : c))
+                );
+            }
+        } catch (err) {
+            console.error("Failed to toggle comment like:", err);
+        }
+    }
+
+    function handleOpenReportModal(c: MangaCommentResponse) {
+        if (!isAuthenticated) {
+            openAuthModal("login");
+            return;
+        }
+        setReportingComment(c);
+        setCommentReportReason("SPAM");
+        setCommentReportDesc("");
+        setCommentReportMsg("");
+    }
+
+    async function handleSubmitCommentReport(e: React.FormEvent) {
+        e.preventDefault();
+        if (!reportingComment) return;
+        setCommentReportSubmitting(true);
+        setCommentReportMsg("");
+        try {
+            const res = await createCommentReport(reportingComment.id, {
+                reason: commentReportReason,
+                description: commentReportDesc.trim() || undefined,
+            });
+            if (res.success) {
+                setCommentReportMsg("Gửi báo cáo bình luận thành công! Cảm ơn bạn.");
+                setTimeout(() => {
+                    setReportingComment(null);
+                    setCommentReportMsg("");
+                }, 1500);
+            }
+        } catch {
+            setCommentReportMsg("Báo cáo thất bại, vui lòng thử lại.");
+        } finally {
+            setCommentReportSubmitting(false);
+        }
+    }
+
+    useEffect(() => {
+        if (!slug) return;
+        async function fetchChapters() {
+            try {
+                const res = await getMangaBySlug(slug!);
+                if (res.success && res.payload?.chapters) {
+                    setAllChapters(res.payload.chapters);
+                }
+            } catch (err) {
+                console.error("Failed to load chapter list:", err);
+            }
+        }
+        void fetchChapters();
+    }, [slug]);
+
+    const filteredChapters = useMemo(() => {
+        if (!chapterSearch.trim()) return allChapters;
+        return allChapters.filter((ch) =>
+            ch.chapterNumber.toLowerCase().includes(chapterSearch.trim().toLowerCase())
+        );
+    }, [allChapters, chapterSearch]);
+
     const chapterPageRequest : ChapterPageRequest = useMemo<ChapterPageRequest>( () => ({
         slugManga : slug as string ,
         chapterNumber : chapterNumber as string
@@ -305,6 +426,11 @@ export function ReadingMangaPage() {
     function prevChapterPage(){
         if (!hasPrevChapter) return;
         navigate(`/manga/${slug}/c/${previousChapterNumber}`);
+    }
+
+    function handleSelectChapter(selectedChapterNum: string) {
+        if (!slug || selectedChapterNum === (chapterPage?.[0]?.chapterNumber ?? chapterNumber)) return;
+        navigate(`/manga/${slug}/c/${selectedChapterNum}`);
     }
 
     async function handleSubmitComment() {
@@ -521,6 +647,9 @@ export function ReadingMangaPage() {
                                         getCommentAuthorName={getCommentAuthorName}
                                         canDeleteComment={canDeleteComment}
                                         handleDeleteComment={handleDeleteComment}
+                                        handleToggleLike={handleToggleLike}
+                                        handleOpenReportModal={handleOpenReportModal}
+                                        user={user}
                                     />
                                 ))}
                                 {comments.length === 0 && (
@@ -545,6 +674,203 @@ export function ReadingMangaPage() {
                     )}
                 </section>
             </main>
+
+            {/* Floating Bottom Bar (Thanh cố định phía dưới màn hình) */}
+            <div className={styles.floatingBottomBar}>
+                <button
+                    className={`${styles.floatingBtn} ${styles.floatingBtnPrimary}`}
+                    type="button"
+                    title="Danh sách chương"
+                    onClick={() => setIsChapterModalOpen(!isChapterModalOpen)}
+                >
+                    <List size={18} />
+                </button>
+
+                <button
+                    className={`${styles.floatingBtn} ${styles.floatingBtnMuted} ${!hasPrevChapter ? styles.disabled : ""}`}
+                    type="button"
+                    title="Chap trước"
+                    onClick={prevChapterPage}
+                    disabled={!hasPrevChapter}
+                >
+                    <ChevronLeft size={18} />
+                </button>
+
+                <button
+                    className={styles.floatingChapterBtn}
+                    type="button"
+                    onClick={() => setIsChapterModalOpen(!isChapterModalOpen)}
+                    title="Bấm để chọn chương"
+                >
+                    CHƯƠNG {chapterPage?.[0]?.chapterNumber ?? chapterNumber ?? ""}
+                </button>
+
+                <button
+                    className={`${styles.floatingBtn} ${styles.floatingBtnPrimary} ${!hasNextChapter ? styles.disabled : ""}`}
+                    type="button"
+                    title="Chap sau"
+                    onClick={nextChapterPage}
+                    disabled={!hasNextChapter}
+                >
+                    <ChevronRight size={18} />
+                </button>
+
+                <button
+                    className={`${styles.floatingBtn} ${styles.floatingBtnPrimary}`}
+                    type="button"
+                    title="Cuộn lên đầu trang"
+                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                >
+                    <ArrowUp size={18} />
+                </button>
+            </div>
+
+            {/* Popup Modal "Chọn chương" (Tham khảo Hình 4) */}
+            {isChapterModalOpen && (
+                <div className={styles.chapterModalOverlay} onClick={() => setIsChapterModalOpen(false)}>
+                    <div className={styles.chapterModalContent} onClick={(e) => e.stopPropagation()}>
+                        <div className={styles.chapterModalHeader}>
+                            <h3>Chọn chương</h3>
+                            <button
+                                type="button"
+                                className={styles.btnCloseModal}
+                                onClick={() => setIsChapterModalOpen(false)}
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
+
+                        {allChapters.length > 8 && (
+                            <div className={styles.chapterSearchBox}>
+                                <Search size={14} className={styles.searchIcon} />
+                                <input
+                                    type="text"
+                                    placeholder="Tìm chương..."
+                                    value={chapterSearch}
+                                    onChange={(e) => setChapterSearch(e.target.value)}
+                                />
+                            </div>
+                        )}
+
+                        <div className={styles.chapterModalList}>
+                            {filteredChapters.map((ch) => {
+                                const isCurrent = ch.chapterNumber === (chapterPage?.[0]?.chapterNumber ?? chapterNumber);
+                                return (
+                                    <button
+                                        key={ch.chapterNumber}
+                                        type="button"
+                                        className={`${styles.chapterModalItem} ${isCurrent ? styles.activeChapterItem : ""}`}
+                                        onClick={() => {
+                                            handleSelectChapter(ch.chapterNumber);
+                                            setIsChapterModalOpen(false);
+                                        }}
+                                    >
+                                        Chương {ch.chapterNumber}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal Báo cáo Bình luận */}
+            {reportingComment && (
+                <div style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: "rgba(15, 23, 42, 0.45)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    zIndex: 9999,
+                    backdropFilter: "blur(4px)"
+                }} onClick={() => setReportingComment(null)}>
+                    <div style={{
+                        backgroundColor: "#ffffff",
+                        borderRadius: "16px",
+                        width: "90%",
+                        maxWidth: "440px",
+                        border: "1px solid #e2e8f0",
+                        overflow: "hidden",
+                        boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+                    }} onClick={(e) => e.stopPropagation()}>
+                        <div style={{
+                            padding: "16px 20px",
+                            borderBottom: "1px solid #f1f5f9",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between"
+                        }}>
+                            <h3 style={{ margin: 0, color: "#0f172a", fontSize: "16px", fontWeight: 700 }}>Báo cáo bình luận</h3>
+                            <button
+                                type="button"
+                                onClick={() => setReportingComment(null)}
+                                style={{ background: "none", border: "none", color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: "4px" }}
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
+                        <form onSubmit={handleSubmitCommentReport} style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
+                            <div>
+                                <label style={{ display: "block", fontSize: "13px", color: "#334155", fontWeight: 600, marginBottom: "6px" }}>
+                                    Lý do báo cáo:
+                                </label>
+                                <select
+                                    value={commentReportReason}
+                                    onChange={(e) => setCommentReportReason(e.target.value as CommentReportReason)}
+                                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", backgroundColor: "#ffffff", border: "1px solid #cbd5e1", color: "#0f172a", fontSize: "13px", outline: "none" }}
+                                >
+                                    <option value="SPAM">Spam / Quảng cáo rác</option>
+                                    <option value="HARASSMENT">Ngôn từ xúc phạm / Độc hại</option>
+                                    <option value="SPOILER">Tiết lộ nội dung / Spoiler</option>
+                                    <option value="HATE_SPEECH">Phát ngôn thù ghét</option>
+                                    <option value="OTHER">Lý do khác</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label style={{ display: "block", fontSize: "13px", color: "#334155", fontWeight: 600, marginBottom: "6px" }}>
+                                    Mô tả thêm (Không bắt buộc):
+                                </label>
+                                <textarea
+                                    rows={3}
+                                    placeholder="Chi tiết lý do báo cáo..."
+                                    value={commentReportDesc}
+                                    onChange={(e) => setCommentReportDesc(e.target.value)}
+                                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", backgroundColor: "#ffffff", border: "1px solid #cbd5e1", color: "#0f172a", fontSize: "13px", resize: "none", outline: "none" }}
+                                />
+                            </div>
+
+                            {commentReportMsg && (
+                                <p style={{ margin: 0, fontSize: "13px", color: commentReportMsg.includes("thành công") ? "#10b981" : "#ef4444" }}>
+                                    {commentReportMsg}
+                                </p>
+                            )}
+
+                            <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "8px" }}>
+                                <button
+                                    type="button"
+                                    onClick={() => setReportingComment(null)}
+                                    style={{ padding: "8px 16px", borderRadius: "8px", border: "1px solid #cbd5e1", backgroundColor: "#ffffff", color: "#475569", fontSize: "13px", fontWeight: 500, cursor: "pointer" }}
+                                >
+                                    Hủy
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={commentReportSubmitting}
+                                    style={{ padding: "8px 16px", borderRadius: "8px", border: "none", backgroundColor: "var(--color-accent)", color: "#ffffff", fontWeight: 600, fontSize: "13px", cursor: "pointer" }}
+                                >
+                                    {commentReportSubmitting ? "Đang gửi..." : "Gửi báo cáo"}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
