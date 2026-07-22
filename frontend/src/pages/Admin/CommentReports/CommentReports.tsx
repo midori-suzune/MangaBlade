@@ -150,7 +150,7 @@ export const CommentReports: React.FC = () => {
   // Common State
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<CommentReportStatusFilter>('ALL');
+  const [statusFilter, setStatusFilter] = useState<CommentReportStatusFilter>('PENDING');
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
