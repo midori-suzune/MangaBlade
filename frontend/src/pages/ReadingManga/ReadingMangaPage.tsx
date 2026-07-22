@@ -299,6 +299,7 @@ export function ReadingMangaPage() {
     const [commentReportDesc, setCommentReportDesc] = useState("");
     const [commentReportSubmitting, setCommentReportSubmitting] = useState(false);
     const [commentReportMsg, setCommentReportMsg] = useState("");
+    const [deletingCommentId, setDeletingCommentId] = useState<number | null>(null);
 
     async function handleToggleLike(commentId: number) {
         if (!isAuthenticated) {

@@ -207,10 +207,11 @@ export const ChapterReports: React.FC = () => {
     }
 
     try {
-      const response = await adminChapterReportApi.reviewReport(selectedReport.id, {
+      const response = await adminChapterReportApi.reviewReport(
+        selectedReport.id,
         status,
-        rejectReason: status === 'REJECTED' ? rejectReason.trim() : undefined,
-      });
+        status === 'REJECTED' ? rejectReason.trim() : undefined
+      );
       setReports((prev) => prev.map((report) => (
         report.id === selectedReport.id ? response.data : report
       )));

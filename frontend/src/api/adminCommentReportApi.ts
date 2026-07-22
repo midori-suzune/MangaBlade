@@ -1,5 +1,5 @@
 import axiosInstance from './axiosInstance';
-import type { ApiResponse } from '../types/apiResponse';
+import type { ApiResponse } from '../types/auth';
 import type { SpringPageResponse } from '../types/user';
 
 export type AdminCommentReportStatus = 'PENDING' | 'CHECKING' | 'RESOLVED' | 'REJECTED';
