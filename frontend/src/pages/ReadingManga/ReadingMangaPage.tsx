@@ -677,102 +677,26 @@ export function ReadingMangaPage() {
             </main>
 
             {/* Floating Bottom Bar (Thanh cố định phía dưới màn hình) */}
-            <div className={styles.floatingBottomBar}>
-                <button
-                    className={`${styles.floatingBtn} ${styles.floatingBtnPrimary}`}
-                    type="button"
-                    title="Danh sách chương"
-                    onClick={() => setIsChapterModalOpen(!isChapterModalOpen)}
-                >
-                    <List size={18} />
-                </button>
-
-                <button
-                    className={`${styles.floatingBtn} ${styles.floatingBtnMuted} ${!hasPrevChapter ? styles.disabled : ""}`}
-                    type="button"
-                    title="Chap trước"
-                    onClick={prevChapterPage}
-                    disabled={!hasPrevChapter}
-                >
-                    <ChevronLeft size={18} />
-                </button>
-
-                <button
-                    className={styles.floatingChapterBtn}
-                    type="button"
-                    onClick={() => setIsChapterModalOpen(!isChapterModalOpen)}
-                    title="Bấm để chọn chương"
-                >
-                    CHƯƠNG {chapterPage?.[0]?.chapterNumber ?? chapterNumber ?? ""}
-                </button>
-
-                <button
-                    className={`${styles.floatingBtn} ${styles.floatingBtnPrimary} ${!hasNextChapter ? styles.disabled : ""}`}
-                    type="button"
-                    title="Chap sau"
-                    onClick={nextChapterPage}
-                    disabled={!hasNextChapter}
-                >
-                    <ChevronRight size={18} />
-                </button>
-
-                <button
-                    className={`${styles.floatingBtn} ${styles.floatingBtnPrimary}`}
-                    type="button"
-                    title="Cuộn lên đầu trang"
-                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                >
-                    <ArrowUp size={18} />
-                </button>
-            </div>
+            <FloatingBottomBar
+                currentChapterNumber={chapterPage?.[0]?.chapterNumber ?? chapterNumber ?? ""}
+                hasPrevChapter={hasPrevChapter}
+                hasNextChapter={hasNextChapter}
+                onPrevChapter={prevChapterPage}
+                onNextChapter={nextChapterPage}
+                onToggleChapterModal={() => setIsChapterModalOpen(!isChapterModalOpen)}
+            />
 
             {/* Popup Modal "Chọn chương" (Tham khảo Hình 4) */}
             {isChapterModalOpen && (
-                <div className={styles.chapterModalOverlay} onClick={() => setIsChapterModalOpen(false)}>
-                    <div className={styles.chapterModalContent} onClick={(e) => e.stopPropagation()}>
-                        <div className={styles.chapterModalHeader}>
-                            <h3>Chọn chương</h3>
-                            <button
-                                type="button"
-                                className={styles.btnCloseModal}
-                                onClick={() => setIsChapterModalOpen(false)}
-                            >
-                                <X size={18} />
-                            </button>
-                        </div>
-
-                        {allChapters.length > 8 && (
-                            <div className={styles.chapterSearchBox}>
-                                <Search size={14} className={styles.searchIcon} />
-                                <input
-                                    type="text"
-                                    placeholder="Tìm chương..."
-                                    value={chapterSearch}
-                                    onChange={(e) => setChapterSearch(e.target.value)}
-                                />
-                            </div>
-                        )}
-
-                        <div className={styles.chapterModalList}>
-                            {filteredChapters.map((ch) => {
-                                const isCurrent = ch.chapterNumber === (chapterPage?.[0]?.chapterNumber ?? chapterNumber);
-                                return (
-                                    <button
-                                        key={ch.chapterNumber}
-                                        type="button"
-                                        className={`${styles.chapterModalItem} ${isCurrent ? styles.activeChapterItem : ""}`}
-                                        onClick={() => {
-                                            handleSelectChapter(ch.chapterNumber);
-                                            setIsChapterModalOpen(false);
-                                        }}
-                                    >
-                                        Chương {ch.chapterNumber}
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </div>
-                </div>
+                <ChapterSelectModal
+                    allChapters={allChapters}
+                    chapterSearch={chapterSearch}
+                    setChapterSearch={setChapterSearch}
+                    filteredChapters={filteredChapters}
+                    currentChapterNumber={chapterPage?.[0]?.chapterNumber ?? chapterNumber ?? ""}
+                    onSelectChapter={handleSelectChapter}
+                    onClose={() => setIsChapterModalOpen(false)}
+                />
             )}
 
             {/* Modal Báo cáo Bình luận */}
@@ -906,6 +830,143 @@ function CommentReportModal({
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+    );
+}
+
+interface FloatingBottomBarProps {
+    currentChapterNumber: string;
+    hasPrevChapter: boolean;
+    hasNextChapter: boolean;
+    onPrevChapter: () => void;
+    onNextChapter: () => void;
+    onToggleChapterModal: () => void;
+}
+
+function FloatingBottomBar({
+    currentChapterNumber,
+    hasPrevChapter,
+    hasNextChapter,
+    onPrevChapter,
+    onNextChapter,
+    onToggleChapterModal
+}: FloatingBottomBarProps) {
+    return (
+        <div className={styles.floatingBottomBar}>
+            <button
+                className={`${styles.floatingBtn} ${styles.floatingBtnPrimary}`}
+                type="button"
+                title="Danh sách chương"
+                onClick={onToggleChapterModal}
+            >
+                <List size={18} />
+            </button>
+
+            <button
+                className={`${styles.floatingBtn} ${styles.floatingBtnMuted} ${!hasPrevChapter ? styles.disabled : ""}`}
+                type="button"
+                title="Chap trước"
+                onClick={onPrevChapter}
+                disabled={!hasPrevChapter}
+            >
+                <ChevronLeft size={18} />
+            </button>
+
+            <button
+                className={styles.floatingChapterBtn}
+                type="button"
+                onClick={onToggleChapterModal}
+                title="Bấm để chọn chương"
+            >
+                CHƯƠNG {currentChapterNumber}
+            </button>
+
+            <button
+                className={`${styles.floatingBtn} ${styles.floatingBtnPrimary} ${!hasNextChapter ? styles.disabled : ""}`}
+                type="button"
+                title="Chap sau"
+                onClick={onNextChapter}
+                disabled={!hasNextChapter}
+            >
+                <ChevronRight size={18} />
+            </button>
+
+            <button
+                className={`${styles.floatingBtn} ${styles.floatingBtnPrimary}`}
+                type="button"
+                title="Cuộn lên đầu trang"
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            >
+                <ArrowUp size={18} />
+            </button>
+        </div>
+    );
+}
+
+interface ChapterSelectModalProps {
+    allChapters: ChapterResponse[];
+    chapterSearch: string;
+    setChapterSearch: (s: string) => void;
+    filteredChapters: ChapterResponse[];
+    currentChapterNumber: string;
+    onSelectChapter: (num: string) => void;
+    onClose: () => void;
+}
+
+function ChapterSelectModal({
+    allChapters,
+    chapterSearch,
+    setChapterSearch,
+    filteredChapters,
+    currentChapterNumber,
+    onSelectChapter,
+    onClose
+}: ChapterSelectModalProps) {
+    return (
+        <div className={styles.chapterModalOverlay} onClick={onClose}>
+            <div className={styles.chapterModalContent} onClick={(e) => e.stopPropagation()}>
+                <div className={styles.chapterModalHeader}>
+                    <h3>Chọn chương</h3>
+                    <button
+                        type="button"
+                        className={styles.btnCloseModal}
+                        onClick={onClose}
+                    >
+                        <X size={18} />
+                    </button>
+                </div>
+
+                {allChapters.length > 8 && (
+                    <div className={styles.chapterSearchBox}>
+                        <Search size={14} className={styles.searchIcon} />
+                        <input
+                            type="text"
+                            placeholder="Tìm chương..."
+                            value={chapterSearch}
+                            onChange={(e) => setChapterSearch(e.target.value)}
+                        />
+                    </div>
+                )}
+
+                <div className={styles.chapterModalList}>
+                    {filteredChapters.map((ch) => {
+                        const isCurrent = ch.chapterNumber === currentChapterNumber;
+                        return (
+                            <button
+                                key={ch.chapterNumber}
+                                type="button"
+                                className={`${styles.chapterModalItem} ${isCurrent ? styles.activeChapterItem : ""}`}
+                                onClick={() => {
+                                    onSelectChapter(ch.chapterNumber);
+                                    onClose();
+                                }}
+                            >
+                                Chương {ch.chapterNumber}
+                            </button>
+                        );
+                    })}
+                </div>
             </div>
         </div>
     );
