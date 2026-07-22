@@ -50,6 +50,13 @@ public class UserService implements UserDetailsService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
 
+        if (user.getRole() == UserRole.AUTHOR && userDetails.getRole() == UserRole.USER) {
+            String newUsername = userDetails.getUsername() != null && !userDetails.getUsername().isBlank()
+                    ? userDetails.getUsername().trim()
+                    : user.getUsername();
+            user.setDisplayName(newUsername);
+        }
+
         user.setUsername(userDetails.getUsername());
         user.setEmail(userDetails.getEmail());
         user.setRole(userDetails.getRole());
@@ -64,7 +71,20 @@ public class UserService implements UserDetailsService {
         }
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
-        userRepository.delete(user);
+
+        user.setBanned(true);
+        user.setUpdatedAt(Instant.now());
+        userRepository.save(user);
+
+        List<Manga> ownedMangas = mangaRepository.findByOwnerUserIdAndDeletedAtIsNull(id, Pageable.unpaged()).getContent();
+        Instant now = Instant.now();
+        for (Manga m : ownedMangas) {
+            m.setDeletedAt(now);
+            m.setDeletedBy(currentAdminId);
+        }
+        if (!ownedMangas.isEmpty()) {
+            mangaRepository.saveAll(ownedMangas);
+        }
     }
 
     @Transactional
@@ -75,8 +95,33 @@ public class UserService implements UserDetailsService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
 
-        user.setBanned(!user.isBanned());
+        boolean newBannedState = !user.isBanned();
+        user.setBanned(newBannedState);
         user.setUpdatedAt(Instant.now());
+
+        if (newBannedState) {
+            List<Manga> ownedMangas = mangaRepository.findByOwnerUserIdAndDeletedAtIsNull(id, Pageable.unpaged()).getContent();
+            Instant now = Instant.now();
+            for (Manga m : ownedMangas) {
+                m.setDeletedAt(now);
+                m.setDeletedBy(currentAdminId);
+            }
+            if (!ownedMangas.isEmpty()) {
+                mangaRepository.saveAll(ownedMangas);
+            }
+        } else {
+            List<Manga> allOwnedMangas = mangaRepository.findAll().stream()
+                    .filter(m -> id.equals(m.getOwnerUserId()) && m.getDeletedAt() != null)
+                    .toList();
+            for (Manga m : allOwnedMangas) {
+                m.setDeletedAt(null);
+                m.setDeletedBy(null);
+            }
+            if (!allOwnedMangas.isEmpty()) {
+                mangaRepository.saveAll(allOwnedMangas);
+            }
+        }
+
         return userRepository.save(user);
     }
 

@@ -22,6 +22,7 @@ import com.mangablade.backend.services.mangablade.AdminDashboardService;
 import com.mangablade.backend.services.mangablade.AdminContentModerationService;
 import com.mangablade.backend.services.mangablade.AdminMangaService;
 import com.mangablade.backend.services.mangablade.ChapterReportService;
+import com.mangablade.backend.services.mangablade.CommentReportService;
 import com.mangablade.backend.services.mangablade.UserService;
 
 import jakarta.validation.Valid;
@@ -42,6 +43,7 @@ public class AdminController {
     private final AdminContentModerationService adminContentModerationService;
     private final AdminMangaService adminMangaService;
     private final ChapterReportService chapterReportService;
+    private final CommentReportService commentReportService;
 
     @GetMapping("/users")
     public ResponseEntity<ApiResponse<PageResponse<AdminUserResponse>>> getUsers(
@@ -193,6 +195,46 @@ public class AdminController {
                 ApiResponse.<AdminChapterReportResponse>builder()
                         .success(true)
                         .message("Cập nhật báo cáo lỗi chương thành công")
+                        .payload(report)
+                        .build()
+        );
+    }
+
+    @GetMapping("/comment-reports")
+    public ResponseEntity<ApiResponse<PageResponse<com.mangablade.backend.dtos.response.AdminCommentReportResponse>>> getCommentReports(
+            @RequestParam(required = false) com.mangablade.backend.enums.CommentReportStatus status,
+            @RequestParam(required = false) com.mangablade.backend.enums.CommentReportReason reason,
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Page<com.mangablade.backend.dtos.response.AdminCommentReportResponse> reports = commentReportService.findReports(
+                status,
+                reason,
+                normalizeSearch(search),
+                PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id"))
+        );
+
+        return ResponseEntity.ok(
+                ApiResponse.<PageResponse<com.mangablade.backend.dtos.response.AdminCommentReportResponse>>builder()
+                        .success(true)
+                        .message("Lấy danh sách báo cáo bình luận thành công")
+                        .payload(PageResponse.from(reports))
+                        .build()
+        );
+    }
+
+    @PatchMapping("/comment-reports/{id}/review")
+    public ResponseEntity<ApiResponse<com.mangablade.backend.dtos.response.AdminCommentReportResponse>> reviewCommentReport(
+            @PathVariable Long id,
+            @Valid @RequestBody com.mangablade.backend.dtos.request.AdminCommentReportReviewRequest request,
+            @AuthenticationPrincipal User currentAdmin
+    ) {
+        var report = commentReportService.review(id, request, currentAdmin);
+        return ResponseEntity.ok(
+                ApiResponse.<com.mangablade.backend.dtos.response.AdminCommentReportResponse>builder()
+                        .success(true)
+                        .message("Cập nhật báo cáo bình luận thành công")
                         .payload(report)
                         .build()
         );

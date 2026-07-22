@@ -5,124 +5,132 @@ import {
   AlertTriangle,
   BarChart3,
   BookOpen,
-  Check,
   ChevronDown,
   Eye,
   FileCheck,
   FileText,
   MessageSquare,
   Users,
-  X,
 } from 'lucide-react';
 import { useAuthStore } from '../../../stores/authStore';
-import { adminChapterReportApi } from '../../../api/adminChapterReportApi';
-import type { AdminChapterReportItem, AdminChapterReportStatus, AdminChapterReportType } from '../../../api/adminChapterReportApi';
+import { adminCommentReportApi } from '../../../api/adminCommentReportApi';
+import type { AdminCommentReportItem, AdminCommentReportReason, AdminCommentReportStatus } from '../../../api/adminCommentReportApi';
 import type { SpringPageResponse } from '../../../types/user';
+import { CommentText } from '../../../components/CommentEmojiPicker/CommentText';
 import styles from '../Admin.module.css';
 
-type ChapterReportStatusFilter = 'ALL' | AdminChapterReportStatus;
-type ChapterReportTypeFilter = 'ALL' | AdminChapterReportType;
+type CommentReportStatusFilter = 'ALL' | AdminCommentReportStatus;
+type CommentReportReasonFilter = 'ALL' | AdminCommentReportReason;
 const REPORT_TABLE_PAGE_SIZE = 10;
 
-const statusLabels: Record<AdminChapterReportStatus, string> = {
+const statusLabels: Record<AdminCommentReportStatus, string> = {
   PENDING: 'Chờ xử lý',
   CHECKING: 'Đang kiểm tra',
   RESOLVED: 'Đã xử lý',
-  REJECTED: 'Từ chối',
+  REJECTED: 'Bác bỏ',
 };
 
-const typeLabels: Record<Exclude<ChapterReportTypeFilter, 'ALL'>, string> = {
-  IMAGE_BROKEN: 'Ảnh lỗi',
-  MISSING_PAGE: 'Thiếu trang',
-  WRONG_ORDER: 'Sai thứ tự',
-  DUPLICATE_CHAPTER: 'Trùng chương',
-  WRONG_CONTENT: 'Nội dung sai',
+const commentReasonLabels: Record<Exclude<CommentReportReasonFilter, 'ALL'>, string> = {
+  SPAM: 'Spam / Quảng cáo',
+  HARASSMENT: 'Xúc phạm / Độc hại',
+  SPOILER: 'Tiết lộ nội dung (Spoiler)',
+  HATE_SPEECH: 'Phát ngôn thù ghét',
+  OTHER: 'Khác',
 };
 
-interface ReportDetailModalProps {
-  report: AdminChapterReportItem;
+interface CommentReportDetailModalProps {
+  report: AdminCommentReportItem;
   rejectReason: string;
   setRejectReason: (value: string) => void;
-  onStatusChange: (status: AdminChapterReportStatus) => void;
+  onReview: (status: AdminCommentReportStatus, deleteComment?: boolean, banUser?: boolean) => void;
   onClose: () => void;
 }
 
-function ReportDetailModal({ report, rejectReason, setRejectReason, onStatusChange, onClose }: ReportDetailModalProps) {
+function CommentReportDetailModal({ report, rejectReason, setRejectReason, onReview, onClose }: CommentReportDetailModalProps) {
   return (
     <div className={styles.modalBackdrop}>
       <div className={styles.modalCard}>
         <div className={styles.modalHeader}>
-          <h3 className={styles.modalTitle}>Chi tiết báo cáo lỗi chương</h3>
+          <h3 className={styles.modalTitle}>Chi tiết báo cáo bình luận</h3>
           <button onClick={onClose} className={styles.modalClose}>
             &times;
           </button>
         </div>
 
         <div className={styles.modalBody}>
-          <div className={styles.detailGrid}>
-            <span className={styles.detailLabel}>Truyện:</span>
-            <span className={styles.detailValue}>{report.mangaTitle}</span>
+          <div className={styles.detailGrid} style={{ display: 'grid', gridTemplateColumns: '130px 1fr', gap: '12px 16px', alignItems: 'start' }}>
+            <span className={styles.detailLabel} style={{ paddingTop: '2px' }}>Nội dung Comment:</span>
+            <span className={styles.detailValue} style={{ fontWeight: 600, color: '#2563eb', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4px' }}>
+              "<CommentText content={report.commentContent} />"
+            </span>
 
-            <span className={styles.detailLabel}>Chương:</span>
-            <span className={styles.detailValue}>Chapter {report.chapterNumber} - {report.chapterTitle}</span>
+            <span className={styles.detailLabel}>Người comment:</span>
+            <span className={styles.detailValue}>{report.commentAuthorUsername}</span>
 
-            <span className={styles.detailLabel}>Loại lỗi:</span>
-            <span className={styles.detailValue}>{typeLabels[report.type]}</span>
+            <span className={styles.detailLabel}>Truyện / Chương:</span>
+            <span className={styles.detailValue}>{report.mangaTitle} {report.chapterNumber ? `(Chương ${report.chapterNumber})` : ''}</span>
+
+            <span className={styles.detailLabel}>Lý do báo cáo:</span>
+            <span className={styles.detailValue}>{commentReasonLabels[report.reason] || report.reason}</span>
 
             <span className={styles.detailLabel}>Người báo cáo:</span>
-            <span className={styles.detailValue}>{report.reporter}</span>
+            <span className={styles.detailValue}>{report.reporterUsername}</span>
 
-            <span className={styles.detailLabel}>Status:</span>
+            <span className={styles.detailLabel}>Ngày gửi:</span>
+            <span className={styles.detailValue}>{new Date(report.createdAt).toLocaleString('vi-VN')}</span>
+
+            <span className={styles.detailLabel}>Trạng thái:</span>
             <span className={styles.detailValue}>{statusLabels[report.status]}</span>
           </div>
 
-          <div className={styles.reportDescription}>
-            <span>Mô tả</span>
-            <p>{report.description}</p>
-          </div>
+          {report.description && (
+            <div className={styles.reportDescription}>
+              <span>Mô tả thêm</span>
+              <p>{report.description}</p>
+            </div>
+          )}
 
           {report.status === 'REJECTED' && report.rejectReason && (
             <div className={styles.rejectBox}>
-              Lý do từ chối: {report.rejectReason}
+              Lý do bác bỏ: {report.rejectReason}
             </div>
           )}
 
           <div className={styles.rejectForm}>
-            <label className={styles.rejectLabel} htmlFor="chapter-report-reject-reason">Lý do từ chối</label>
+            <label className={styles.rejectLabel} htmlFor="comment-report-reject-reason">Lý do bác bỏ</label>
             <textarea
-              id="chapter-report-reject-reason"
+              id="comment-report-reject-reason"
               value={rejectReason}
               onChange={(event) => setRejectReason(event.target.value)}
               className={`${styles.formInput} ${styles.textarea}`}
+              placeholder="Nhập lý do nếu muốn bác bỏ báo cáo..."
             />
           </div>
-        </div>
 
-        <div className={styles.modalFooter}>
-          <div className={styles.footerActions}>
+          <div className={styles.modalActions} style={{ marginTop: '8px' }}>
             <button
               type="button"
-              className={styles.btnSecondary}
-              onClick={() => onStatusChange('CHECKING')}
-              disabled={report.status === 'CHECKING'}
-            >
-              <Eye size={14} /> Kiểm tra
-            </button>
-            <button
-              type="button"
-              className={styles.btnDanger}
-              onClick={() => onStatusChange('REJECTED')}
+              className={styles.btnBan}
+              onClick={() => onReview('REJECTED')}
               disabled={report.status === 'REJECTED'}
             >
-              <X size={14} /> Từ chối
+              Bác bỏ
             </button>
             <button
               type="button"
-              className={styles.btnPrimary}
-              onClick={() => onStatusChange('RESOLVED')}
+              className={styles.btnBan}
+              onClick={() => onReview('RESOLVED', true, false)}
               disabled={report.status === 'RESOLVED'}
             >
-              <Check size={14} /> Duyệt
+              Ẩn comment
+            </button>
+            <button
+              type="button"
+              className={styles.btnBan}
+              onClick={() => onReview('RESOLVED', false, true)}
+              disabled={report.status === 'RESOLVED'}
+            >
+              Ban user
             </button>
           </div>
         </div>
@@ -131,22 +139,22 @@ function ReportDetailModal({ report, rejectReason, setRejectReason, onStatusChan
   );
 }
 
-export const ChapterReports: React.FC = () => {
+export const CommentReports: React.FC = () => {
   const navigate = useNavigate();
   const { displayName } = useAuthStore();
 
-  const [reports, setReports] = useState<AdminChapterReportItem[]>([]);
-  const [reportPage, setReportPage] = useState<SpringPageResponse<AdminChapterReportItem> | null>(null);
-  const [chapterTypeFilter, setChapterTypeFilter] = useState<ChapterReportTypeFilter>('ALL');
+  const [commentReports, setCommentReports] = useState<AdminCommentReportItem[]>([]);
+  const [commentReportPage, setCommentReportPage] = useState<SpringPageResponse<AdminCommentReportItem> | null>(null);
+  const [commentReasonFilter, setCommentReasonFilter] = useState<CommentReportReasonFilter>('ALL');
 
   // Common State
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<ChapterReportStatusFilter>('ALL');
+  const [statusFilter, setStatusFilter] = useState<CommentReportStatusFilter>('PENDING');
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [selectedReport, setSelectedReport] = useState<AdminChapterReportItem | null>(null);
+  const [selectedCommentReport, setSelectedCommentReport] = useState<AdminCommentReportItem | null>(null);
   const [rejectReason, setRejectReason] = useState('');
 
   const getErrorMessage = (error: unknown) => {
@@ -163,24 +171,24 @@ export const ChapterReports: React.FC = () => {
     setLoading(true);
     setErrorMessage('');
     try {
-      const response = await adminChapterReportApi.getReports({
+      const response = await adminCommentReportApi.getCommentReports({
         status: statusFilter === 'ALL' ? undefined : statusFilter,
-        type: chapterTypeFilter === 'ALL' ? undefined : chapterTypeFilter,
+        reason: commentReasonFilter === 'ALL' ? undefined : commentReasonFilter,
         search: search || undefined,
         page: nextPage,
         size: REPORT_TABLE_PAGE_SIZE,
       });
-      setReports(response.data.content);
-      setReportPage(response.data);
+      setCommentReports(response.data?.content || []);
+      setCommentReportPage(response.data || null);
     } catch (error) {
       console.error('Lỗi khi tải danh sách báo cáo:', error);
-      setReports([]);
-      setReportPage(null);
+      setCommentReports([]);
+      setCommentReportPage(null);
       setErrorMessage(getErrorMessage(error));
     } finally {
       setLoading(false);
     }
-  }, [page, search, statusFilter, chapterTypeFilter]);
+  }, [page, search, statusFilter, commentReasonFilter]);
 
   useEffect(() => {
     Promise.resolve().then(() => fetchReports());
@@ -192,36 +200,33 @@ export const ChapterReports: React.FC = () => {
     setSearch(searchInput);
   };
 
-  const formatDate = (value: string) => new Date(value).toLocaleDateString('vi-VN');
-
-  const openReport = (report: AdminChapterReportItem) => {
-    setSelectedReport(report);
+  const openCommentReport = (report: AdminCommentReportItem) => {
+    setSelectedCommentReport(report);
     setRejectReason(report.rejectReason || '');
   };
 
-  const updateReportStatus = async (status: AdminChapterReportStatus) => {
-    if (!selectedReport) return;
+  const updateCommentReportReview = async (status: AdminCommentReportStatus, deleteComment = false, banUser = false) => {
+    if (!selectedCommentReport) return;
     if (status === 'REJECTED' && !rejectReason.trim()) {
-      alert('Vui lòng nhập lý do từ chối!');
+      alert('Vui lòng nhập lý do bác bỏ!');
       return;
     }
 
     try {
-      const response = await adminChapterReportApi.reviewReport(
-        selectedReport.id,
+      const response = await adminCommentReportApi.reviewCommentReport(selectedCommentReport.id, {
         status,
-        status === 'REJECTED' ? rejectReason.trim() : undefined
-      );
-      setReports((prev) => prev.map((report) => (
-        report.id === selectedReport.id ? response.data : report
+        deleteComment,
+        banUser,
+        rejectReason: status === 'REJECTED' ? rejectReason.trim() : undefined,
+      });
+      setCommentReports((prev) => prev.map((report) => (
+        report.id === selectedCommentReport.id ? response.data : report
       )));
-      setSelectedReport(response.data);
-      if (status !== 'REJECTED') {
-        setRejectReason('');
-      }
+      setSelectedCommentReport(null);
+      setRejectReason('');
       await fetchReports(page);
     } catch (error) {
-      console.error('Lỗi khi cập nhật báo cáo lỗi chương:', error);
+      console.error('Lỗi khi cập nhật báo cáo bình luận:', error);
       alert(getErrorMessage(error));
     }
   };
@@ -230,8 +235,8 @@ export const ChapterReports: React.FC = () => {
     setPage(nextPage);
   };
 
-  const canGoPrevious = Boolean(reportPage && !reportPage.first);
-  const canGoNext = Boolean(reportPage && !reportPage.last);
+  const canGoPrevious = Boolean(commentReportPage && !commentReportPage.first);
+  const canGoNext = Boolean(commentReportPage && !commentReportPage.last);
 
   return (
     <div className={styles.adminPage}>
@@ -253,10 +258,10 @@ export const ChapterReports: React.FC = () => {
             <button className={styles.adminNavItem} onClick={() => navigate('/admin/content-moderation')}>
               <FileCheck size={16} /> Kiểm duyệt nội dung
             </button>
-            <button className={`${styles.adminNavItem} ${styles.active}`} onClick={() => navigate('/admin/chapter-reports')}>
+            <button className={styles.adminNavItem} onClick={() => navigate('/admin/chapter-reports')}>
               <AlertTriangle size={16} /> Báo cáo lỗi chương
             </button>
-            <button className={styles.adminNavItem} onClick={() => navigate('/admin/comment-reports')}>
+            <button className={`${styles.adminNavItem} ${styles.active}`} onClick={() => navigate('/admin/comment-reports')}>
               <MessageSquare size={16} /> Báo cáo bình luận
             </button>
             <button className={styles.adminNavItem} onClick={() => navigate('/admin/author-requests')}>
@@ -267,9 +272,9 @@ export const ChapterReports: React.FC = () => {
           <main className={styles.adminContent}>
             <div className={styles.pageTitleSection}>
               <div>
-                <h2 className={styles.pageTitle}>Báo cáo lỗi chương</h2>
+                <h2 className={styles.pageTitle}>Báo cáo bình luận</h2>
                 <p className={styles.pageSubtitle}>
-                  Xem và xử lý các báo cáo lỗi người đọc gửi về từng chương.
+                  Xem và xử lý các báo cáo bình luận vi phạm chính sách của MangaBlade từ độc giả.
                 </p>
               </div>
               <button className={styles.adminUserChip} type="button" aria-label="Tài khoản quản trị">
@@ -287,7 +292,7 @@ export const ChapterReports: React.FC = () => {
                 <form onSubmit={handleSearchSubmit} className={styles.searchForm}>
                   <input
                     type="text"
-                    placeholder="Tìm truyện, chương hoặc người báo cáo"
+                    placeholder="Tìm bình luận, người đăng hoặc người báo cáo"
                     value={searchInput}
                     onChange={(event) => setSearchInput(event.target.value)}
                     className={`${styles.formInput} ${styles.searchInput}`}
@@ -298,7 +303,7 @@ export const ChapterReports: React.FC = () => {
                   value={statusFilter}
                   onChange={(event) => {
                     setPage(0);
-                    setStatusFilter(event.target.value as ChapterReportStatusFilter);
+                    setStatusFilter(event.target.value as CommentReportStatusFilter);
                   }}
                   className={`${styles.formInput} ${styles.authorStatusSelect}`}
                 >
@@ -306,22 +311,23 @@ export const ChapterReports: React.FC = () => {
                   <option value="PENDING">Chờ xử lý</option>
                   <option value="CHECKING">Đang kiểm tra</option>
                   <option value="RESOLVED">Đã xử lý</option>
-                  <option value="REJECTED">Từ chối</option>
+                  <option value="REJECTED">Bác bỏ</option>
                 </select>
 
                 <select
-                  value={chapterTypeFilter}
+                  value={commentReasonFilter}
                   onChange={(event) => {
                     setPage(0);
-                    setChapterTypeFilter(event.target.value as ChapterReportTypeFilter);
+                    setCommentReasonFilter(event.target.value as CommentReportReasonFilter);
                   }}
                   className={`${styles.formInput} ${styles.authorStatusSelect}`}
                 >
-                  <option value="ALL">Tất cả lỗi</option>
-                  <option value="IMAGE_BROKEN">Ảnh lỗi</option>
-                  <option value="MISSING_PAGE">Thiếu trang</option>
-                  <option value="WRONG_ORDER">Sai thứ tự</option>
-                  <option value="DUPLICATE_CHAPTER">Trùng chương</option>
+                  <option value="ALL">Tất cả lý do</option>
+                  <option value="SPAM">Spam / Quảng cáo</option>
+                  <option value="HARASSMENT">Xúc phạm / Độc hại</option>
+                  <option value="SPOILER">Tiết lộ nội dung (Spoiler)</option>
+                  <option value="HATE_SPEECH">Phát ngôn thù ghét</option>
+                  <option value="OTHER">Lý do khác</option>
                 </select>
               </div>
             </div>
@@ -332,31 +338,32 @@ export const ChapterReports: React.FC = () => {
                   <thead>
                     <tr>
                       <th className={styles.idColumn}>ID</th>
-                      <th className={styles.mangaInfoColumn}>Truyện / Chương</th>
-                      <th className={styles.roleColumn}>Loại lỗi</th>
-                      <th className={styles.usernameColumn}>Người báo cáo</th>
+                      <th className={styles.mangaInfoColumn}>Bình luận / Truyện</th>
+                      <th className={styles.roleColumn}>Lý do báo cáo</th>
                       <th className={styles.statusColumn}>Status</th>
-                      <th className={styles.dateColumn}>Created At</th>
                       <th className={styles.actionColumn}>Action</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {reports.length === 0 ? (
+                    {commentReports.length === 0 ? (
                       <tr>
-                        <td colSpan={7} className={styles.emptyCell}>
+                        <td colSpan={5} className={styles.emptyCell}>
                           {loading ? 'Đang tải báo cáo...' : errorMessage || 'Không có dữ liệu hiển thị.'}
                         </td>
                       </tr>
                     ) : (
-                      reports.map((report) => (
+                      commentReports.map((report) => (
                         <tr key={report.id}>
                           <td className={styles.idCell}>{report.id}</td>
                           <td>
-                            <span className={styles.userName}>{report.mangaTitle}</span>
-                            <span className={styles.userEmail}>Chapter {report.chapterNumber} - {report.chapterTitle}</span>
+                            <span className={styles.userName} style={{ maxWidth: '420px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
+                              "<CommentText content={report.commentContent} />"
+                            </span>
+                            <span className={styles.userEmail}>
+                              bởi {report.commentAuthorUsername} • {report.mangaTitle} {report.chapterNumber ? `(Chap ${report.chapterNumber})` : ''}
+                            </span>
                           </td>
-                          <td>{typeLabels[report.type]}</td>
-                          <td className={styles.truncateCell}>{report.reporter}</td>
+                          <td>{commentReasonLabels[report.reason] || report.reason}</td>
                           <td>
                             <span className={`${styles.plainStatus} ${
                               report.status === 'REJECTED'
@@ -368,10 +375,9 @@ export const ChapterReports: React.FC = () => {
                               {statusLabels[report.status]}
                             </span>
                           </td>
-                          <td>{formatDate(report.createdAt)}</td>
                           <td>
                             <div className={styles.iconActions}>
-                              <button type="button" className={styles.iconBtn} onClick={() => openReport(report)} aria-label="Xem chi tiết báo cáo">
+                              <button type="button" className={styles.iconBtn} onClick={() => openCommentReport(report)} aria-label="Xem chi tiết báo cáo">
                                 <Eye size={15} />
                               </button>
                             </div>
@@ -383,7 +389,7 @@ export const ChapterReports: React.FC = () => {
                 </table>
               </div>
 
-              {reportPage && reportPage.totalPages > 1 && (
+              {commentReportPage && commentReportPage.totalPages > 1 && (
                 <div className={styles.pagination}>
                   <button
                     type="button"
@@ -394,7 +400,7 @@ export const ChapterReports: React.FC = () => {
                     Trước
                   </button>
                   <span className={styles.pageCount}>
-                    {reportPage.number + 1}/{reportPage.totalPages}
+                    {commentReportPage.number + 1}/{commentReportPage.totalPages}
                   </span>
                   <button
                     type="button"
@@ -411,14 +417,14 @@ export const ChapterReports: React.FC = () => {
         </section>
       </div>
 
-      {selectedReport && (
-        <ReportDetailModal
-          report={selectedReport}
+      {selectedCommentReport && (
+        <CommentReportDetailModal
+          report={selectedCommentReport}
           rejectReason={rejectReason}
           setRejectReason={setRejectReason}
-          onStatusChange={updateReportStatus}
+          onReview={updateCommentReportReview}
           onClose={() => {
-            setSelectedReport(null);
+            setSelectedCommentReport(null);
             setRejectReason('');
           }}
         />

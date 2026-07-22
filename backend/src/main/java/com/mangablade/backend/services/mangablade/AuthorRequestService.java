@@ -56,18 +56,17 @@ public class AuthorRequestService {
     }
 
     @Transactional(readOnly = true)
-    public Page<AuthorRequestResponse> getAllRequests(String status, Pageable pageable) {
-        Page<AuthorRequest> requests;
-        if (status == null || status.trim().isEmpty()) {
-            requests = authorRequestRepository.findAll(pageable);
-        } else {
+    public Page<AuthorRequestResponse> getAllRequests(String status, String search, Pageable pageable) {
+        AuthorRequestStatus statusEnum = null;
+        if (status != null && !status.trim().isEmpty()) {
             try {
-                AuthorRequestStatus statusEnum = AuthorRequestStatus.valueOf(status.toUpperCase());
-                requests = authorRequestRepository.findByStatus(statusEnum, pageable);
+                statusEnum = AuthorRequestStatus.valueOf(status.toUpperCase());
             } catch (IllegalArgumentException e) {
-                requests = authorRequestRepository.findAll(pageable);
+                // Keep statusEnum as null if invalid status string is provided
             }
         }
+        String searchNormalized = (search != null && !search.trim().isEmpty()) ? search.trim() : null;
+        Page<AuthorRequest> requests = authorRequestRepository.findRequests(statusEnum, searchNormalized, pageable);
         return requests.map(this::toResponse);
     }
 

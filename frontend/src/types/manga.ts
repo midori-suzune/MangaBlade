@@ -94,6 +94,8 @@ export type MangaCommentResponse = {
     content: string,
     createdAt: string,
     isAuthor?: boolean | null,
+    likeCount?: number | null,
+    isLiked?: boolean | null,
     user: {
         id: number,
         username: string,
@@ -107,6 +109,18 @@ export type MangaCommentResponse = {
 export type CreateCommentRequest = {
     content: string,
     parentId?: number,
+}
+
+export type CommentLikeResponse = {
+    liked: boolean,
+    likeCount: number,
+}
+
+export type CommentReportReason = 'SPAM' | 'HARASSMENT' | 'SPOILER' | 'HATE_SPEECH' | 'OTHER';
+
+export type CreateCommentReportRequest = {
+    reason: CommentReportReason,
+    description?: string,
 }
 
 export type ChapterReportType = "IMAGE_BROKEN" | "MISSING_PAGE" | "WRONG_ORDER" | "DUPLICATE_CHAPTER";

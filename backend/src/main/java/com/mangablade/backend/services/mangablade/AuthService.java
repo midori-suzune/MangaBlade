@@ -63,6 +63,10 @@ public class AuthService {
         );
         User user = userService.loadUserByUsername(loginRequest.getEmail());
 
+        if (user.isBanned()) {
+            throw new AppException(ErrorCode.ACCOUNT_BANNED);
+        }
+
         if (user.getAuthProvider() == AuthProvider.LOCAL && user.getEmailVerifiedAt() == null) {
             throw new AppException(ErrorCode.EMAIL_NOT_VERIFIED);
         }
@@ -194,6 +198,9 @@ public class AuthService {
             User user;
             if (userRepository.existsByEmail(email)) {
                 user = (User) userService.loadUserByUsername(email);
+                if (user.isBanned()) {
+                    throw new AppException(ErrorCode.ACCOUNT_BANNED);
+                }
                 boolean needsSave = false;
                 if (user.getAuthProvider() == AuthProvider.LOCAL) {
                     user.setProviderId(googleId);
@@ -323,6 +330,10 @@ public class AuthService {
     public void changePassword(User user, String currentPassword, String newPassword) {
         if (user.getAuthProvider() == AuthProvider.GOOGLE && user.getPasswordHash() == null) {
             throw new AppException(ErrorCode.SOCIAL_USER_CANT_CHANGE_PASSWORD);
+        }
+
+        if (currentPassword.equals(newPassword) || (user.getPasswordHash() != null && passwordEncoder.matches(newPassword, user.getPasswordHash()))) {
+            throw new AppException(ErrorCode.SAME_AS_CURRENT_PASSWORD);
         }
 
         if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {

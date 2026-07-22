@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { authorRequestApi, type AuthorRequestResponse } from '../../../api/authorRequestApi';
 import { useAuthStore } from '../../../stores/authStore';
-import { AlertTriangle, BarChart3, BookOpen, Users, FileCheck, FileText, ChevronDown, Eye } from 'lucide-react';
+import { AlertTriangle, BarChart3, BookOpen, Users, FileCheck, FileText, ChevronDown, Eye, MessageSquare } from 'lucide-react';
 import styles from '../Admin.module.css';
 
 interface DetailModalProps {
@@ -277,18 +277,17 @@ export const AuthorRequests: React.FC = () => {
   const fetchRequests = useCallback(async (nextPage = page) => {
     try {
       const statusParam = filterStatus === 'ALL' ? undefined : filterStatus;
-      const response = await authorRequestApi.getAll(statusParam, nextPage, 10);
+      const response = await authorRequestApi.getAll(statusParam, search || undefined, nextPage, 10);
       if (response.success && response.payload) {
-        const fetchedRequests = filterRequestsBySearch(response.payload.content);
-        setRequests(response.payload.content.length > 0 ? fetchedRequests : getSeededRequests());
-        setTotalPages(response.payload.content.length > 0 ? response.payload.totalPages : 0);
+        setRequests(response.payload.content);
+        setTotalPages(response.payload.totalPages);
       }
     } catch (error) {
       console.error("Lỗi khi tải danh sách đơn đăng ký:", error);
       setRequests(getSeededRequests());
       setTotalPages(0);
     }
-  }, [filterStatus, page, filterRequestsBySearch, getSeededRequests]);
+  }, [filterStatus, search, page, getSeededRequests]);
 
   useEffect(() => {
     Promise.resolve().then(() => fetchRequests());
@@ -371,6 +370,12 @@ export const AuthorRequests: React.FC = () => {
                 onClick={() => navigate('/admin/chapter-reports')}
               >
                 <AlertTriangle size={16} /> Báo cáo lỗi chương
+              </button>
+              <button
+                className={styles.adminNavItem}
+                onClick={() => navigate('/admin/comment-reports')}
+              >
+                <MessageSquare size={16} /> Báo cáo bình luận
               </button>
               <button
                 className={`${styles.adminNavItem} ${activeTab === "author-requests" ? styles.active : ""}`}

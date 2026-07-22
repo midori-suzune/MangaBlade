@@ -170,11 +170,11 @@ const MangaHeaderCard: React.FC<MangaHeaderCardProps> = ({
               </button>
             )}
 
-            {manga.approvalStatus === 'REJECTED' && manga.rejectionReason && (
+            {manga.approvalStatus === 'REJECTED' && (
               <button
                 onClick={() => {
                   setIsMangaDropdownOpen(false);
-                  alert(`Lý do từ chối truyện:\n\n${manga.rejectionReason}`);
+                  alert(`Lý do từ chối truyện:\n\n${manga.rejectionReason || "Chưa có lý do chi tiết từ Admin."}`);
                 }}
                 style={{
                   display: 'flex',
@@ -184,7 +184,8 @@ const MangaHeaderCard: React.FC<MangaHeaderCardProps> = ({
                   fontSize: '13px',
                   background: 'none',
                   border: 'none',
-                  color: 'var(--color-text-main)',
+                  color: '#ef4444',
+                  fontWeight: '600',
                   cursor: 'pointer',
                   textAlign: 'left',
                   width: '100%'
@@ -467,11 +468,11 @@ const ChapterRow: React.FC<ChapterRowProps> = ({
                 </button>
               )}
 
-              {chapter.approvalStatus === 'REJECTED' && chapter.rejectionReason && (
+              {chapter.approvalStatus === 'REJECTED' && (
                 <button
                   onClick={() => {
                     setActiveDropdownId(null);
-                    alert(`Lý do từ chối chương ${chapter.chapterNumber}:\n\n${chapter.rejectionReason}`);
+                    alert(`Lý do từ chối chương ${chapter.chapterNumber}:\n\n${chapter.rejectionReason || "Chưa có lý do chi tiết từ Admin."}`);
                   }}
                   style={{
                     display: 'flex',
@@ -481,7 +482,8 @@ const ChapterRow: React.FC<ChapterRowProps> = ({
                     fontSize: '13px',
                     background: 'none',
                     border: 'none',
-                    color: 'var(--color-text-main)',
+                    color: '#ef4444',
+                    fontWeight: '600',
                     cursor: 'pointer',
                     textAlign: 'left',
                     width: '100%'
