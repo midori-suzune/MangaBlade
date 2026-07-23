@@ -36,7 +36,7 @@
   border: 1px solid #EAEAEA;
   border-radius: 12px;
   width: 100%;
-  max-width: 440px;
+  max-width: 500px;
   padding: 32px;
   position: relative;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
@@ -259,7 +259,7 @@
   padding: 12px;
   background-color: #111111;
   color: #FFFFFF;
-  border: none;
+  border: 1px solid #111111;
   border-radius: 6px;
   font-size: 14px;
   font-weight: 600;
@@ -271,6 +271,7 @@
 
 .submitBtn:hover:not(:disabled) {
   background-color: #333333;
+  border-color: #333333;
 }
 
 .submitBtn:active:not(:disabled) {
@@ -312,19 +313,20 @@
   justify-content: center;
   gap: 10px;
   padding: 11px;
-  background-color: #F7F6F3;
-  border: 1px solid #EAEAEA;
+  background-color: #111111;
+  border: 1px solid #111111;
   border-radius: 6px;
   font-size: 14px;
   font-weight: 500;
-  color: #2F3437;
+  color: #FFFFFF;
   cursor: pointer;
   transition: background-color 0.2s, transform 0.2s;
   font-family: inherit;
 }
 
 .googleBtn:hover {
-  background-color: #EAEAEA;
+  background-color: #333333;
+  border-color: #333333;
 }
 
 .googleBtn:active {
@@ -360,4 +362,134 @@
   color: #111111;
   text-align: center;
   margin-bottom: 24px;
+}
+
+.turnstileBox {
+  width: 100%;
+  min-height: 65px;
+  display: flex;
+  justify-content: center;
+}
+
+:global(:root[data-theme="dark"]) .overlay {
+  background-color: rgba(0, 0, 0, 0.62);
+}
+
+:global(:root[data-theme="dark"]) .modal {
+  background-color: #171717;
+  border-color: #2f2f2f;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.42);
+}
+
+:global(:root[data-theme="dark"]) .modal::-webkit-scrollbar-thumb {
+  background: #3f3f3f;
+}
+
+:global(:root[data-theme="dark"]) .modal::-webkit-scrollbar-thumb:hover {
+  background: #525252;
+}
+
+:global(:root[data-theme="dark"]) .closeBtn {
+  color: #a3a3a3;
+}
+
+:global(:root[data-theme="dark"]) .closeBtn:hover {
+  color: #f5f5f5;
+  background-color: #262626;
+}
+
+:global(:root[data-theme="dark"]) .logo,
+:global(:root[data-theme="dark"]) .activeTab,
+:global(:root[data-theme="dark"]) .forgotHeading {
+  color: #f5f5f5;
+}
+
+:global(:root[data-theme="dark"]) .tabs {
+  border-bottom-color: #2f2f2f;
+}
+
+:global(:root[data-theme="dark"]) .tab {
+  color: #a3a3a3;
+}
+
+:global(:root[data-theme="dark"]) .tab:hover {
+  color: #f5f5f5;
+}
+
+:global(:root[data-theme="dark"]) .activeTab::after {
+  background-color: #f5f5f5;
+}
+
+:global(:root[data-theme="dark"]) .label,
+:global(:root[data-theme="dark"]) .checkboxLabel {
+  color: #e5e5e5;
+}
+
+:global(:root[data-theme="dark"]) .input {
+  background-color: #202020;
+  border-color: #3a3a3a;
+  color: #f5f5f5;
+}
+
+:global(:root[data-theme="dark"]) .input::placeholder {
+  color: #8f8f8f;
+}
+
+:global(:root[data-theme="dark"]) .input:focus {
+  border-color: #818cf8;
+}
+
+:global(:root[data-theme="dark"]) .inputError {
+  border-color: #f87171;
+}
+
+:global(:root[data-theme="dark"]) .eyeToggle {
+  color: #a3a3a3;
+}
+
+:global(:root[data-theme="dark"]) .eyeToggle:hover {
+  color: #f5f5f5;
+}
+
+:global(:root[data-theme="dark"]) .checkbox {
+  accent-color: #818cf8;
+}
+
+:global(:root[data-theme="dark"]) .submitBtn {
+  background-color: #202020;
+  border: 1px solid #3a3a3a;
+  color: #f5f5f5;
+}
+
+:global(:root[data-theme="dark"]) .submitBtn:hover:not(:disabled) {
+  background-color: #2a2a2a;
+}
+
+:global(:root[data-theme="dark"]) .divider::before,
+:global(:root[data-theme="dark"]) .divider::after {
+  background-color: #2f2f2f;
+}
+
+:global(:root[data-theme="dark"]) .divider span,
+:global(:root[data-theme="dark"]) .footer {
+  color: #a3a3a3;
+}
+
+:global(:root[data-theme="dark"]) .googleBtn {
+  background-color: #202020;
+  border-color: #3a3a3a;
+  color: #e5e5e5;
+}
+
+:global(:root[data-theme="dark"]) .googleBtn:hover {
+  background-color: #2a2a2a;
+}
+
+:global(:root[data-theme="dark"]) .successBanner {
+  color: #86efac;
+}
+
+:global(:root[data-theme="dark"]) .errorBanner,
+:global(:root[data-theme="dark"]) .fieldError {
+  color: #fca5a5;
 }

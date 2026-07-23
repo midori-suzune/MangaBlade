@@ -27,4 +27,7 @@ public class RegisterRequest{
     @Email(message = "Email is invalid")
     @Size(max = 255, message = "Email must not exceed 255 characters")
     private String email;
+
+    @NotBlank(message = "Turnstile token is required")
+    private String turnstileToken;
 }

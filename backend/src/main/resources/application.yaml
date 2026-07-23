@@ -7,6 +7,9 @@ spring:
   application:
     name: mangablade-backend
 
+  flyway:
+    baseline-on-migrate: true
+
   datasource:
     url: ${DB_URL:jdbc:mysql://localhost:3306/MangaBlade?createDatabaseIfNotExist=true&serverTimezone=UTC}
     username: ${DB_USERNAME:root}
@@ -48,6 +51,9 @@ jwt:
 
 google:
   client-id: ${GOOGLE_CLIENT_ID}
+
+turnstile:
+  secret: ${TURNSTILE_SECRET:}
 
 cloudinary:
   cloud-name: ${CLOUDINARY_CLOUD_NAME:}

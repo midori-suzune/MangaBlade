@@ -6,7 +6,7 @@ import styles from "./Menu.module.css";
 export function Menu() {
     const { isAuthenticated, openAuthModal } = useAuthStore();
     const [theme, setTheme] = useState<"light" | "dark">(() => {
-        return localStorage.getItem("mangablade-theme") === "dark" ? "dark" : "light";
+        return localStorage.getItem("mangablade-theme") === "light" ? "light" : "dark";
     });
 
     useEffect(() => {

@@ -4,6 +4,11 @@ FROM node:24-alpine AS build
 # Set the working directory
 WORKDIR /app
 
+ARG VITE_GOOGLE_CLIENT_ID
+ARG VITE_TURNSTILE_SITE_KEY
+ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
+ENV VITE_TURNSTILE_SITE_KEY=$VITE_TURNSTILE_SITE_KEY
+
 # Copy only package files first to leverage Docker layer caching for dependencies
 COPY frontend/package*.json ./
 

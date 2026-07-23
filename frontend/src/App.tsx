@@ -15,7 +15,7 @@ export default function App() {
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('mangablade-theme');
-    document.documentElement.dataset.theme = savedTheme === 'dark' ? 'dark' : 'light';
+    document.documentElement.dataset.theme = savedTheme === 'light' ? 'light' : 'dark';
   }, []);
 
   return (

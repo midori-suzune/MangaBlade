@@ -1,5 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { forwardRef, useState, useEffect, useRef } from "react";
 import type { FormEvent } from "react";
+import { Turnstile } from "@marsidev/react-turnstile";
+import type { TurnstileInstance } from "@marsidev/react-turnstile";
 import styles from "./AuthModal.module.css";
 import {
   login as loginApi,
@@ -15,6 +17,8 @@ import { useGoogleLogin } from '@react-oauth/google';
 import { googleLogin as googleLoginApi } from '../../api/authApi';
 
 import { useNavigate } from "react-router-dom";
+
+const turnstileSiteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined;
 
 export function AuthModal() {
   const navigate = useNavigate();
@@ -38,6 +42,8 @@ export function AuthModal() {
   const [verificationEmail, setVerificationEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const [turnstileError, setTurnstileError] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -45,6 +51,7 @@ export function AuthModal() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const modalRef = useRef<HTMLDivElement>(null);
+  const turnstileRef = useRef<TurnstileInstance>(null);
 
   useEffect(() => {
     if (authModalTab === 'login' || authModalTab === 'register' || authModalTab === 'forgot') {
@@ -61,6 +68,9 @@ export function AuthModal() {
       setFieldErrors({});
       setShowPassword(false);
       setShowConfirmPassword(false);
+      setTurnstileToken("");
+      setTurnstileError("");
+      turnstileRef.current?.reset();
 
       if (!isAuthModalOpen) {
         setEmail("");
@@ -133,6 +143,9 @@ export function AuthModal() {
     if (!password) {
       errors.password = "Password is required";
     }
+    if (!turnstileToken) {
+      errors.turnstileToken = turnstileError || "Vui lòng xác minh bạn không phải bot";
+    }
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   }
@@ -170,6 +183,9 @@ export function AuthModal() {
     } else if (password !== confirmPassword) {
       errors.confirmPassword = "Passwords do not match";
     }
+    if (!turnstileToken) {
+      errors.turnstileToken = turnstileError || "Vui lòng xác minh bạn không phải bot";
+    }
 
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
@@ -184,7 +200,7 @@ export function AuthModal() {
 
     setLoading(true);
     try {
-      const result = await loginApi({ email, password });
+      const result = await loginApi({ email, password, turnstileToken });
       if (result.success) {
         authLogin(result.payload.accessToken, result.payload.userInfo, rememberMe);
         closeAuthModal();
@@ -216,6 +232,8 @@ export function AuthModal() {
       }
     } finally {
       setLoading(false);
+      setTurnstileToken("");
+      turnstileRef.current?.reset();
     }
   }
 
@@ -228,7 +246,7 @@ export function AuthModal() {
 
     setLoading(true);
     try {
-      const result = await registerApi({ username, email, password });
+      const result = await registerApi({ username, email, password, turnstileToken });
       if (result.success) {
         setSuccess("Mã OTP đã được gửi vào Email của bạn. Vui lòng xác thực.");
         setVerificationEmail(email);
@@ -254,6 +272,8 @@ export function AuthModal() {
       }
     } finally {
       setLoading(false);
+      setTurnstileToken("");
+      turnstileRef.current?.reset();
     }
   }
 
@@ -569,6 +589,16 @@ export function AuthModal() {
                   </button>
                 </div>
 
+                <TurnstileChallenge
+                    ref={turnstileRef}
+                    siteKey={turnstileSiteKey}
+                    onToken={setTurnstileToken}
+                    onError={setTurnstileError}
+                />
+                {fieldErrors.turnstileToken && (
+                    <span className={styles.fieldError}>{fieldErrors.turnstileToken}</span>
+                )}
+
                 <button
                     type="submit"
                     className={styles.submitBtn}
@@ -786,6 +816,16 @@ export function AuthModal() {
                   )}
                 </div>
 
+                <TurnstileChallenge
+                    ref={turnstileRef}
+                    siteKey={turnstileSiteKey}
+                    onToken={setTurnstileToken}
+                    onError={setTurnstileError}
+                />
+                {fieldErrors.turnstileToken && (
+                    <span className={styles.fieldError}>{fieldErrors.turnstileToken}</span>
+                )}
+
                 <button
                     type="submit"
                     className={styles.submitBtn}
@@ -866,3 +906,41 @@ export function AuthModal() {
       </div>
   );
 }
+
+interface TurnstileChallengeProps {
+  siteKey?: string;
+  onToken: (token: string) => void;
+  onError: (message: string) => void;
+}
+
+const TurnstileChallenge = forwardRef<TurnstileInstance, TurnstileChallengeProps>(({
+  siteKey,
+  onToken,
+  onError,
+}, ref) => {
+  if (!siteKey) {
+    return null;
+  }
+
+  return (
+      <Turnstile
+          ref={ref}
+          siteKey={siteKey}
+          className={styles.turnstileBox}
+          options={{
+            theme: "auto",
+            size: "flexible",
+          }}
+          onSuccess={onToken}
+          onExpire={() => {
+            onToken("");
+            onError("Turnstile đã hết hạn, vui lòng xác minh lại");
+          }}
+          onError={(errorCode) => {
+            console.error("Turnstile error:", errorCode);
+            onToken("");
+            onError(`Turnstile lỗi ${errorCode}. Kiểm tra site key/domain hoặc extension chặn script.`);
+          }}
+      />
+  );
+});

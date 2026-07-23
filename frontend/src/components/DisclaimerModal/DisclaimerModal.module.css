@@ -1,0 +1,140 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background-color: rgba(0, 0, 0, 0.58);
+  backdrop-filter: blur(5px);
+}
+
+.modal {
+  width: min(760px, 100%);
+  max-height: min(82vh, 720px);
+  overflow-y: auto;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.32);
+  padding: 28px;
+}
+
+.topMedia {
+  display: flex;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.topMedia img {
+  width: 160px;
+  height: 80px;
+  object-fit: contain;
+}
+
+.titleStack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+
+.heading {
+  display: grid;
+  grid-template-columns: 150px 1fr 150px;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.headingMedia {
+  flex: 0 0 auto;
+}
+
+.headingMedia img {
+  width: 150px;
+  height: 150px;
+  object-fit: contain;
+}
+
+.rightMedia img {
+  width: 120px;
+  height: 120px;
+}
+
+.title {
+  color: #f97316;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  color: var(--color-text);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.acceptBtn {
+  width: 100%;
+  margin-top: 24px;
+  padding: 12px 18px;
+  border: 1px solid #111111;
+  border-radius: 8px;
+  background-color: #111111;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 700;
+  transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
+}
+
+.acceptBtn:hover {
+  background-color: #333333;
+  border-color: #333333;
+}
+
+.acceptBtn:active {
+  transform: scale(0.98);
+}
+
+:global(:root[data-theme="dark"]) .acceptBtn {
+  background-color: #000000;
+  border-color: #000000;
+}
+
+:global(:root[data-theme="dark"]) .acceptBtn:hover {
+  background-color: #111111;
+  border-color: #111111;
+}
+
+@media (max-width: 640px) {
+  .modal {
+    padding: 22px;
+  }
+
+  .headingMedia img {
+    width: 72px;
+    height: 72px;
+  }
+
+  .heading {
+    grid-template-columns: 72px 1fr 72px;
+    gap: 10px;
+  }
+
+  .title {
+    font-size: 21px;
+  }
+
+  .content {
+    font-size: 14px;
+  }
+}
