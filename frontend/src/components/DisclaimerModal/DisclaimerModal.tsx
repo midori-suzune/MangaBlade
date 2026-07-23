@@ -1,15 +1,11 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import phoenixWrightGif from "../../assets/face_troll/71-PhoenixWright.gif";
 import truotTuyetGif from "../../assets/gif_anime/truottuyet.gif";
 import useMyBrainGif from "../../assets/gif_anime/usemybrain.gif";
 import styles from "./DisclaimerModal.module.css";
 
 export function DisclaimerModal() {
-  const [isOpen, setIsOpen] = useState(false);
-
-  useEffect(() => {
-    setIsOpen(window.location.pathname === "/");
-  }, []);
+  const [isOpen, setIsOpen] = useState(() => window.location.pathname === "/");
 
   function acceptDisclaimer() {
     setIsOpen(false);
