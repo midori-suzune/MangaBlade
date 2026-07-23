@@ -28,7 +28,10 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -55,7 +58,12 @@ public class AuthService {
     @Value("${google.client-id}")
     private String googleClientId;
 
+    @Value("${turnstile.secret:}")
+    private String turnstileSecret;
+
     public AuthResponse login(LoginRequest loginRequest) {
+        verifyTurnstile(loginRequest.getTurnstileToken());
+
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.getEmail(),
@@ -85,6 +93,8 @@ public class AuthService {
     }
 
     public void register(RegisterRequest registerRequest) {
+        verifyTurnstile(registerRequest.getTurnstileToken());
+
         if (userRepository.existsByEmail(registerRequest.getEmail())
                 || userRepository.existsByUsername(registerRequest.getUsername())) {
             throw new AppException(ErrorCode.USER_EXISTED);
@@ -99,6 +109,40 @@ public class AuthService {
         userRepository.save(user);
 
         sendAndSaveVerificationOtp(user);
+    }
+
+    private void verifyTurnstile(String token) {
+        if (turnstileSecret == null || turnstileSecret.isBlank() || token == null || token.isBlank()) {
+            throw new AppException(ErrorCode.INVALID_TURNSTILE_TOKEN);
+        }
+
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+            MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+            body.add("secret", turnstileSecret);
+            body.add("response", token);
+
+            ResponseEntity<TurnstileVerifyResponse> response = restTemplate.postForEntity(
+                    "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+                    new HttpEntity<>(body, headers),
+                    TurnstileVerifyResponse.class
+            );
+
+            TurnstileVerifyResponse verifyResponse = response.getBody();
+            if (verifyResponse == null || !verifyResponse.success()) {
+                throw new AppException(ErrorCode.INVALID_TURNSTILE_TOKEN);
+            }
+        } catch (AppException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new AppException(ErrorCode.INVALID_TURNSTILE_TOKEN);
+        }
+    }
+
+    private record TurnstileVerifyResponse(boolean success) {
     }
 
     private String generateOtp() {

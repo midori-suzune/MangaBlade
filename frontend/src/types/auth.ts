@@ -1,12 +1,14 @@
 export interface LoginRequest {
   email: string;
   password: string;
+  turnstileToken: string;
 }
 
 export interface RegisterRequest {
   username: string;
   email: string;
   password: string;
+  turnstileToken: string;
 }
 
 export interface UserInfo {
