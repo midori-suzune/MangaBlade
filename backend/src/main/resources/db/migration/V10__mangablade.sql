@@ -1,11 +1,3 @@
-DROP DATABASE IF EXISTS MangaBlade;
-
-CREATE DATABASE IF NOT EXISTS MangaBlade
-    CHARACTER SET utf8mb4
-    COLLATE utf8mb4_unicode_ci;
-
-USE MangaBlade;
-
 CREATE TABLE titles (
     id BIGINT NOT NULL AUTO_INCREMENT,
     name VARCHAR(100) NOT NULL,
@@ -451,7 +443,6 @@ VALUES
     ('the-doraemon-special-doi-quan-doraemons-dac-bietdoi-quan-doremon-them', TRUE, 'doi-quan-doraemon-dac-biet', 0, 0, NOW(3), NOW(3)),
     ('dao-hai-tac', TRUE, 'one-piece', 0, 0, NOW(3), NOW(3)),
     ('huong-dan-sinh-ton-trong-hoc-vien', TRUE, 'huong-dan-sinh-ton-trong-hoc-vien', 0, 0, NOW(3), NOW(3)),
-    ('arya-ban-ben-thinh-thoang-lai-treu-gheo-toi-bang-tieng-nga', TRUE, 'arya-ban-ben-thinh-thoang-lai-treu-gheo-toi-bang-tieng-nga', 0, 0, NOW(3), NOW(3)),
     ('dai-quan-gia-la-ma-hoang', TRUE, 'dai-quan-gia-la-ma-hoang', 0, 0, NOW(3), NOW(3)),
     ('dai-vuong-tha-mang', TRUE, 'dai-vuong-tha-mang', 0, 0, NOW(3), NOW(3)),
     ('vua-bong-chuyen', TRUE, 'haikyuu', 0, 0, NOW(3), NOW(3)),

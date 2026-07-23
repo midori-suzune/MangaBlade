@@ -44,7 +44,7 @@ export function appendComment(
     }
 
     if (!nextComment.replyToCommentId) {
-        return [...comments, {...nextComment, replies: nextComment.replies ?? []}];
+        return [{...nextComment, replies: nextComment.replies ?? []}, ...comments];
     }
 
     return comments.map((comment) => {
