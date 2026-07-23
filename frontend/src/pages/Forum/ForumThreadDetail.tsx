@@ -1,4 +1,5 @@
 import type {FormEvent} from "react";
+import {useMemo} from "react";
 import {MessageCircle, Send, Users} from "lucide-react";
 import type {ForumCommentResponse, ForumThreadResponse} from "../../types/forum.ts";
 import {CommentEditor} from "../../components/CommentEmojiPicker/CommentEditor.tsx";
@@ -6,7 +7,7 @@ import {CommentEmojiPicker} from "../../components/CommentEmojiPicker/CommentEmo
 import {CommentItem} from "./CommentItem.tsx";
 import styles from "./ForumPage.module.css";
 import {categoryLabels} from "./forumConstants.ts";
-import {formatTime, getInitial, getRoleBadge} from "./forumUtils.ts";
+import {flattenComments, formatTime, getInitial, getRoleBadge} from "./forumUtils.ts";
 
 function getRoleBadgeClass(role?: string | null) {
     if (role === "ADMIN") return `${styles.commentBadge} ${styles.adminBadge}`;
@@ -49,6 +50,17 @@ export function ForumThreadDetail({
     onReply: (comment: ForumCommentResponse) => void;
     onSubmitComment: (event: FormEvent<HTMLFormElement>) => void;
 }) {
+    const flatComments = useMemo(
+        () => flattenComments(comments)
+            .slice()
+            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
+        [comments]
+    );
+
+    const commentById = useMemo(() => {
+        return new Map(flatComments.map((comment) => [comment.id, comment]));
+    }, [flatComments]);
+
     return (
         <section className={styles.chatPanel} aria-label="Cuộc trò chuyện">
             {errorMessage && <div className={styles.errorBanner}>{errorMessage}</div>}
@@ -92,24 +104,6 @@ export function ForumThreadDetail({
                         </div>
                     </div>
 
-                    <div className={styles.commentList}>
-                        {isLoadingComments && <div className={styles.emptyState}>Đang tải bình luận...</div>}
-                        {!isLoadingComments && comments.length === 0 && (
-                            <div className={styles.emptyState}>Chưa có bình luận nào.</div>
-                        )}
-                        {comments.map((comment) => (
-                            <CommentItem
-                                comment={comment}
-                                currentUserId={userId}
-                                depth={0}
-                                key={comment.id}
-                                onDelete={onDeleteComment}
-                                onLike={onLikeComment}
-                                onReply={onReply}
-                            />
-                        ))}
-                    </div>
-
                     <form className={styles.commentInputBox} onSubmit={onSubmitComment}>
                         <div className={styles.commentAvatar}>{getInitial(currentUsername)}</div>
                         <div className={styles.commentInputWrapper}>
@@ -134,6 +128,26 @@ export function ForumThreadDetail({
                             </div>
                         </div>
                     </form>
+
+                    <div className={styles.commentList}>
+                        {isLoadingComments && <div className={styles.emptyState}>Đang tải bình luận...</div>}
+                        {!isLoadingComments && comments.length === 0 && (
+                            <div className={styles.emptyState}>Chưa có bình luận nào.</div>
+                        )}
+                        {flatComments.map((comment) => (
+                            <CommentItem
+                                comment={comment}
+                                currentUserId={userId}
+                                key={comment.id}
+                                onDelete={onDeleteComment}
+                                onLike={onLikeComment}
+                                onReply={onReply}
+                                replyToUsername={comment.replyToCommentId
+                                    ? commentById.get(comment.replyToCommentId)?.user?.username
+                                    : undefined}
+                            />
+                        ))}
+                    </div>
                 </>
             ) : (
                 <div className={styles.noThreadState}>Chọn hoặc tạo một thread để bắt đầu.</div>

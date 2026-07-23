@@ -12,23 +12,23 @@ function getRoleBadgeClass(role?: string | null) {
 export function CommentItem({
     comment,
     currentUserId,
-    depth,
     onDelete,
     onLike,
-    onReply
+    onReply,
+    replyToUsername
 }: {
     comment: ForumCommentResponse;
     currentUserId?: number;
-    depth: number;
     onDelete: (commentId: number) => void;
     onLike: (commentId: number) => void;
     onReply: (comment: ForumCommentResponse) => void;
+    replyToUsername?: string;
 }) {
     const authorName = comment.user?.username || "Người dùng";
     const canDelete = currentUserId !== undefined && comment.user?.id === currentUserId;
 
     return (
-        <article className={styles.commentItem} style={{marginLeft: depth ? Math.min(depth * 34, 68) : 0}}>
+        <article className={styles.commentItem}>
             <div className={styles.commentAvatar}>{getInitial(authorName)}</div>
             <div className={styles.commentBody}>
                 <div className={styles.commentBubble}>
@@ -47,6 +47,7 @@ export function CommentItem({
                         )}
                     </div>
                     <p className={styles.commentText}>
+                        {replyToUsername && <span className={styles.replyMention}>@{replyToUsername}</span>}
                         <CommentText content={comment.content} />
                     </p>
                 </div>
@@ -60,17 +61,6 @@ export function CommentItem({
                         <button type="button" onClick={() => onDelete(comment.id)}>Gỡ</button>
                     )}
                 </div>
-                {(comment.replies ?? []).map((reply) => (
-                    <CommentItem
-                        comment={reply}
-                        currentUserId={currentUserId}
-                        depth={depth + 1}
-                        key={reply.id}
-                        onDelete={onDelete}
-                        onLike={onLike}
-                        onReply={onReply}
-                    />
-                ))}
             </div>
         </article>
     );
