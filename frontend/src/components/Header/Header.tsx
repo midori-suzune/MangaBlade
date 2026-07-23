@@ -1,19 +1,22 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { searchManga } from "../../api/mangaApi";
 import { useAuthStore } from "../../stores/authStore";
 import type { MangaSearchResponse } from "../../types/manga";
 import styles from "./Header.module.css";
 
 export function Header() {
+    const navigate = useNavigate();
     const { isAuthenticated, user, logout, openAuthModal, avatarUrl } = useAuthStore();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [searchResults, setSearchResults] = useState<MangaSearchResponse[]>([]);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [isSearchLoading, setIsSearchLoading] = useState(false);
+    const [activeSearchIndex, setActiveSearchIndex] = useState(-1);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const searchRef = useRef<HTMLDivElement>(null);
+    const searchItemRefs = useRef<Array<HTMLAnchorElement | null>>([]);
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -43,10 +46,12 @@ export function Header() {
                     const response = await searchManga(keyword, 10);
                     if (!cancelled) {
                         setSearchResults(response.success ? response.payload : []);
+                        setActiveSearchIndex(-1);
                     }
                 } catch {
                     if (!cancelled) {
                         setSearchResults([]);
+                        setActiveSearchIndex(-1);
                     }
                 } finally {
                     if (!cancelled) {
@@ -67,8 +72,30 @@ export function Header() {
     const trimmedSearchQuery = searchQuery.trim();
     const shouldShowSearchDropdown = isSearchOpen && trimmedSearchQuery.length >= 2;
 
+    useEffect(() => {
+        if (activeSearchIndex < 0) {
+            return;
+        }
+
+        searchItemRefs.current[activeSearchIndex]?.scrollIntoView({
+            block: "nearest",
+        });
+    }, [activeSearchIndex]);
+
     function closeSearch() {
         setIsSearchOpen(false);
+        setActiveSearchIndex(-1);
+    }
+
+    function openSearchResult(index: number) {
+        const selectedResult = searchResults[index];
+
+        if (!selectedResult) {
+            return;
+        }
+
+        closeSearch();
+        navigate(`/manga/${selectedResult.slug}`);
     }
 
     return (
@@ -90,6 +117,7 @@ export function Header() {
                             const nextQuery = event.target.value;
                             setSearchQuery(nextQuery);
                             setIsSearchOpen(true);
+                            setActiveSearchIndex(-1);
                             if (nextQuery.trim().length < 2) {
                                 setSearchResults([]);
                                 setIsSearchLoading(false);
@@ -101,6 +129,32 @@ export function Header() {
                         onKeyDown={(event) => {
                             if (event.key === "Escape") {
                                 closeSearch();
+                                return;
+                            }
+
+                            if (!shouldShowSearchDropdown || isSearchLoading || searchResults.length === 0) {
+                                return;
+                            }
+
+                            if (event.key === "ArrowDown") {
+                                event.preventDefault();
+                                setActiveSearchIndex((currentIndex) =>
+                                    currentIndex < searchResults.length - 1 ? currentIndex + 1 : 0
+                                );
+                                return;
+                            }
+
+                            if (event.key === "ArrowUp") {
+                                event.preventDefault();
+                                setActiveSearchIndex((currentIndex) =>
+                                    currentIndex > 0 ? currentIndex - 1 : searchResults.length - 1
+                                );
+                                return;
+                            }
+
+                            if (event.key === "Enter" && activeSearchIndex >= 0) {
+                                event.preventDefault();
+                                openSearchResult(activeSearchIndex);
                             }
                         }}
                     />
@@ -110,12 +164,16 @@ export function Header() {
                             {isSearchLoading ? (
                                 <div className={styles.searchState}>Đang tìm...</div>
                             ) : searchResults.length > 0 ? (
-                                searchResults.map((item) => (
+                                searchResults.map((item, index) => (
                                     <Link
+                                        ref={(element) => {
+                                            searchItemRefs.current[index] = element;
+                                        }}
                                         to={`/manga/${item.slug}`}
-                                        className={styles.searchItem}
+                                        className={`${styles.searchItem} ${index === activeSearchIndex ? styles.searchItemActive : ""}`}
                                         key={item.slug}
                                         onClick={closeSearch}
+                                        onMouseEnter={() => setActiveSearchIndex(index)}
                                     >
                                         <span className={styles.searchThumb}>
                                             {item.thumbUrl && <img src={item.thumbUrl} alt={item.title} />}

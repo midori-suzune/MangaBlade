@@ -99,16 +99,20 @@
     border-bottom: none;
 }
 
-.searchItem:hover {
+.searchItem:hover,
+.searchItemActive {
     background-color: var(--color-surface-muted);
 }
 
-.searchItem:hover .searchTitle {
+.searchItem:hover .searchTitle,
+.searchItemActive .searchTitle {
     color: var(--color-text-strong);
 }
 
 .searchItem:hover .searchMeta,
-.searchItem:hover .searchAuthors {
+.searchItem:hover .searchAuthors,
+.searchItemActive .searchMeta,
+.searchItemActive .searchAuthors {
     color: var(--color-text-muted);
 }
 
