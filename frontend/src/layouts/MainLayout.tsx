@@ -4,6 +4,7 @@ import {Menu} from "../components/Menu/Menu.tsx";
 import {Footer} from "../components/Footer/Footer.tsx";
 import {AuthModal} from "../components/AuthModal/AuthModal.tsx";
 import {ScrollToTop} from "../components/ScrollToTop/ScrollToTop.tsx";
+import {DisclaimerModal} from "../components/DisclaimerModal/DisclaimerModal.tsx";
 
 
 export function MainLayout(){
@@ -16,6 +17,7 @@ export function MainLayout(){
                 <Outlet></Outlet>
             </main>
             <Footer></Footer>
+            <DisclaimerModal />
             <AuthModal />
         </div>
     )
