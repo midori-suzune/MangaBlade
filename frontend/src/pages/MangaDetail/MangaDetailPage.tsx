@@ -62,6 +62,11 @@ const EMPTY_AUTHORS: MangaDetailResponse["authors"] = [];
 const EMPTY_CATEGORIES: MangaDetailResponse["categories"] = [];
 const COMMENTS_PER_PAGE = 5;
 
+function getCommentRoleClass(comment: MangaCommentResponse) {
+    if (comment.isAuthor || comment.user?.isAuthor) return styles.authorComment;
+    return styles.memberComment;
+}
+
 interface MangaCommentItemProps {
     comment: MangaCommentResponse;
     expandedReplyParentIds: number[];
@@ -125,7 +130,7 @@ function MangaReplyItem({
                 {getCommentAuthorName(reply.user.id, reply.user.username).slice(0, 1).toUpperCase()}
             </div>
             <div className={styles.replyBody}>
-                <div className={styles.commentBubble}>
+                <div className={`${styles.commentBubble} ${getCommentRoleClass(reply)}`}>
                     <div className={styles.commentAuthorRow}>
                         <span className={styles.commentAuthor}>
                             {getCommentAuthorName(reply.user.id, reply.user.username)}
@@ -266,6 +271,7 @@ function MangaReplyInput({
                     minRows={2}
                     value={replyContent}
                     onChange={setReplyContent}
+                    onSubmit={() => handleSubmitReply(comment.id)}
                 />
                 <div className={styles.replyActions}>
                     <CommentEmojiPicker />
@@ -331,7 +337,7 @@ function CommentBubble({
 }: CommentBubbleProps) {
     return (
         <>
-            <div className={styles.commentBubble}>
+                <div className={`${styles.commentBubble} ${getCommentRoleClass(comment)}`}>
                 <div className={styles.commentAuthorRow}>
                     <span className={styles.commentAuthor}>
                         {getCommentAuthorName(comment.user.id, comment.user.username)}
@@ -482,7 +488,7 @@ function MangaCommentItem({
                         type="button"
                         onClick={() => toggleReplies(comment.id)}
                     >
-                        {isRepliesExpanded ? "Ẩn phản hồi" : `${comment.replies.length} phản hồi`}
+                        {isRepliesExpanded ? "Thu gọn phản hồi" : `Xem ${comment.replies.length} phản hồi`}
                     </button>
                 )}
                 {comment.replies?.length > 0 && isRepliesExpanded && (
@@ -1011,6 +1017,7 @@ export function MangaDetailPage() {
                                 minRows={3}
                                 value={commentContent}
                                 onChange={setCommentContent}
+                                onSubmit={handleSubmitComment}
                             />
                             <div className={styles.commentActions}>
                                 <CommentEmojiPicker />

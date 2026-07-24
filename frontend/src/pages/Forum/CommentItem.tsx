@@ -15,6 +15,7 @@ export function CommentItem({
     onDelete,
     onLike,
     onReply,
+    isReply = false,
     replyToUsername
 }: {
     comment: ForumCommentResponse;
@@ -22,16 +23,22 @@ export function CommentItem({
     onDelete: (commentId: number) => void;
     onLike: (commentId: number) => void;
     onReply: (comment: ForumCommentResponse) => void;
+    isReply?: boolean;
     replyToUsername?: string;
 }) {
     const authorName = comment.user?.username || "Người dùng";
     const canDelete = currentUserId !== undefined && comment.user?.id === currentUserId;
+    const roleClass = comment.user?.role === "ADMIN"
+        ? styles.adminComment
+        : comment.user?.role === "AUTHOR"
+            ? styles.authorComment
+            : styles.memberComment;
 
     return (
-        <article className={styles.commentItem}>
+        <article className={`${styles.commentItem} ${isReply ? styles.replyItem : ""}`}>
             <div className={styles.commentAvatar}>{getInitial(authorName)}</div>
             <div className={styles.commentBody}>
-                <div className={styles.commentBubble}>
+                <div className={`${styles.commentBubble} ${roleClass}`}>
                     <div className={styles.commentAuthorRow}>
                         <span className={styles.commentAuthor}>{authorName}</span>
                         {comment.user?.activeTitle && (

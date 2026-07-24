@@ -525,10 +525,22 @@
     max-width: 100%;
     flex-direction: column;
     gap: 8px;
-    padding: 10px 12px 12px;
-    border-top: 1px solid #f97316;
+    padding: 11px 12px 12px;
+    border-top: 1px solid #6366f1;
     border-radius: 0;
-    background-color: var(--color-surface-soft);
+    background-color: rgba(148, 163, 184, 0.08);
+}
+
+:global(:root[data-theme="dark"]) .commentBubble {
+    background-color: rgba(255, 255, 255, 0.045);
+}
+
+.authorComment {
+    border-top-color: #f97316;
+}
+
+.memberComment {
+    border-top-color: #6366f1;
 }
 
 .commentAuthorRow {
@@ -590,6 +602,114 @@
 .commentFooterActions span:hover,
 .commentFooterActions button:hover {
     color: #3b82f6;
+}
+
+.replyCountButton {
+    align-self: flex-start;
+    margin-top: 4px;
+    padding: 0 0 0 2px;
+    border: none;
+    background: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.replyCountButton:hover {
+    color: #3b82f6;
+}
+
+.replyList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 8px;
+    margin-left: 18px;
+    padding-left: 14px;
+}
+
+.replyItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.replyInputBox {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.replyBody {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.replyAvatar {
+    display: flex;
+    width: 32px;
+    height: 32px;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid var(--color-border);
+    border-radius: 50%;
+    background-color: var(--color-surface-soft);
+    color: var(--color-accent);
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.replyItem .commentBubble {
+    padding: 10px 11px 11px;
+    border-top-color: #10b981;
+    background-color: rgba(148, 163, 184, 0.07);
+}
+
+:global(:root[data-theme="dark"]) .replyItem .commentBubble {
+    background-color: rgba(255, 255, 255, 0.04);
+}
+
+.replyActions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.replyButtonGroup {
+    display: flex;
+    gap: 10px;
+}
+
+.cancelReplyButton {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 0;
+    background-color: var(--color-accent);
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.cancelReplyButton:hover {
+    background-color: var(--color-accent);
+}
+
+:global(:root[data-theme="dark"]) .cancelReplyButton {
+    background-color: #000000;
+    color: #ffffff;
+}
+
+:global(:root[data-theme="dark"]) .cancelReplyButton:hover {
+    background-color: #000000;
 }
 
 /* ==========================================================================

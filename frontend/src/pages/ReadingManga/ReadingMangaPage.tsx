@@ -11,9 +11,20 @@ import {CommentEditor} from "../../components/CommentEmojiPicker/CommentEditor.t
 import {CommentEmojiPicker} from "../../components/CommentEmojiPicker/CommentEmojiPicker.tsx";
 import {CommentText} from "../../components/CommentEmojiPicker/CommentText.tsx";
 
+function getCommentRoleClass(comment: MangaCommentResponse) {
+    if (comment.isAuthor || comment.user?.isAuthor) return styles.authorComment;
+    return styles.memberComment;
+}
+
 interface CommentItemProps {
     comment: MangaCommentResponse;
     chapterLabel: string;
+    expandedReplyParentIds: number[];
+    replyParentId: number | null;
+    replyContent: string;
+    replyingToUsername: string | null;
+    submittingReplyParentId: number | null;
+    replyError: string;
     deletingCommentId: number | null;
     getAvatarLabel: (username?: string) => string;
     getCommentAuthorName: (userId: number, username: string) => string;
@@ -21,12 +32,24 @@ interface CommentItemProps {
     handleDeleteComment: (commentId: number) => void;
     handleToggleLike: (commentId: number) => void;
     handleOpenReportModal: (comment: MangaCommentResponse) => void;
+    handleSubmitReply: (parentId: number) => void;
+    setReplyParentId: (parentId: number | null) => void;
+    setReplyContent: (content: string) => void;
+    setReplyingToUsername: (username: string | null) => void;
+    setReplyError: (error: string) => void;
+    toggleReplies: (commentId: number) => void;
     user: UserInfo | null;
 }
 
 function CommentItem({
     comment,
     chapterLabel,
+    expandedReplyParentIds,
+    replyParentId,
+    replyContent,
+    replyingToUsername,
+    submittingReplyParentId,
+    replyError,
     deletingCommentId,
     getAvatarLabel,
     getCommentAuthorName,
@@ -34,15 +57,23 @@ function CommentItem({
     handleDeleteComment,
     handleToggleLike,
     handleOpenReportModal,
+    handleSubmitReply,
+    setReplyParentId,
+    setReplyContent,
+    setReplyingToUsername,
+    setReplyError,
+    toggleReplies,
     user
 }: CommentItemProps) {
+    const isRepliesExpanded = expandedReplyParentIds.includes(comment.id);
+
     return (
         <article className={styles.commentItem}>
             <div className={`${styles.commentAvatar} ${styles.sampleAvatar}`}>
                 {getAvatarLabel(getCommentAuthorName(comment.user.id, comment.user.username))}
             </div>
             <div className={styles.commentBody}>
-                <div className={styles.commentBubble}>
+                <div className={`${styles.commentBubble} ${getCommentRoleClass(comment)}`}>
                     <div className={styles.commentAuthorRow}>
                         <span className={styles.commentAuthor}>{getCommentAuthorName(comment.user.id, comment.user.username)}</span>
                         {(comment.isAuthor || comment.user?.isAuthor) && (
@@ -107,6 +138,12 @@ function CommentItem({
                     </button>
                     <button
                         type="button"
+                        onClick={() => {
+                            setReplyParentId(comment.id);
+                            setReplyContent("");
+                            setReplyingToUsername(null);
+                            setReplyError("");
+                        }}
                         style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}
                     >
                         <MessageSquare size={12} /> Trả lời
@@ -131,6 +168,139 @@ function CommentItem({
                         </button>
                     )}
                 </div>
+                {comment.replies?.length > 0 && (
+                    <button
+                        className={styles.replyCountButton}
+                        type="button"
+                        onClick={() => toggleReplies(comment.id)}
+                    >
+                        {isRepliesExpanded ? "Thu gọn phản hồi" : `Xem ${comment.replies.length} phản hồi`}
+                    </button>
+                )}
+                {comment.replies?.length > 0 && isRepliesExpanded && (
+                    <div className={styles.replyList}>
+                        {comment.replies.map((reply) => (
+                            <article className={styles.replyItem} key={reply.id}>
+                                <div className={styles.replyAvatar}>
+                                    {getAvatarLabel(getCommentAuthorName(reply.user.id, reply.user.username))}
+                                </div>
+                                <div className={styles.replyBody}>
+                                    <div className={`${styles.commentBubble} ${getCommentRoleClass(reply)}`}>
+                                        <div className={styles.commentAuthorRow}>
+                                            <span className={styles.commentAuthor}>
+                                                {getCommentAuthorName(reply.user.id, reply.user.username)}
+                                            </span>
+                                            {(reply.isAuthor || reply.user?.isAuthor) && (
+                                                <span className={styles.commentBadge}>Tác giả</span>
+                                            )}
+                                            {reply.user.activeTitle && (
+                                                <span
+                                                    className={styles.commentBadge}
+                                                    style={reply.user.activeTitleColor ? {color: reply.user.activeTitleColor} : undefined}
+                                                >
+                                                    {reply.user.activeTitle}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <p className={styles.commentText}>
+                                            <CommentText content={reply.content} />
+                                        </p>
+                                    </div>
+                                    <div className={styles.commentFooterActions}>
+                                        <span>{new Date(reply.createdAt).toLocaleDateString("vi-VN")}</span>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleToggleLike(reply.id)}
+                                            style={{
+                                                color: reply.isLiked ? "#3b82f6" : "inherit",
+                                                fontWeight: reply.isLiked ? "bold" : "normal",
+                                                display: "inline-flex",
+                                                alignItems: "center",
+                                                gap: "4px"
+                                            }}
+                                        >
+                                            <ThumbsUp size={13} fill={reply.isLiked ? "#3b82f6" : "none"} color={reply.isLiked ? "#3b82f6" : "currentColor"} />
+                                            {reply.likeCount && reply.likeCount > 0 ? reply.likeCount : "Thích"}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setReplyParentId(comment.id);
+                                                setReplyContent("");
+                                                setReplyingToUsername(getCommentAuthorName(reply.user.id, reply.user.username));
+                                                setReplyError("");
+                                            }}
+                                            style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}
+                                        >
+                                            <MessageSquare size={12} /> Trả lời
+                                        </button>
+                                        {user && user.id !== reply.user.id && (
+                                            <button
+                                                type="button"
+                                                onClick={() => handleOpenReportModal(reply)}
+                                                title="Báo cáo bình luận vi phạm"
+                                                style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}
+                                            >
+                                                <Flag size={12} /> Báo cáo
+                                            </button>
+                                        )}
+                                        {canDeleteComment(reply) && (
+                                            <button
+                                                type="button"
+                                                onClick={() => void handleDeleteComment(reply.id)}
+                                                disabled={deletingCommentId === reply.id}
+                                            >
+                                                {deletingCommentId === reply.id ? "Đang gỡ..." : "Gỡ"}
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            </article>
+                        ))}
+                    </div>
+                )}
+                {replyParentId === comment.id && (
+                    <div className={styles.replyInputBox}>
+                        <div className={styles.replyAvatar}>
+                            {getAvatarLabel(user?.username)}
+                        </div>
+                        <div className={styles.commentInputWrapper}>
+                            <CommentEditor
+                                placeholder={`Trả lời ${replyingToUsername ?? getCommentAuthorName(comment.user.id, comment.user.username)}...`}
+                                minRows={2}
+                                value={replyContent}
+                                onChange={setReplyContent}
+                                onSubmit={() => handleSubmitReply(comment.id)}
+                            />
+                            <div className={styles.replyActions}>
+                                <CommentEmojiPicker />
+                                <div className={styles.replyButtonGroup}>
+                                    <button
+                                        className={styles.cancelReplyButton}
+                                        type="button"
+                                        onClick={() => {
+                                            setReplyParentId(null);
+                                            setReplyContent("");
+                                            setReplyingToUsername(null);
+                                            setReplyError("");
+                                        }}
+                                    >
+                                        Hủy
+                                    </button>
+                                    <button
+                                        className={styles.btnSubmitComment}
+                                        type="button"
+                                        onClick={() => handleSubmitReply(comment.id)}
+                                        disabled={submittingReplyParentId === comment.id || !replyContent.trim()}
+                                    >
+                                        {submittingReplyParentId === comment.id ? "Đang gửi..." : "Gửi trả lời"}
+                                    </button>
+                                </div>
+                            </div>
+                            {replyError && <p className={styles.commentError}>{replyError}</p>}
+                        </div>
+                    </div>
+                )}
             </div>
         </article>
     );
@@ -522,6 +692,12 @@ function CommentSectionContent({ slug, chapterNumber, chapterLabel }: CommentSec
     const [commentError, setCommentError] = useState("");
     const [commentSubmitting, setCommentSubmitting] = useState(false);
     const [deletingCommentId, setDeletingCommentId] = useState<number | null>(null);
+    const [expandedReplyParentIds, setExpandedReplyParentIds] = useState<number[]>([]);
+    const [replyParentId, setReplyParentId] = useState<number | null>(null);
+    const [replyContent, setReplyContent] = useState("");
+    const [replyingToUsername, setReplyingToUsername] = useState<string | null>(null);
+    const [replyError, setReplyError] = useState("");
+    const [submittingReplyParentId, setSubmittingReplyParentId] = useState<number | null>(null);
 
     // Comment Report states
     const [reportingComment, setReportingComment] = useState<MangaCommentResponse | null>(null);
@@ -551,7 +727,14 @@ function CommentSectionContent({ slug, chapterNumber, chapterLabel }: CommentSec
             if (res.success && res.payload) {
                 const { liked, likeCount } = res.payload;
                 setComments((prev) =>
-                    prev.map((c) => (c.id === commentId ? { ...c, isLiked: liked, likeCount } : c))
+                    prev.map((c) => ({
+                        ...c,
+                        isLiked: c.id === commentId ? liked : c.isLiked,
+                        likeCount: c.id === commentId ? likeCount : c.likeCount,
+                        replies: (c.replies ?? []).map((reply) => (
+                            reply.id === commentId ? { ...reply, isLiked: liked, likeCount } : reply
+                        ))
+                    }))
                 );
             }
         } catch (err) {
@@ -608,6 +791,37 @@ function CommentSectionContent({ slug, chapterNumber, chapterLabel }: CommentSec
         }
     }
 
+    async function handleSubmitReply(parentId: number) {
+        if (!isAuthenticated) { openAuthModal("login"); return; }
+        const content = replyContent.trim();
+        if (!content || !slug || !chapterNumber) {
+            setReplyError("Vui lòng nhập trả lời.");
+            return;
+        }
+
+        setSubmittingReplyParentId(parentId);
+        try {
+            const replyText = replyingToUsername ? `@${replyingToUsername} ${content}` : content;
+            const data = await createChapterComment(slug, chapterNumber, {content: replyText, parentId});
+            setComments((current) => current.map((comment) => (
+                comment.id === parentId
+                    ? {...comment, replies: [...(comment.replies ?? []), data.payload]}
+                    : comment
+            )));
+            setExpandedReplyParentIds((currentIds) => (
+                currentIds.includes(parentId) ? currentIds : [...currentIds, parentId]
+            ));
+            setReplyParentId(null);
+            setReplyContent("");
+            setReplyingToUsername(null);
+            setReplyError("");
+        } catch {
+            setReplyError("Không thể gửi trả lời.");
+        } finally {
+            setSubmittingReplyParentId(null);
+        }
+    }
+
     function canDeleteComment(comment: MangaCommentResponse) {
         return Boolean(user && (user.role === "ADMIN" || user.id === comment.user.id));
     }
@@ -618,7 +832,13 @@ function CommentSectionContent({ slug, chapterNumber, chapterLabel }: CommentSec
         setDeletingCommentId(commentId);
         try {
             await deleteMangaComment(commentId);
-            setComments((current) => current.filter((comment) => comment.id !== commentId));
+            setComments((current) => current
+                .filter((comment) => comment.id !== commentId)
+                .map((comment) => ({
+                    ...comment,
+                    replies: (comment.replies ?? []).filter((reply) => reply.id !== commentId)
+                }))
+            );
             setCommentError("");
         } catch {
             setCommentError("Không thể gỡ bình luận.");
@@ -629,6 +849,14 @@ function CommentSectionContent({ slug, chapterNumber, chapterLabel }: CommentSec
 
     function getAvatarLabel(username?: string) {
         return (username || "U").slice(0, 1).toUpperCase();
+    }
+
+    function toggleReplies(commentId: number) {
+        setExpandedReplyParentIds((currentIds) => (
+            currentIds.includes(commentId)
+                ? currentIds.filter((id) => id !== commentId)
+                : [...currentIds, commentId]
+        ));
     }
 
     function getCommentAuthorName(userId: number, username: string) {
@@ -656,6 +884,7 @@ function CommentSectionContent({ slug, chapterNumber, chapterLabel }: CommentSec
                         minRows={3}
                         value={commentContent}
                         onChange={setCommentContent}
+                        onSubmit={handleSubmitComment}
                     />
                     <div className={styles.commentActions}>
                         <CommentEmojiPicker />
@@ -678,6 +907,12 @@ function CommentSectionContent({ slug, chapterNumber, chapterLabel }: CommentSec
                         key={comment.id}
                         comment={comment}
                         chapterLabel={chapterLabel}
+                        expandedReplyParentIds={expandedReplyParentIds}
+                        replyParentId={replyParentId}
+                        replyContent={replyContent}
+                        replyingToUsername={replyingToUsername}
+                        submittingReplyParentId={submittingReplyParentId}
+                        replyError={replyError}
                         deletingCommentId={deletingCommentId}
                         getAvatarLabel={getAvatarLabel}
                         getCommentAuthorName={getCommentAuthorName}
@@ -685,6 +920,12 @@ function CommentSectionContent({ slug, chapterNumber, chapterLabel }: CommentSec
                         handleDeleteComment={handleDeleteComment}
                         handleToggleLike={handleToggleLike}
                         handleOpenReportModal={handleOpenReportModal}
+                        handleSubmitReply={handleSubmitReply}
+                        setReplyParentId={setReplyParentId}
+                        setReplyContent={setReplyContent}
+                        setReplyingToUsername={setReplyingToUsername}
+                        setReplyError={setReplyError}
+                        toggleReplies={toggleReplies}
                         user={user}
                     />
                 ))}
