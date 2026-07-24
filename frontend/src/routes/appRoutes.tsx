@@ -28,7 +28,23 @@ import { AuthorChapterManage } from "../pages/AuthorDashboard/AuthorChapterManag
 import { AuthorChapterUpload } from "../pages/AuthorDashboard/AuthorChapterUpload.tsx";
 import { AuthorStatistics } from "../pages/AuthorDashboard/AuthorStatistics.tsx";
 
-export const appRoutes: RouteObject[] = [
+const chatHost = window.location.hostname === "chat.mangablade.online";
+
+const chatRoutes: RouteObject[] = [
+    {
+        path: "/",
+        element: <MainLayout />,
+        errorElement: <RouteError />,
+        children: [
+            {
+                path: "forum",
+                element: <ForumPage />
+            }
+        ]
+    }
+];
+
+const mainRoutes: RouteObject[] = [
     {
         path: "/",
         element: <MainLayout />,
@@ -66,10 +82,6 @@ export const appRoutes: RouteObject[] = [
                 path: "followed-manga",
                 element: <FollowedManga />
             },
-            {
-                path: "forum",
-                element: <ForumPage />
-            }
         ]
     },
     {
@@ -150,4 +162,12 @@ export const appRoutes: RouteObject[] = [
         element: <ResetPasswordPage />,
         errorElement: <RouteError />
     }
-]
+];
+
+let appRoutes = mainRoutes;
+
+if (chatHost) {
+    appRoutes = chatRoutes;
+}
+
+export {appRoutes};
