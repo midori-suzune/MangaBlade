@@ -107,7 +107,7 @@ export function AuthModal() {
       try {
         const result = await googleLoginApi({ credential: tokenResponse.access_token });
         if (result.success) {
-          authLogin(result.payload.accessToken, result.payload.userInfo, true);
+          authLogin(result.payload.userInfo, true);
           closeAuthModal();
           if (result.payload.userInfo.role === 'AUTHOR') {
             navigate('/profile?tab=author-manga');
@@ -202,7 +202,7 @@ export function AuthModal() {
     try {
       const result = await loginApi({ email, password, turnstileToken });
       if (result.success) {
-        authLogin(result.payload.accessToken, result.payload.userInfo, rememberMe);
+        authLogin(result.payload.userInfo, rememberMe);
         closeAuthModal();
         if (result.payload.userInfo.role === 'AUTHOR') {
           navigate('/profile?tab=author-manga');

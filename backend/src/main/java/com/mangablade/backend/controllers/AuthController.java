@@ -16,7 +16,9 @@ import com.mangablade.backend.entities.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -30,13 +32,42 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request){
-        return ResponseEntity.ok(
-                ApiResponse.<AuthResponse>builder()
+        AuthResponse auth = authService.login(request);
+        ResponseCookie cookie = ResponseCookie.from("accessToken", auth.getAccessToken())
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("Lax")
+                .domain(".mangablade.online")
+                .path("/")
+                .maxAge(60 * 60 * 24 * 7 )
+                .build();
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .header(HttpHeaders.SET_COOKIE,cookie.toString())
+                .body(ApiResponse.<AuthResponse>builder()
                         .success(true)
                         .message("Login successful")
-                        .payload(authService.login(request))
-                        .build()
-        );
+                        .payload(auth)
+                        .build());
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(){
+        var cookie = ResponseCookie.from("accessToken", "")
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("Lax")
+                .domain(".mangablade.online")
+                .path("/")
+                .maxAge(0)
+                .build();
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(ApiResponse.<Void>builder()
+                        .success(true)
+                        .message("Logout successful")
+                        .build());
     }
 
     @PostMapping("/register")
