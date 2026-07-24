@@ -1,5 +1,4 @@
-import type {FormEvent} from "react";
-import {useMemo} from "react";
+import {useMemo, useState} from "react";
 import {MessageCircle, Send, Users} from "lucide-react";
 import type {ForumCommentResponse, ForumThreadResponse} from "../../types/forum.ts";
 import {CommentEditor} from "../../components/CommentEmojiPicker/CommentEditor.tsx";
@@ -48,10 +47,16 @@ export function ForumThreadDetail({
     onDraftChange: (value: string) => void;
     onLikeComment: (commentId: number) => void;
     onReply: (comment: ForumCommentResponse) => void;
-    onSubmitComment: (event: FormEvent<HTMLFormElement>) => void;
+    onSubmitComment: () => void;
 }) {
+    const [expandedCommentIds, setExpandedCommentIds] = useState<number[]>([]);
     const flatComments = useMemo(
-        () => flattenComments(comments)
+        () => flattenComments(comments),
+        [comments]
+    );
+
+    const sortedRootComments = useMemo(
+        () => comments
             .slice()
             .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
         [comments]
@@ -60,6 +65,60 @@ export function ForumThreadDetail({
     const commentById = useMemo(() => {
         return new Map(flatComments.map((comment) => [comment.id, comment]));
     }, [flatComments]);
+
+    function toggleReplies(commentId: number) {
+        setExpandedCommentIds((currentIds) => (
+            currentIds.includes(commentId)
+                ? currentIds.filter((id) => id !== commentId)
+                : [...currentIds, commentId]
+        ));
+    }
+
+    function renderComment(comment: ForumCommentResponse) {
+        const replies = flattenComments(comment.replies ?? [])
+            .slice()
+            .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+        const isExpanded = expandedCommentIds.includes(comment.id);
+
+        return (
+            <div className={styles.commentThread} key={comment.id}>
+                <CommentItem
+                    comment={comment}
+                    currentUserId={userId}
+                    onDelete={onDeleteComment}
+                    onLike={onLikeComment}
+                    onReply={onReply}
+                />
+                {replies.length > 0 && (
+                    <button
+                        className={styles.replyCountButton}
+                        type="button"
+                        onClick={() => toggleReplies(comment.id)}
+                    >
+                        {isExpanded ? "Thu gọn phản hồi" : `Xem ${replies.length} phản hồi`}
+                    </button>
+                )}
+                {replies.length > 0 && isExpanded && (
+                    <div className={styles.replyList}>
+                        {replies.map((reply) => (
+                            <CommentItem
+                                comment={reply}
+                                currentUserId={userId}
+                                isReply
+                                key={reply.id}
+                                onDelete={onDeleteComment}
+                                onLike={onLikeComment}
+                                onReply={onReply}
+                                replyToUsername={reply.replyToCommentId
+                                    ? commentById.get(reply.replyToCommentId)?.user?.username
+                                    : undefined}
+                            />
+                        ))}
+                    </div>
+                )}
+            </div>
+        );
+    }
 
     return (
         <section className={styles.chatPanel} aria-label="Cuộc trò chuyện">
@@ -104,13 +163,18 @@ export function ForumThreadDetail({
                         </div>
                     </div>
 
-                    <form className={styles.commentInputBox} onSubmit={onSubmitComment}>
+                    <form
+                        className={styles.commentInputBox}
+                        onSubmit={(event) => {
+                            event.preventDefault();
+                            onSubmitComment();
+                        }}
+                    >
                         <div className={styles.commentAvatar}>{getInitial(currentUsername)}</div>
                         <div className={styles.commentInputWrapper}>
                             {replyTarget && (
                                 <div className={styles.replyTarget}>
                                     <span>Trả lời {replyTarget.user?.username || "người dùng"}</span>
-                                    <button type="button" onClick={onCancelReply}>Hủy</button>
                                 </div>
                             )}
                             <CommentEditor
@@ -118,13 +182,25 @@ export function ForumThreadDetail({
                                 placeholder={isAuthenticated ? "Nhập bình luận..." : "Đăng nhập để bình luận..."}
                                 minRows={3}
                                 onChange={onDraftChange}
+                                onSubmit={onSubmitComment}
                             />
                             <div className={styles.commentActions}>
                                 <CommentEmojiPicker />
-                                <button className={styles.submitCommentButton} type="submit" disabled={!draft.trim()}>
-                                    <Send size={15} />
-                                    Gửi
-                                </button>
+                                <div className={styles.commentButtonGroup}>
+                                    {replyTarget && (
+                                        <button
+                                            className={styles.cancelReplyButton}
+                                            type="button"
+                                            onClick={onCancelReply}
+                                        >
+                                            Hủy
+                                        </button>
+                                    )}
+                                    <button className={styles.submitCommentButton} type="submit" disabled={!draft.trim()}>
+                                        <Send size={15} />
+                                        Gửi
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </form>
@@ -134,19 +210,7 @@ export function ForumThreadDetail({
                         {!isLoadingComments && comments.length === 0 && (
                             <div className={styles.emptyState}>Chưa có bình luận nào.</div>
                         )}
-                        {flatComments.map((comment) => (
-                            <CommentItem
-                                comment={comment}
-                                currentUserId={userId}
-                                key={comment.id}
-                                onDelete={onDeleteComment}
-                                onLike={onLikeComment}
-                                onReply={onReply}
-                                replyToUsername={comment.replyToCommentId
-                                    ? commentById.get(comment.replyToCommentId)?.user?.username
-                                    : undefined}
-                            />
-                        ))}
+                        {sortedRootComments.map((comment) => renderComment(comment))}
                     </div>
                 </>
             ) : (

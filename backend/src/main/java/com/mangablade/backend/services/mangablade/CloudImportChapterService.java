@@ -57,7 +57,6 @@ public class CloudImportChapterService {
         indexMangaSearch(managedManga);
         return syncedChapters;
     }
-
     @Transactional
 //   @Scheduled(cron = "${spring.app.cloudinary.chapter-page-sync-cron}", zone = "Asia/Ho_Chi_Minh")
     public void syncMissingChapterPages() {

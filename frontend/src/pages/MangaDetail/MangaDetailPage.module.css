@@ -395,10 +395,22 @@
     max-width: 100%;
     flex-direction: column;
     gap: 8px;
-    padding: 10px 12px 12px;
-    border-top: 1px solid #f97316;
+    padding: 11px 12px 12px;
+    border-top: 1px solid #6366f1;
     border-radius: 0;
-    background-color: var(--color-surface-soft);
+    background-color: rgba(148, 163, 184, 0.08);
+}
+
+:global(:root[data-theme="dark"]) .commentBubble {
+    background-color: rgba(255, 255, 255, 0.045);
+}
+
+.authorComment {
+    border-top-color: #f97316;
+}
+
+.memberComment {
+    border-top-color: #6366f1;
 }
 
 .commentAuthorRow {
@@ -460,11 +472,11 @@
 
 .replyCountButton {
     align-self: flex-start;
-    margin-top: 2px;
-    padding: 0;
+    margin-top: 4px;
+    padding: 0 0 0 2px;
     border: none;
     background: none;
-    color: var(--color-text);
+    color: var(--color-text-muted);
     cursor: pointer;
     font: inherit;
     font-size: 13px;
@@ -480,6 +492,8 @@
     flex-direction: column;
     gap: 12px;
     margin-top: 8px;
+    margin-left: 18px;
+    padding-left: 14px;
 }
 
 .replyItem,
@@ -498,8 +512,8 @@
 
 .replyAvatar {
     display: flex;
-    width: 34px;
-    height: 34px;
+    width: 32px;
+    height: 32px;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
@@ -509,6 +523,16 @@
     color: var(--color-accent);
     font-size: 13px;
     font-weight: 900;
+}
+
+.replyItem .commentBubble {
+    padding: 10px 11px 11px;
+    border-top-color: #10b981;
+    background-color: rgba(148, 163, 184, 0.07);
+}
+
+:global(:root[data-theme="dark"]) .replyItem .commentBubble {
+    background-color: rgba(255, 255, 255, 0.04);
 }
 
 .replyInputBox {
@@ -531,15 +555,24 @@
     padding: 8px 16px;
     border: none;
     border-radius: 0;
-    background-color: #e2e8f0;
-    color: #475569;
+    background-color: var(--color-accent);
+    color: #ffffff;
     cursor: pointer;
     font-size: 14px;
     font-weight: 700;
 }
 
 .cancelReplyButton:hover {
-    background-color: #cbd5e1;
+    background-color: var(--color-accent);
+}
+
+:global(:root[data-theme="dark"]) .cancelReplyButton {
+    background-color: #000000;
+    color: #ffffff;
+}
+
+:global(:root[data-theme="dark"]) .cancelReplyButton:hover {
+    background-color: #000000;
 }
 
 .commentMoreActions {

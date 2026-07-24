@@ -8,6 +8,7 @@ type CommentEditorProps = {
     placeholder: string;
     minRows?: number;
     onChange: (value: string) => void;
+    onSubmit?: () => void;
 };
 
 const COMMENT_EMOJI_PATTERN = /:?emoji:([^:\s]+):/g;
@@ -131,7 +132,7 @@ function insertTextAtSelection(text: string) {
     selection.addRange(range);
 }
 
-export function CommentEditor({value, placeholder, minRows = 3, onChange}: CommentEditorProps) {
+export function CommentEditor({value, placeholder, minRows = 3, onChange, onSubmit}: CommentEditorProps) {
     const editorId = useId();
     const editorRef = useRef<HTMLDivElement>(null);
     const isComposingRef = useRef(false);
@@ -221,6 +222,12 @@ export function CommentEditor({value, placeholder, minRows = 3, onChange}: Comme
             }}
             onKeyDown={(event) => {
                 if (event.key !== "Enter") return;
+
+                if (!event.shiftKey && onSubmit) {
+                    event.preventDefault();
+                    onSubmit();
+                    return;
+                }
 
                 event.preventDefault();
                 insertTextAtSelection("\n");

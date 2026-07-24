@@ -292,8 +292,7 @@ export function ForumPage() {
         }
     }
 
-    async function handleSubmitComment(event: FormEvent<HTMLFormElement>) {
-        event.preventDefault();
+    async function handleSubmitComment() {
         if (!isAuthenticated) {
             openAuthModal("login");
             return;

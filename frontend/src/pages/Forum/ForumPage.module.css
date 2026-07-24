@@ -549,6 +549,12 @@
     scrollbar-color: var(--color-text-soft) transparent;
 }
 
+.commentThread {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
 .threadPost {
     display: flex;
     flex-direction: column;
@@ -618,10 +624,26 @@
     max-width: 100%;
     flex-direction: column;
     gap: 7px;
-    padding: 9px 11px 11px;
+    padding: 11px 12px 12px;
     border-top: 1px solid #f97316;
     border-radius: 0;
-    background-color: var(--color-surface-soft);
+    background-color: rgba(148, 163, 184, 0.08);
+}
+
+.authorComment {
+    border-top-color: #f97316;
+}
+
+.memberComment {
+    border-top-color: #6366f1;
+}
+
+.adminComment {
+    border-top-color: #ef4444;
+}
+
+:global(:root[data-theme="dark"]) .commentBubble {
+    background-color: rgba(255, 255, 255, 0.045);
 }
 
 .commentAuthorRow {
@@ -708,6 +730,51 @@
     color: #3b82f6;
 }
 
+.replyCountButton {
+    align-self: flex-start;
+    margin-left: 51px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.replyCountButton:hover {
+    color: #3b82f6;
+}
+
+.replyList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-left: 51px;
+    padding-left: 14px;
+}
+
+.replyItem {
+    gap: 8px;
+}
+
+.replyItem .commentAvatar {
+    width: 32px;
+    height: 32px;
+    font-size: 13px;
+}
+
+.replyItem .commentBubble {
+    padding: 10px 11px 11px;
+    border-top-color: #10b981;
+    background-color: rgba(148, 163, 184, 0.07);
+}
+
+:global(:root[data-theme="dark"]) .replyItem .commentBubble {
+    background-color: rgba(255, 255, 255, 0.04);
+}
+
 .emptyState,
 .noThreadState {
     padding: 18px;
@@ -742,7 +809,6 @@
     display: flex;
     min-height: 32px;
     align-items: center;
-    justify-content: space-between;
     gap: 10px;
     padding: 6px 10px;
     border-left: 3px solid var(--color-accent);
@@ -750,16 +816,6 @@
     color: var(--color-text-muted);
     font-size: 13px;
     font-weight: 750;
-}
-
-.replyTarget button {
-    border: none;
-    background: transparent;
-    color: var(--color-accent);
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 850;
 }
 
 .commentInputBox {
@@ -792,18 +848,52 @@
     gap: 10px;
 }
 
-.submitCommentButton {
-    display: inline-flex;
+.commentButtonGroup {
+    display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 7px 16px;
+    gap: 10px;
+}
+
+.cancelReplyButton {
+    padding: 8px 16px;
     border: none;
     border-radius: 0;
     background-color: var(--color-accent);
     color: #ffffff;
     cursor: pointer;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
+}
+
+.cancelReplyButton:hover {
+    background-color: var(--color-accent);
+}
+
+:global(:root[data-theme="dark"]) .cancelReplyButton {
+    background-color: #000000;
+    color: #ffffff;
+}
+
+:global(:root[data-theme="dark"]) .cancelReplyButton:hover {
+    background-color: #000000;
+}
+
+.submitCommentButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 20px;
+    border: none;
+    border-radius: 0;
+    background-color: var(--color-accent);
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.submitCommentButton:hover {
+    background-color: var(--color-accent);
 }
 
 .submitCommentButton:disabled {
@@ -814,6 +904,10 @@
 :global(:root[data-theme="dark"]) .submitCommentButton {
     background-color: #000000;
     color: #ffffff;
+}
+
+:global(:root[data-theme="dark"]) .submitCommentButton:hover {
+    background-color: #000000;
 }
 
 @media (max-width: 920px) {
