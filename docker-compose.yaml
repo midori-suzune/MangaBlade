@@ -38,8 +38,10 @@ services:
       TURNSTILE_SECRET: ${TURNSTILE_SECRET}
       ELASTICSEARCH_URL: http://elasticsearch:9200
     depends_on:
-      - mysql
-      - elasticsearch
+      mysql:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_started
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:9.4.1
@@ -55,6 +57,12 @@ services:
     environment:
       MYSQL_DATABASE: MangaBlade
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
     volumes:
       - mysql_data:/var/lib/mysql
 volumes:
