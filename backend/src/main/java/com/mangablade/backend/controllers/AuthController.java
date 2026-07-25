@@ -14,9 +14,12 @@ import com.mangablade.backend.services.mangablade.AuthService;
 import com.mangablade.backend.entities.User;
 
 import jakarta.validation.Valid;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -29,14 +32,29 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request){
-        return ResponseEntity.ok(
-                ApiResponse.<AuthResponse>builder()
+    public ResponseEntity<ApiResponse<AuthResponse>> login(
+            @Valid @RequestBody LoginRequest request,
+            HttpServletRequest servletRequest
+    ){
+        AuthResponse auth = authService.login(request);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .header(HttpHeaders.SET_COOKIE, buildAccessTokenCookie(auth.getAccessToken(), servletRequest, 60 * 60 * 24 * 7).toString())
+                .body(ApiResponse.<AuthResponse>builder()
                         .success(true)
                         .message("Login successful")
-                        .payload(authService.login(request))
-                        .build()
-        );
+                        .payload(auth)
+                        .build());
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(HttpServletRequest servletRequest){
+        return ResponseEntity.status(HttpStatus.OK)
+                .header(HttpHeaders.SET_COOKIE, buildAccessTokenCookie("", servletRequest, 0).toString())
+                .body(ApiResponse.<Void>builder()
+                        .success(true)
+                        .message("Logout successful")
+                        .build());
     }
 
     @PostMapping("/register")
@@ -98,14 +116,19 @@ public class AuthController {
     }
 
     @PostMapping("/google")
-    public ResponseEntity<ApiResponse<AuthResponse>> googleLogin(@Valid @RequestBody GoogleLoginRequest request) {
-        return ResponseEntity.ok(
-                ApiResponse.<AuthResponse>builder()
+    public ResponseEntity<ApiResponse<AuthResponse>> googleLogin(
+            @Valid @RequestBody GoogleLoginRequest request,
+            HttpServletRequest servletRequest
+    ) {
+        AuthResponse auth = authService.googleLogin(request);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, buildAccessTokenCookie(auth.getAccessToken(), servletRequest, 60 * 60 * 24 * 7).toString())
+                .body(ApiResponse.<AuthResponse>builder()
                         .success(true)
                         .message("Google login successful")
-                        .payload(authService.googleLogin(request))
+                        .payload(auth)
                         .build()
-        );
+                );
     }
 
     @PostMapping("/change-password")
@@ -120,5 +143,23 @@ public class AuthController {
                         .message("Password updated successfully")
                         .build()
         );
+    }
+
+    private ResponseCookie buildAccessTokenCookie(String token, HttpServletRequest request, long maxAge) {
+        String host = request.getServerName();
+        boolean isLocalhost = "localhost".equals(host) || "127.0.0.1".equals(host);
+
+        ResponseCookie.ResponseCookieBuilder cookie = ResponseCookie.from("accessToken", token)
+                .httpOnly(true)
+                .secure(!isLocalhost)
+                .sameSite("Lax")
+                .path("/")
+                .maxAge(maxAge);
+
+        if (!isLocalhost) {
+            cookie.domain(".mangablade.online");
+        }
+
+        return cookie.build();
     }
 }

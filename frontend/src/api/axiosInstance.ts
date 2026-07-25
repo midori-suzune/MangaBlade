@@ -1,29 +1,19 @@
 import axios from 'axios';
+import { handleAuthExpired, shouldHandleAuthExpired } from './authExpired';
 
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
-});
-
-axiosInstance.interceptors.request.use((config) => {
-  const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
+  withCredentials: true,
 });
 
 axiosInstance.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('user');
-      sessionStorage.removeItem('accessToken');
-      sessionStorage.removeItem('user');
-      window.location.href = '/login';
+    (response) => response,
+    (error) => {
+        if ((error.response?.status === 401 || error.response?.status === 403) && shouldHandleAuthExpired(error)) {
+            handleAuthExpired();
+        }
+        return Promise.reject(error);
     }
-    return Promise.reject(error);
-  }
 );
 
 export default axiosInstance;

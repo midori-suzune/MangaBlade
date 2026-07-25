@@ -1,9 +1,9 @@
 import { create } from 'zustand';
 import type { UserInfo } from '../types/auth';
 import { userProfileApi } from '../api/userApi';
+import { logout as logoutApi } from '../api/authApi';
 
 interface AuthState {
-  token: string | null;
   user: UserInfo | null;
   isAuthenticated: boolean;
   isAuthModalOpen: boolean;
@@ -14,9 +14,9 @@ interface AuthState {
   exp: number;
   activeTitle: string | null;
   activeTitleColor: string | null;
-  login: (token: string, user: UserInfo, rememberMe: boolean) => void;
-  logout: () => void;
-  loadFromStorage: () => void;
+  login: (user: UserInfo, rememberMe: boolean) => void;
+  logout: () => Promise<void>;
+  loadFromStorage: () => Promise<void>;
   openAuthModal: (tab: 'login' | 'register' | 'forgot') => void;
   closeAuthModal: () => void;
   updateAvatar: (file: File) => Promise<void>;
@@ -27,7 +27,6 @@ interface AuthState {
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
-  token: null,
   user: null,
   isAuthenticated: false,
   isAuthModalOpen: false,
@@ -39,16 +38,18 @@ export const useAuthStore = create<AuthState>((set) => ({
   activeTitle: null,
   activeTitleColor: null,
 
-  login: (token, user, rememberMe) => {
+  login: (user, rememberMe) => {
     const storage = rememberMe ? localStorage : sessionStorage;
-    storage.setItem('accessToken', token);
+    localStorage.removeItem('accessToken');
+    sessionStorage.removeItem('accessToken');
+    localStorage.removeItem('user');
+    sessionStorage.removeItem('user');
     storage.setItem('user', JSON.stringify(user));
     
     const savedAvatar = localStorage.getItem(`avatar_${user.id}`);
     const savedName = localStorage.getItem(`displayName_${user.id}`) || user.username;
     
     set({ 
-      token, 
       user, 
       isAuthenticated: true, 
       isAuthModalOpen: false,
@@ -61,34 +62,39 @@ export const useAuthStore = create<AuthState>((set) => ({
     });
   },
 
-  logout: () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('user');
-    sessionStorage.removeItem('accessToken');
-    sessionStorage.removeItem('user');
-    set({ 
-      token: null, 
-      user: null, 
-      isAuthenticated: false, 
-      avatarUrl: null, 
-      displayName: '',
-      level: 0,
-      exp: 0,
-      activeTitle: null,
-      activeTitleColor: null
-    });
+  logout: async () => {
+    try {
+      await logoutApi();
+    } catch (err) {
+      console.error("Failed to clear auth cookie", err);
+    } finally {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('user');
+      sessionStorage.removeItem('accessToken');
+      sessionStorage.removeItem('user');
+      set({
+        user: null,
+        isAuthenticated: false,
+        avatarUrl: null,
+        displayName: '',
+        level: 0,
+        exp: 0,
+        activeTitle: null,
+        activeTitleColor: null
+      });
+    }
   },
 
-  loadFromStorage: () => {
-    const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
+  loadFromStorage: async () => {
+    localStorage.removeItem('accessToken');
+    sessionStorage.removeItem('accessToken');
     const userStr = localStorage.getItem('user') || sessionStorage.getItem('user');
-    if (token && userStr) {
+    if (userStr) {
       try {
         const user = JSON.parse(userStr) as UserInfo;
         const savedAvatar = localStorage.getItem(`avatar_${user.id}`);
         const savedName = localStorage.getItem(`displayName_${user.id}`) || user.username;
         set({ 
-          token, 
           user, 
           isAuthenticated: true,
           avatarUrl: user.avatarUrl ?? savedAvatar,
@@ -100,7 +106,6 @@ export const useAuthStore = create<AuthState>((set) => ({
         });
       } catch {
         set({ 
-          token: null, 
           user: null, 
           isAuthenticated: false, 
           avatarUrl: null, 
@@ -111,6 +116,37 @@ export const useAuthStore = create<AuthState>((set) => ({
           activeTitleColor: null
         });
       }
+    }
+
+    try {
+      const res = await userProfileApi.getProfile({ skipAuthExpiredHandler: true });
+      if (res.success && res.payload) {
+        const u = res.payload;
+        localStorage.setItem('user', JSON.stringify(u));
+        set({
+          user: u,
+          isAuthenticated: true,
+          avatarUrl: u.avatarUrl || localStorage.getItem(`avatar_${u.id}`),
+          displayName: u.displayName || localStorage.getItem(`displayName_${u.id}`) || u.username,
+          level: u.level ?? 0,
+          exp: u.exp ?? 0,
+          activeTitle: u.activeTitle ?? null,
+          activeTitleColor: u.activeTitleColor ?? null
+        });
+      }
+    } catch {
+      localStorage.removeItem('user');
+      sessionStorage.removeItem('user');
+      set({
+        user: null,
+        isAuthenticated: false,
+        avatarUrl: null,
+        displayName: '',
+        level: 0,
+        exp: 0,
+        activeTitle: null,
+        activeTitleColor: null
+      });
     }
   },
 
@@ -171,7 +207,10 @@ export const useAuthStore = create<AuthState>((set) => ({
       const res = await userProfileApi.getProfile();
       if (res.success && res.payload) {
         const u = res.payload;
+        localStorage.setItem('user', JSON.stringify(u));
         set({
+          user: u,
+          isAuthenticated: true,
           level: u.level ?? 0,
           exp: u.exp ?? 0,
           avatarUrl: u.avatarUrl || null,

@@ -28,7 +28,27 @@ import { AuthorChapterManage } from "../pages/AuthorDashboard/AuthorChapterManag
 import { AuthorChapterUpload } from "../pages/AuthorDashboard/AuthorChapterUpload.tsx";
 import { AuthorStatistics } from "../pages/AuthorDashboard/AuthorStatistics.tsx";
 
-export const appRoutes: RouteObject[] = [
+const chatHost = window.location.hostname === "chat.mangablade.online";
+
+const chatRoutes: RouteObject[] = [
+    {
+        path: "/",
+        element: <MainLayout />,
+        errorElement: <RouteError />,
+        children: [
+            {
+                index: true,
+                element: <ForumPage />
+            },
+            {
+                path: "forum",
+                element: <ForumPage />
+            }
+        ]
+    }
+];
+
+const mainRoutes: RouteObject[] = [
     {
         path: "/",
         element: <MainLayout />,
@@ -67,9 +87,20 @@ export const appRoutes: RouteObject[] = [
                 element: <FollowedManga />
             },
             {
-                path: "forum",
-                element: <ForumPage />
-            }
+                path: "login",
+                element: <LoginPage />,
+                errorElement: <RouteError />
+            },
+            {
+                path: "register",
+                element: <RegisterPage />,
+                errorElement: <RouteError />
+            },
+            {
+                path: "reset-password",
+                element: <ResetPasswordPage />,
+                errorElement: <RouteError />
+            },
         ]
     },
     {
@@ -135,19 +166,12 @@ export const appRoutes: RouteObject[] = [
             }
         ]
     },
-    {
-        path: "/login",
-        element: <LoginPage />,
-        errorElement: <RouteError />
-    },
-    {
-        path: "/register",
-        element: <RegisterPage />,
-        errorElement: <RouteError />
-    },
-    {
-        path: "/reset-password",
-        element: <ResetPasswordPage />,
-        errorElement: <RouteError />
-    }
-]
+];
+
+let appRoutes = mainRoutes;
+
+if (chatHost) {
+    appRoutes = chatRoutes;
+}
+
+export {appRoutes};

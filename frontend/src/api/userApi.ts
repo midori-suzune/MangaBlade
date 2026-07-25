@@ -43,8 +43,10 @@ export const adminUserApi = {
 };
 
 export const userProfileApi = {
-  getProfile: async () => {
-    const response = await axiosClient.get<ApiResponse<UserInfo>>('/v1/users/profile');
+  getProfile: async (options?: { skipAuthExpiredHandler?: boolean }) => {
+    const response = await axiosClient.get<ApiResponse<UserInfo>>('/v1/users/profile', {
+      skipAuthExpiredHandler: options?.skipAuthExpiredHandler,
+    });
     return response.data;
   },
   updateProfile: async (data: { displayName: string }) => {
@@ -62,4 +64,3 @@ export const userProfileApi = {
     return response.data;
   }
 };
-

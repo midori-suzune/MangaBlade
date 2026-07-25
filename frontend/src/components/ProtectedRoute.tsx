@@ -1,5 +1,6 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
+import { useAuthStore } from '../stores/authStore';
 
 interface ProtectedRouteProps {
   allowedRoles: string[];
@@ -7,15 +8,13 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles, redirectPath }) => {
-  const token = localStorage.getItem('accessToken');
-  const userRole = localStorage.getItem('role'); // Nhận giá trị: ROLE_ADMIN, ROLE_AUTHOR, ROLE_USER
+  const { isAuthenticated, user } = useAuthStore();
 
-  if (!token) {
+  if (!isAuthenticated) {
     return <Navigate to={redirectPath} replace />;
   }
 
-  // Nếu có role nhưng không nằm trong danh sách được phép -> Chặn quyền truy cập
-  if (userRole && !allowedRoles.includes(userRole)) {
+  if (user && !allowedRoles.includes(user.role)) {
     return <Navigate to="/unauthorized" replace />;
   }
 

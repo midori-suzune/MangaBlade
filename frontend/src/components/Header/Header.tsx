@@ -101,7 +101,10 @@ export function Header() {
     return (
         <header className={styles.topHeaderWrapper}>
             <div className={styles.topHeader}>
-                <Link to="/" className={styles.logo}>Manga<span>Blade</span></Link>
+                <Link to="/" className={styles.logo} aria-label="MangaBlade">
+                    <img src="/logo9.png" alt="" className={`${styles.logoImage} ${styles.logoImageLight}`} aria-hidden="true" />
+                    <img src="/logo8.png" alt="" className={`${styles.logoImage} ${styles.logoImageDark}`} aria-hidden="true" />
+                </Link>
                 <div className={styles.searchBox} ref={searchRef}>
                     <span className={styles.searchIcon} aria-hidden="true">
                         <svg viewBox="0 0 24 24" role="img">

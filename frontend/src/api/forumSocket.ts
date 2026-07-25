@@ -1,10 +1,6 @@
 import {Client, type IMessage, type StompSubscription} from "@stomp/stompjs";
 import type {ForumRealtimeEvent} from "../types/forum";
 
-function getAccessToken() {
-  return localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken") || "";
-}
-
 function getSocketUrl() {
   const configuredBaseUrl = import.meta.env.VITE_API_BASE_URL as string | undefined;
   if (!configuredBaseUrl || configuredBaseUrl.startsWith("/")) {
@@ -24,11 +20,6 @@ export function createForumSocketClient(onConnect?: (client: Client) => void) {
     reconnectDelay: 4000,
     heartbeatIncoming: 10000,
     heartbeatOutgoing: 10000,
-    connectHeaders: getAccessToken()
-      ? {
-          Authorization: `Bearer ${getAccessToken()}`,
-        }
-      : {},
     brokerURL: getSocketUrl(),
     onConnect: () => onConnect?.(client),
   });
