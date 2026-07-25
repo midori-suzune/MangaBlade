@@ -13,15 +13,30 @@
 }
 
 .logo {
+    display: inline-flex;
+    align-items: center;
     color: var(--color-text);
-    font-size: 26px;
-    font-weight: 900;
-    letter-spacing: -0.5px;
     white-space: nowrap;
 }
 
-.logo span {
-    color: var(--color-accent);
+.logoImage {
+    width: 205px;
+    height: 44px;
+    display: block;
+    object-fit: contain;
+    object-position: center;
+}
+
+.logoImageDark {
+    display: none;
+}
+
+:global(:root[data-theme="dark"]) .logoImageLight {
+    display: none;
+}
+
+:global(:root[data-theme="dark"]) .logoImageDark {
+    display: block;
 }
 
 .searchBox {
@@ -191,12 +206,12 @@
 }
 
 .btnSignup {
-    background-color: var(--color-text);
+    background-color: var(--color-accent);
     color: #ffffff;
 }
 
 .btnSignup:hover {
-    background-color: var(--color-text-strong);
+    background-color: #4f46e5;
 }
 
 :global(:root[data-theme="dark"]) .btnSignup {

@@ -75,10 +75,10 @@
     justify-content: center;
     width: 32px;
     height: 32px;
-    border: 1.5px solid var(--color-text-soft);
+    border: 1.5px solid var(--color-accent);
     border-radius: 50%;
     background: transparent;
-    color: var(--color-text-muted);
+    color: var(--color-accent);
     cursor: pointer;
     transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s, border-color 0.2s, background-color 0.2s;
 }
@@ -86,7 +86,7 @@
 .themeToggleBtn:hover {
     color: var(--color-accent);
     border-color: var(--color-accent);
-    background-color: var(--color-surface);
+    background-color: rgba(99, 102, 241, 0.1);
 }
 
 .themeToggleBtn.dark {
