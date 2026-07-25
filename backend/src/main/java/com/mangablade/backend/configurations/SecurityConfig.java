@@ -34,7 +34,7 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final UserService userService;
 
-    private static final String[] PUBLIC_ENDPOINTS = {
+    public static final String[] PUBLIC_ENDPOINTS = {
             "/api/v1/auth/login",
             "/api/v1/auth/register",
             "/api/v1/auth/verify-otp",

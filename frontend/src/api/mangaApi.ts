@@ -17,7 +17,9 @@ import type {ApiResponse} from '../types/auth';
 import axiosInstance from './axiosInstance';
 
 export async function getManga(): Promise<ApiResponse<MangaResponse[]>> {
-  const response = await axiosInstance.get<ApiResponse<MangaResponse[]>>('/v1/manga');
+  const response = await axiosInstance.get<ApiResponse<MangaResponse[]>>('/v1/manga', {
+    skipAuthExpiredHandler: true,
+  });
   return response.data;
 }
 
@@ -29,6 +31,7 @@ export async function getFollowedManga(): Promise<ApiResponse<MangaResponse[]>> 
 export async function getMangaRanking(sort: 'views' | 'follows'): Promise<ApiResponse<MangaRankingResponse[]>> {
   const response = await axiosInstance.get<ApiResponse<MangaRankingResponse[]>>('/v1/manga/ranking', {
     params: { sort },
+    skipAuthExpiredHandler: true,
   });
   return response.data;
 }
@@ -36,6 +39,7 @@ export async function getMangaRanking(sort: 'views' | 'follows'): Promise<ApiRes
 export async function searchManga(query: string, limit = 5): Promise<ApiResponse<MangaSearchResponse[]>> {
   const response = await axiosInstance.get<ApiResponse<MangaSearchResponse[]>>('/v1/manga/search', {
     params: { query, limit },
+    skipAuthExpiredHandler: true,
   });
   return response.data;
 }
@@ -49,17 +53,22 @@ export async function filterManga(params: {
 }): Promise<ApiResponse<MangaSearchResponse[]>> {
   const response = await axiosInstance.get<ApiResponse<MangaSearchResponse[]>>('/v1/manga/filter', {
     params,
+    skipAuthExpiredHandler: true,
   });
   return response.data;
 }
 
 export async function getCategories(): Promise<ApiResponse<CategoryResponse[]>> {
-  const response = await axiosInstance.get<ApiResponse<CategoryResponse[]>>('/v1/categories');
+  const response = await axiosInstance.get<ApiResponse<CategoryResponse[]>>('/v1/categories', {
+    skipAuthExpiredHandler: true,
+  });
   return response.data;
 }
 
 export async function getRecentUserComments(): Promise<ApiResponse<RecentCommentResponse[]>> {
-  const response = await axiosInstance.get<ApiResponse<RecentCommentResponse[]>>('/v1/manga/comments/recent-users');
+  const response = await axiosInstance.get<ApiResponse<RecentCommentResponse[]>>('/v1/manga/comments/recent-users', {
+    skipAuthExpiredHandler: true,
+  });
   return response.data;
 }
 
@@ -80,12 +89,16 @@ export async function getLatestReadingHistory(slug: string): Promise<ApiResponse
 }
 
 export async function getMangaBySlug(slug: string): Promise<ApiResponse<MangaDetailResponse>> {
-  const response = await axiosInstance.post<ApiResponse<MangaDetailResponse>>(`/v1/manga/${slug}`);
+  const response = await axiosInstance.post<ApiResponse<MangaDetailResponse>>(`/v1/manga/${slug}`, undefined, {
+    skipAuthExpiredHandler: true,
+  });
   return response.data;
 }
 
 export async function requestChapterPage( body : ChapterPageRequest) : Promise<ApiResponse<ChapterPageResponse[]>>{
-   const response = await axiosInstance.post<ApiResponse<ChapterPageResponse[]>>("/v1/chapter", body );
+   const response = await axiosInstance.post<ApiResponse<ChapterPageResponse[]>>("/v1/chapter", body, {
+     skipAuthExpiredHandler: true,
+   });
    return response.data
 }
 
@@ -100,7 +113,9 @@ export async function markFollowedMangaLatestChapterSeen(slug: string): Promise<
 }
 
 export async function getMangaComments(slug: string): Promise<ApiResponse<MangaCommentResponse[]>> {
-  const response = await axiosInstance.get<ApiResponse<MangaCommentResponse[]>>(`/v1/manga/${slug}/comments`);
+  const response = await axiosInstance.get<ApiResponse<MangaCommentResponse[]>>(`/v1/manga/${slug}/comments`, {
+    skipAuthExpiredHandler: true,
+  });
   return response.data;
 }
 
@@ -122,7 +137,10 @@ export async function getChapterComments(
   chapterNumber: string
 ): Promise<ApiResponse<MangaCommentResponse[]>> {
   const response = await axiosInstance.get<ApiResponse<MangaCommentResponse[]>>(
-    `/v1/manga/${slug}/chapters/${chapterNumber}/comments`
+    `/v1/manga/${slug}/chapters/${chapterNumber}/comments`,
+    {
+      skipAuthExpiredHandler: true,
+    }
   );
   return response.data;
 }

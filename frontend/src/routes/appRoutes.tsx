@@ -37,6 +37,10 @@ const chatRoutes: RouteObject[] = [
         errorElement: <RouteError />,
         children: [
             {
+                index: true,
+                element: <ForumPage />
+            },
+            {
                 path: "forum",
                 element: <ForumPage />
             }
@@ -81,6 +85,21 @@ const mainRoutes: RouteObject[] = [
             {
                 path: "followed-manga",
                 element: <FollowedManga />
+            },
+            {
+                path: "login",
+                element: <LoginPage />,
+                errorElement: <RouteError />
+            },
+            {
+                path: "register",
+                element: <RegisterPage />,
+                errorElement: <RouteError />
+            },
+            {
+                path: "reset-password",
+                element: <ResetPasswordPage />,
+                errorElement: <RouteError />
             },
         ]
     },
@@ -147,21 +166,6 @@ const mainRoutes: RouteObject[] = [
             }
         ]
     },
-    {
-        path: "/login",
-        element: <LoginPage />,
-        errorElement: <RouteError />
-    },
-    {
-        path: "/register",
-        element: <RegisterPage />,
-        errorElement: <RouteError />
-    },
-    {
-        path: "/reset-password",
-        element: <ResetPasswordPage />,
-        errorElement: <RouteError />
-    }
 ];
 
 let appRoutes = mainRoutes;

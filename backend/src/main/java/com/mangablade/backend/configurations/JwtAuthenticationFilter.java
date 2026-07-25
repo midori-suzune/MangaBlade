@@ -7,6 +7,8 @@ import java.io.IOException;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -19,12 +21,20 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Arrays;
+import java.util.List;
+
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserService userService;
+    private static final PathPatternRequestMatcher.Builder PATH_PATTERN_MATCHER = PathPatternRequestMatcher.withDefaults();
+    
+    private final List<RequestMatcher> publicEndpointMatchers = Arrays.stream(SecurityConfig.PUBLIC_ENDPOINTS)
+            .map(pattern -> (RequestMatcher) PATH_PATTERN_MATCHER.matcher(pattern))
+            .toList();
 
     private String getToken(HttpServletRequest request){
         String authHeader = request.getHeader("Authorization");
@@ -68,9 +78,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         }catch (JwtException  | IllegalArgumentException e){
+            if (isPublicEndpoint(request)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
         filterChain.doFilter(request, response);
+    }
+
+    private boolean isPublicEndpoint(HttpServletRequest request) {
+        return publicEndpointMatchers.stream().anyMatch(matcher -> matcher.matches(request));
     }
 }

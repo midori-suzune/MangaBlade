@@ -119,7 +119,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
 
     try {
-      const res = await userProfileApi.getProfile();
+      const res = await userProfileApi.getProfile({ skipAuthExpiredHandler: true });
       if (res.success && res.payload) {
         const u = res.payload;
         localStorage.setItem('user', JSON.stringify(u));
