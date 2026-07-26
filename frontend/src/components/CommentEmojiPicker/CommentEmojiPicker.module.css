@@ -7,6 +7,10 @@
     min-width: 0;
 }
 
+.emojiPickerBottom {
+    flex-direction: column;
+}
+
 .emojiPanel {
     position: absolute;
     left: 0;
@@ -20,6 +24,41 @@
     border-radius: 0;
     background-color: #ffffff;
     box-shadow: 0 16px 36px rgba(15, 23, 42, 0.16);
+}
+
+.emojiPickerBottom .emojiPanel {
+    top: calc(100% + 8px);
+    bottom: auto;
+}
+
+.emojiPickerToolbar {
+    z-index: 25;
+}
+
+.emojiPickerToolbar .folderBar {
+    max-width: none;
+    overflow: visible;
+    gap: 2px;
+    padding: 0;
+    border: none;
+    background-color: transparent;
+}
+
+.emojiPickerToolbar .folderButton {
+    width: 28px;
+    height: 26px;
+    border-radius: 4px;
+    background-color: transparent;
+}
+
+.emojiPickerToolbar .folderButton:hover,
+.emojiPickerToolbar .folderButtonActive {
+    background-color: var(--color-surface-muted);
+}
+
+.emojiPickerToolbar .folderButton img {
+    max-width: 19px;
+    max-height: 19px;
 }
 
 .folderBar {
@@ -114,5 +153,10 @@
         left: 0;
         bottom: calc(100% + 8px);
         width: min(300px, calc(100vw - 32px));
+    }
+
+    .emojiPickerBottom .emojiPanel {
+        top: calc(100% + 8px);
+        bottom: auto;
     }
 }

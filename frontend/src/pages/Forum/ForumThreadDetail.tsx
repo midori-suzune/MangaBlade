@@ -4,9 +4,12 @@ import type {ForumCommentResponse, ForumThreadResponse} from "../../types/forum.
 import {CommentEditor} from "../../components/CommentEmojiPicker/CommentEditor.tsx";
 import {CommentEmojiPicker} from "../../components/CommentEmojiPicker/CommentEmojiPicker.tsx";
 import {CommentItem} from "./CommentItem.tsx";
+import {ForumMarkdown} from "./ForumMarkdown.tsx";
 import styles from "./ForumPage.module.css";
 import {categoryLabels} from "./forumConstants.ts";
 import {flattenComments, formatTime, getInitial, getRoleBadge} from "./forumUtils.ts";
+
+const hasImageTokenPattern = /!\[[^\]]*]\(([^)\s]+)\)/;
 
 function getRoleBadgeClass(role?: string | null) {
     if (role === "ADMIN") return `${styles.commentBadge} ${styles.adminBadge}`;
@@ -155,7 +158,16 @@ export function ForumThreadDetail({
                                 {categoryLabels[activeThread.category]}
                             </span>
                             <h2 className={styles.chatTitle}>{activeThread.title}</h2>
-                            <p className={styles.threadPostText}>{activeThread.content}</p>
+                            <div className={styles.threadPostContent}>
+                                <ForumMarkdown attachments={activeThread.attachments} content={activeThread.content} />
+                            </div>
+                            {activeThread.attachments && activeThread.attachments.length > 0 && !hasImageTokenPattern.test(activeThread.content) && (
+                                <div className={styles.threadPostImages}>
+                                    {activeThread.attachments.map((attachment) => (
+                                        <img src={attachment.url} alt="" key={attachment.id} />
+                                    ))}
+                                </div>
+                            )}
                         </div>
                         <div className={styles.chatStats}>
                             <span><MessageCircle size={16} /> {activeThread.commentCount}</span>

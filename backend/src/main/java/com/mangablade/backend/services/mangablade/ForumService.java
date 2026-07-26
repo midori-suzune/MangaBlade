@@ -3,6 +3,7 @@ package com.mangablade.backend.services.mangablade;
 import com.mangablade.backend.dtos.request.CreateForumCommentRequest;
 import com.mangablade.backend.dtos.request.CreateForumThreadRequest;
 import com.mangablade.backend.dtos.response.CommentLikeResponse;
+import com.mangablade.backend.dtos.response.ForumAttachmentResponse;
 import com.mangablade.backend.dtos.response.ForumCommentResponse;
 import com.mangablade.backend.dtos.response.ForumThreadResponse;
 import com.mangablade.backend.dtos.response.PageResponse;
@@ -21,6 +22,7 @@ import com.mangablade.backend.repositories.ForumCommentRepository;
 import com.mangablade.backend.repositories.ForumThreadRepository;
 import com.mangablade.backend.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -45,6 +47,8 @@ public class ForumService {
     private final UserRepository userRepository;
     private final TaskService taskService;
     private final ForumRealtimePublisher realtimePublisher;
+
+    private final ForumAttachmentService forumAttachmentService;
 
     @Transactional(readOnly = true)
     public PageResponse<ForumThreadResponse> findThreads(ForumThreadCategory category, int page, int size) {
@@ -91,6 +95,14 @@ public class ForumService {
         var savedThread = forumThreadRepository.save(thread);
         savedThread.setUser(dbUser);
         var response = toThreadResponse(savedThread);
+
+        if (request.getAttachmentIds() != null && !request.getAttachmentIds().isEmpty()) {
+            var attachments = forumAttachmentService.attachToThread(
+                    request.getAttachmentIds(), savedThread.getId(), dbUser.getId()
+            );
+            response.setAttachments(attachments);
+        }
+
         realtimePublisher.threadCreated(response);
         return response;
     }
@@ -245,6 +257,9 @@ public class ForumService {
     }
 
     private ForumThreadResponse toThreadResponse(ForumThread thread) {
+        var attachments = thread.getId() != null
+                ? forumAttachmentService.getThreadAttachments(thread.getId())
+                : List.<ForumAttachmentResponse>of();
         return ForumThreadResponse.builder()
                 .id(thread.getId())
                 .category(thread.getCategory())
@@ -257,6 +272,7 @@ public class ForumService {
                 .createdAt(thread.getCreatedAt())
                 .updatedAt(thread.getUpdatedAt())
                 .user(toThreadUserResponse(thread.getUser()))
+                .attachments(attachments)
                 .build();
     }
 

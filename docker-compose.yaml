@@ -39,6 +39,11 @@ services:
       CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
       TURNSTILE_SECRET: ${TURNSTILE_SECRET}
       ELASTICSEARCH_URL: http://elasticsearch:9200
+      R2_ENDPOINT: ${R2_ENDPOINT}
+      R2_ACCESS_KEY: ${R2_ACCESS_KEY}
+      R2_SECRET_KEY: ${R2_SECRET_KEY}
+      R2_BUCKET: ${R2_BUCKET}
+      R2_PUBLIC_URL: ${R2_PUBLIC_URL}
     depends_on:
       mysql:
         condition: service_healthy

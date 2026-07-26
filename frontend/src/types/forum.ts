@@ -13,6 +13,15 @@ export type ForumUser = {
   activeTitleColor?: string | null;
 };
 
+export type ForumAttachmentResponse = {
+  id: number;
+  url: string;
+  mimeType?: string | null;
+  fileSize?: number | null;
+  width?: number | null;
+  height?: number | null;
+};
+
 export type ForumThreadResponse = {
   id: number;
   category: ForumThreadCategory;
@@ -25,6 +34,7 @@ export type ForumThreadResponse = {
   createdAt: string;
   updatedAt: string;
   user?: ForumUser | null;
+  attachments?: ForumAttachmentResponse[];
 };
 
 export type ForumCommentResponse = {
@@ -45,6 +55,7 @@ export type CreateForumThreadRequest = {
   category: ForumThreadCategory;
   title: string;
   content: string;
+  attachmentIds?: number[];
 };
 
 export type CreateForumCommentRequest = {

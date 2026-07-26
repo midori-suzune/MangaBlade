@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.Instant;
+import java.util.List;
 
 @Getter
 @Setter
@@ -28,6 +29,7 @@ public class ForumThreadResponse {
     private Instant createdAt;
     private Instant updatedAt;
     private User user;
+    private List<ForumAttachmentResponse> attachments;
 
     @Getter
     @Setter

@@ -3,6 +3,7 @@ import type {ApiResponse} from "../types/auth";
 import type {
   CreateForumCommentRequest,
   CreateForumThreadRequest,
+  ForumAttachmentResponse,
   ForumCommentResponse,
   ForumThreadCategory,
   ForumThreadResponse,
@@ -29,6 +30,22 @@ export async function createForumThread(
   body: CreateForumThreadRequest
 ): Promise<ApiResponse<ForumThreadResponse>> {
   const response = await axiosInstance.post<ApiResponse<ForumThreadResponse>>("/v1/forum/threads", body);
+  return response.data;
+}
+
+export async function uploadForumImage(file: File): Promise<ApiResponse<ForumAttachmentResponse>> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await axiosInstance.post<ApiResponse<ForumAttachmentResponse>>(
+    "/v1/forum/images/upload",
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
   return response.data;
 }
 

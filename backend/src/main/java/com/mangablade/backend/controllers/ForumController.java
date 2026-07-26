@@ -4,15 +4,18 @@ import com.mangablade.backend.dtos.request.CreateForumCommentRequest;
 import com.mangablade.backend.dtos.request.CreateForumThreadRequest;
 import com.mangablade.backend.dtos.response.ApiResponse;
 import com.mangablade.backend.dtos.response.CommentLikeResponse;
+import com.mangablade.backend.dtos.response.ForumAttachmentResponse;
 import com.mangablade.backend.dtos.response.ForumCommentResponse;
 import com.mangablade.backend.dtos.response.ForumThreadResponse;
 import com.mangablade.backend.dtos.response.PageResponse;
 import com.mangablade.backend.entities.User;
 import com.mangablade.backend.enums.ForumThreadCategory;
+import com.mangablade.backend.services.mangablade.ForumAttachmentService;
 import com.mangablade.backend.services.mangablade.ForumService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -31,6 +35,7 @@ import java.util.List;
 @RequestMapping("/api/v1/forum")
 public class ForumController {
     private final ForumService forumService;
+    private final ForumAttachmentService forumAttachmentService;
 
     @GetMapping("/threads")
     public ResponseEntity<ApiResponse<PageResponse<ForumThreadResponse>>> getThreads(
@@ -139,6 +144,33 @@ public class ForumController {
                         .success(true)
                         .message("success")
                         .payload(forumService.toggleCommentLike(commentId, user))
+                        .build()
+        );
+    }
+
+    @PostMapping(value = "/images/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<ForumAttachmentResponse>> uploadImage(
+            @RequestParam("file") MultipartFile file,
+            @AuthenticationPrincipal User user
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                ApiResponse.<ForumAttachmentResponse>builder()
+                        .success(true)
+                        .message("success")
+                        .payload(forumAttachmentService.uploadForumImage(file, user))
+                        .build()
+        );
+    }
+
+    @GetMapping("/threads/{threadId}/attachments")
+    public ResponseEntity<ApiResponse<List<ForumAttachmentResponse>>> getThreadAttachments(
+            @PathVariable Long threadId
+    ) {
+        return ResponseEntity.ok(
+                ApiResponse.<List<ForumAttachmentResponse>>builder()
+                        .success(true)
+                        .message("success")
+                        .payload(forumAttachmentService.getThreadAttachments(threadId))
                         .build()
         );
     }
