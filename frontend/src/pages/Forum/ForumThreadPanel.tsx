@@ -70,7 +70,9 @@ export function ForumThreadPanel({
                         type="button"
                         onClick={() => onSelectThread(thread.id)}
                     >
-                        <span className={styles.threadCategory}>{categoryLabels[thread.category]}</span>
+                        <span className={`${styles.threadCategory} ${thread.category === "ANNOUNCEMENT" ? styles.announcementCategory : ""}`}>
+                            {categoryLabels[thread.category]}
+                        </span>
                         <span className={styles.threadTitle}>{thread.title}</span>
                         <span className={styles.threadMeta}>
                             <span><MessageCircle size={14} /> {thread.commentCount} bình luận</span>

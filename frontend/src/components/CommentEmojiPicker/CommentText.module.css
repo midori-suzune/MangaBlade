@@ -1,8 +1,8 @@
 .commentEmoji {
     display: inline-block;
     width: auto;
-    max-width: 92px;
-    max-height: 92px;
+    max-width: 72px;
+    max-height: 72px;
     margin: 0 5px;
     object-fit: contain;
     vertical-align: middle;

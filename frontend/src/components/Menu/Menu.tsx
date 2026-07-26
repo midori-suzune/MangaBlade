@@ -5,6 +5,10 @@ import styles from "./Menu.module.css";
 
 export function Menu() {
     const { isAuthenticated, openAuthModal } = useAuthStore();
+    const hostname = window.location.hostname;
+    const isChatHost = hostname === "chat.mangablade.online";
+    const isLocalHost = hostname === "localhost" || hostname === "127.0.0.1";
+    const mainSiteOrigin = "https://mangablade.online";
     const [theme, setTheme] = useState<"light" | "dark">(() => {
         return localStorage.getItem("mangablade-theme") === "light" ? "light" : "dark";
     });
@@ -23,27 +27,44 @@ export function Menu() {
         openAuthModal("login");
     }
 
+    function mainHref(path: string) {
+        return isChatHost ? `${mainSiteOrigin}${path}` : path;
+    }
+
+    function renderMainLink(path: string, label: string, options?: { end?: boolean; requireAuth?: boolean }) {
+        if (isChatHost) {
+            return (
+                <a href={mainHref(path)} onClick={options?.requireAuth ? requireLogin : undefined}>
+                    {label}
+                </a>
+            );
+        }
+
+        return (
+            <NavLink
+                to={path}
+                className={({ isActive }) => isActive ? styles.active : ''}
+                end={options?.end}
+                onClick={options?.requireAuth ? requireLogin : undefined}
+            >
+                {label}
+            </NavLink>
+        );
+    }
+
     return (
         <header className={styles.bottomHeaderWrapper}>
             <div className={styles.bottomHeader}>
             <nav className={styles.navLinks} aria-label="Main navigation">
-                <NavLink to="/" className={({ isActive }) => isActive ? styles.active : ''} end>Trang chủ</NavLink>
-                <NavLink to="/category" className={({ isActive }) => isActive ? styles.active : ''}>Thể loại</NavLink>
-                <a href="https://chat.mangablade.online">Diễn Đàn</a>
-                <NavLink
-                    to="/followed-manga"
-                    className={({ isActive }) => isActive ? styles.active : ''}
-                    onClick={requireLogin}
-                >
-                    Theo dõi
-                </NavLink>
-                <NavLink
-                    to="/reading-history"
-                    className={({ isActive }) => isActive ? styles.active : ''}
-                    onClick={requireLogin}
-                >
-                    Lịch sử đọc
-                </NavLink>
+                {renderMainLink("/", "Trang chủ", { end: true })}
+                {renderMainLink("/category", "Thể loại")}
+                {isLocalHost ? (
+                    <NavLink to="/forum" className={({ isActive }) => isActive ? styles.active : ''}>Diễn Đàn</NavLink>
+                ) : (
+                    <a href="https://chat.mangablade.online" className={isChatHost ? styles.active : undefined}>Diễn Đàn</a>
+                )}
+                {renderMainLink("/followed-manga", "Theo dõi", { requireAuth: true })}
+                {renderMainLink("/reading-history", "Lịch sử đọc", { requireAuth: true })}
             </nav>
             <div className={styles.menuRightIcons}>
                 <button

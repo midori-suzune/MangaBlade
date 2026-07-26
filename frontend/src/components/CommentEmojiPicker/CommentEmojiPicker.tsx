@@ -4,12 +4,22 @@ import {commentEmojiFolders, getCommentEmojiToken, type CommentEmojiFolder} from
 import styles from "./CommentEmojiPicker.module.css";
 
 type CommentEmojiPickerProps = {
+    className?: string;
+    dispatchInsertEvent?: boolean;
     onSelect?: (emojiToken: string) => void;
+    panelPlacement?: "top" | "bottom";
+    variant?: "default" | "toolbar";
 };
 
 const INSERT_COMMENT_EMOJI_EVENT = "insert-comment-emoji";
 
-export function CommentEmojiPicker({onSelect}: CommentEmojiPickerProps) {
+export function CommentEmojiPicker({
+    className = "",
+    dispatchInsertEvent = true,
+    onSelect,
+    panelPlacement = "top",
+    variant = "default"
+}: CommentEmojiPickerProps) {
     const [isPanelOpen, setIsPanelOpen] = useState(false);
     const [activeFolderName, setActiveFolderName] = useState(commentEmojiFolders[0]?.name ?? "");
     const pickerRef = useRef<HTMLDivElement>(null);
@@ -40,7 +50,7 @@ export function CommentEmojiPicker({onSelect}: CommentEmojiPickerProps) {
 
     return (
         <div
-            className={styles.emojiPicker}
+            className={`${styles.emojiPicker} ${panelPlacement === "bottom" ? styles.emojiPickerBottom : ""} ${variant === "toolbar" ? styles.emojiPickerToolbar : ""} ${className}`}
             data-comment-emoji-picker
             ref={pickerRef}
         >
@@ -75,13 +85,15 @@ export function CommentEmojiPicker({onSelect}: CommentEmojiPickerProps) {
                                     onMouseDown={(event) => event.preventDefault()}
                                     onClick={() => {
                                         const emojiToken = getCommentEmojiToken(emoji);
-                                        document.dispatchEvent(new CustomEvent(INSERT_COMMENT_EMOJI_EVENT, {
-                                            detail: {
-                                                token: emojiToken,
-                                                src: emoji.src,
-                                                name: emoji.name,
-                                            },
-                                        }));
+                                        if (dispatchInsertEvent) {
+                                            document.dispatchEvent(new CustomEvent(INSERT_COMMENT_EMOJI_EVENT, {
+                                                detail: {
+                                                    token: emojiToken,
+                                                    src: emoji.src,
+                                                    name: emoji.name,
+                                                },
+                                            }));
+                                        }
                                         onSelect?.(emojiToken);
                                         setIsPanelOpen(false);
                                     }}

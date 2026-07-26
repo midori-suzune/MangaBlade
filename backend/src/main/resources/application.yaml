@@ -35,7 +35,7 @@ spring:
             enable: true
   app:
     otruyen:
-      manga-import-cron: "0 */2 * * * *"
+      manga-import-cron: "0 */30 * * * *"
       importer:
         max-manga-per-run: 2
     cloudinary:
@@ -59,6 +59,13 @@ cloudinary:
   cloud-name: ${CLOUDINARY_CLOUD_NAME:}
   api-key: ${CLOUDINARY_API_KEY:}
   api-secret: ${CLOUDINARY_API_SECRET:}
+
+r2:
+  endpoint: ${R2_ENDPOINT:http://localhost:9000}
+  access-key: ${R2_ACCESS_KEY:test}
+  secret-key: ${R2_SECRET_KEY:test}
+  bucket: ${R2_BUCKET:mangablade-forum}
+  public-url: ${R2_PUBLIC_URL:http://localhost:9000/mangablade-forum}
 
 logging:
   charset:

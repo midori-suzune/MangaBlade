@@ -5,10 +5,13 @@ import {
     createForumComment,
     createForumThread,
     deleteForumComment,
+    deleteForumThread,
     getForumComments,
     getForumThread,
     getForumThreads,
-    toggleForumCommentLike
+    toggleForumCommentLike,
+    updateForumThread,
+    uploadForumImage
 } from "../../api/forumApi.ts";
 import {createForumSocketClient, subscribeForumEvent} from "../../api/forumSocket.ts";
 import {useAuthStore} from "../../stores/authStore.ts";
@@ -16,6 +19,7 @@ import type {
     ForumCommentDeletedPayload,
     ForumCommentLikePayload,
     ForumCommentResponse,
+    ForumAttachmentResponse,
     ForumPresenceResponse,
     ForumThreadCategory,
     ForumThreadDeletedPayload,
@@ -42,14 +46,18 @@ export function ForumPage() {
     const [comments, setComments] = useState<ForumCommentResponse[]>([]);
     const [onlineCounts, setOnlineCounts] = useState<Record<number, number>>({});
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [editingThread, setEditingThread] = useState<ForumThreadResponse | null>(null);
     const [newThreadTitle, setNewThreadTitle] = useState("");
     const [newThreadCategory, setNewThreadCategory] = useState<ForumThreadCategory>("ANNOUNCEMENT");
     const [newThreadExcerpt, setNewThreadExcerpt] = useState("");
+    const [newThreadAttachments, setNewThreadAttachments] = useState<ForumAttachmentResponse[]>([]);
     const [activeCategory, setActiveCategory] = useState<CategoryFilter>("ALL");
     const [draft, setDraft] = useState("");
     const [replyTarget, setReplyTarget] = useState<ForumCommentResponse | null>(null);
     const [isLoadingThreads, setIsLoadingThreads] = useState(true);
     const [isLoadingComments, setIsLoadingComments] = useState(false);
+    const [isUploadingImage, setIsUploadingImage] = useState(false);
+    const [uploadError, setUploadError] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
     const [isSocketConnected, setIsSocketConnected] = useState(false);
     const clientRef = useRef<Client | null>(null);
@@ -59,6 +67,24 @@ export function ForumPage() {
         () => activeThreadDetail ?? threads.find((thread) => thread.id === activeThreadId) ?? null,
         [activeThreadDetail, activeThreadId, threads]
     );
+
+    function resetCreateThreadDraft() {
+        setNewThreadTitle("");
+        setNewThreadCategory("ANNOUNCEMENT");
+        setNewThreadExcerpt("");
+        setNewThreadAttachments([]);
+        setUploadError("");
+    }
+
+    function openEditThreadModal(thread: ForumThreadResponse) {
+        setEditingThread(thread);
+        setNewThreadTitle(thread.title);
+        setNewThreadCategory(thread.category);
+        setNewThreadExcerpt(thread.content);
+        setNewThreadAttachments(thread.attachments ?? []);
+        setUploadError("");
+        setIsCreateModalOpen(true);
+    }
 
     const handleThreadDeleted = useCallback((payload: ForumThreadDeletedPayload) => {
         setThreads((currentThreads) => currentThreads.filter((thread) => thread.id !== payload.threadId));
@@ -199,6 +225,14 @@ export function ForumPage() {
                     setActiveThreadId((currentActiveId) => currentActiveId ?? thread.id);
                 }
 
+                if (event.type === "THREAD_UPDATED") {
+                    const thread = event.payload as ForumThreadResponse;
+                    setThreads((currentThreads) => upsertThread(currentThreads, thread));
+                    setActiveThreadDetail((currentThread) => (
+                        currentThread?.id === thread.id ? thread : currentThread
+                    ));
+                }
+
                 if (event.type === "THREAD_DELETED") {
                     handleThreadDeleted(event.payload as ForumThreadDeletedPayload);
                 }
@@ -228,6 +262,13 @@ export function ForumPage() {
         const subscription = subscribeForumEvent<unknown>(client, `/topic/forum/threads/${activeThreadId}`, (event) => {
             if (event.type === "THREAD_DELETED") {
                 handleThreadDeleted(event.payload as ForumThreadDeletedPayload);
+            }
+            if (event.type === "THREAD_UPDATED") {
+                const thread = event.payload as ForumThreadResponse;
+                setThreads((currentThreads) => upsertThread(currentThreads, thread));
+                setActiveThreadDetail((currentThread) => (
+                    currentThread?.id === thread.id ? thread : currentThread
+                ));
             }
             if (event.type === "COMMENT_CREATED") {
                 handleCommentCreated(event.payload as ForumCommentResponse);
@@ -275,20 +316,89 @@ export function ForumPage() {
         if (!title || !content) return;
 
         try {
-            const response = await createForumThread({
+            const request = {
                 category: newThreadCategory,
                 title,
-                content
-            });
+                content,
+                attachmentIds: newThreadAttachments.map((attachment) => attachment.id)
+            };
+            const response = editingThread
+                ? await updateForumThread(editingThread.id, request)
+                : await createForumThread(request);
             if (response.payload) {
                 setThreads((currentThreads) => upsertThread(currentThreads, response.payload as ForumThreadResponse));
                 setActiveThreadId(response.payload.id);
+                setActiveThreadDetail(response.payload as ForumThreadResponse);
             }
-            setNewThreadTitle("");
-            setNewThreadExcerpt("");
+            resetCreateThreadDraft();
+            setEditingThread(null);
             setIsCreateModalOpen(false);
         } catch {
-            setErrorMessage("Không đăng được thread.");
+            setErrorMessage(editingThread ? "Không cập nhật được thread." : "Không đăng được thread.");
+        }
+    }
+
+    async function handleForumImageSelect(files: File[] | FileList | null, insertAt?: number) {
+        if (!files?.length) return;
+
+        const remainingSlots = 5 - newThreadAttachments.length;
+        const selectedFiles = Array.from(files).slice(0, Math.max(remainingSlots, 0));
+        if (selectedFiles.length === 0) {
+            setUploadError("Mỗi thread chỉ được đính kèm tối đa 5 ảnh.");
+            return;
+        }
+
+        const oversizedFile = selectedFiles.find((file) => file.size > 5 * 1024 * 1024);
+        if (oversizedFile) {
+            setUploadError(`Ảnh "${oversizedFile.name}" vượt quá 5MB.`);
+            return;
+        }
+
+        const invalidFile = selectedFiles.find((file) => !["image/jpeg", "image/png", "image/gif", "image/webp"].includes(file.type));
+        if (invalidFile) {
+            setUploadError(`Ảnh "${invalidFile.name}" không đúng định dạng hỗ trợ.`);
+            return;
+        }
+
+        setIsUploadingImage(true);
+        setUploadError("");
+        try {
+            const uploadedAttachments = await Promise.all(selectedFiles.map(async (file) => {
+                const response = await uploadForumImage(file);
+                return response.payload;
+            }));
+            const validAttachments = uploadedAttachments.filter(
+                (attachment): attachment is ForumAttachmentResponse => Boolean(attachment)
+            );
+
+            setNewThreadAttachments((currentAttachments) => [
+                ...currentAttachments,
+                ...validAttachments
+            ].slice(0, 5));
+            if (validAttachments.length > 0) {
+                const imageTokens = validAttachments
+                    .map((attachment) => `![Ảnh đính kèm](attachment:${attachment.id})`)
+                    .join("\n\n");
+
+                setNewThreadExcerpt((currentContent) => {
+                    const safeInsertAt = Math.min(
+                        Math.max(insertAt ?? currentContent.length, 0),
+                        currentContent.length
+                    );
+                    const prefix = currentContent.slice(0, safeInsertAt);
+                    const suffix = currentContent.slice(safeInsertAt);
+                    const before = prefix && !prefix.endsWith("\n") ? "\n\n" : "";
+                    const after = suffix && !suffix.startsWith("\n") ? "\n\n" : "";
+                    return `${prefix}${before}${imageTokens}${after}${suffix}`;
+                });
+            }
+            if (files.length > selectedFiles.length) {
+                setUploadError("Chỉ 5 ảnh đầu tiên được đính kèm vào thread.");
+            }
+        } catch {
+            setUploadError("Không tải được ảnh đính kèm.");
+        } finally {
+            setIsUploadingImage(false);
         }
     }
 
@@ -326,6 +436,20 @@ export function ForumPage() {
         }
     }
 
+    async function handleDeleteThread(threadId: number) {
+        if (!window.confirm("Gỡ bài viết này?")) return;
+
+        try {
+            await deleteForumThread(threadId);
+            setThreads((currentThreads) => currentThreads.filter((thread) => thread.id !== threadId));
+            setActiveThreadId((currentActiveId) => currentActiveId === threadId ? null : currentActiveId);
+            setActiveThreadDetail((currentThread) => currentThread?.id === threadId ? null : currentThread);
+            setComments([]);
+        } catch {
+            setErrorMessage("Không gỡ được bài viết.");
+        }
+    }
+
     async function handleToggleLike(commentId: number) {
         if (!isAuthenticated) {
             openAuthModal("login");
@@ -359,7 +483,15 @@ export function ForumPage() {
                     isLoadingThreads={isLoadingThreads}
                     onlineCounts={onlineCounts}
                     threads={threads}
-                    onCreateClick={() => isAuthenticated ? setIsCreateModalOpen(true) : openAuthModal("login")}
+                    onCreateClick={() => {
+                        if (!isAuthenticated) {
+                            openAuthModal("login");
+                            return;
+                        }
+                        setEditingThread(null);
+                        resetCreateThreadDraft();
+                        setIsCreateModalOpen(true);
+                    }}
                     onSelectCategory={(category) => {
                         setActiveCategory(category);
                         setActiveThreadId(null);
@@ -380,9 +512,12 @@ export function ForumPage() {
                     onlineCount={activeThread ? onlineCounts[activeThread.id] ?? 0 : 0}
                     replyTarget={replyTarget}
                     userId={user?.id}
+                    userRole={user?.role}
                     onCancelReply={() => setReplyTarget(null)}
                     onDeleteComment={handleDeleteComment}
+                    onDeleteThread={handleDeleteThread}
                     onDraftChange={setDraft}
+                    onEditThread={openEditThreadModal}
                     onLikeComment={handleToggleLike}
                     onReply={setReplyTarget}
                     onSubmitComment={handleSubmitComment}
@@ -391,12 +526,41 @@ export function ForumPage() {
 
             {isCreateModalOpen && (
                 <CreateThreadModal
+                    attachments={newThreadAttachments}
                     category={newThreadCategory}
                     content={newThreadExcerpt}
+                    isUploadingImage={isUploadingImage}
+                    modalTitle={editingThread ? "Chỉnh sửa bài viết" : "Tạo thread mới"}
+                    submitLabel={editingThread ? "Lưu thay đổi" : "Đăng bài"}
                     title={newThreadTitle}
+                    uploadError={uploadError}
+                    onAttachmentRemove={(attachmentId) => {
+                        const attachment = newThreadAttachments.find((item) => item.id === attachmentId);
+                        setNewThreadAttachments((currentAttachments) => (
+                            currentAttachments.filter((attachment) => attachment.id !== attachmentId)
+                        ));
+                        if (attachment) {
+                            setNewThreadExcerpt((currentContent) => (
+                                currentContent
+                                    .replace(`![Ảnh đính kèm](attachment:${attachment.id})`, "")
+                                    .replace(`![Ảnh đính kèm](${attachment.url})`, "")
+                                    .replace(/\n{3,}/g, "\n\n")
+                                    .trimStart()
+                            ));
+                        }
+                    }}
+                    onCancel={() => {
+                        setIsCreateModalOpen(false);
+                        setEditingThread(null);
+                        resetCreateThreadDraft();
+                    }}
                     onCategoryChange={setNewThreadCategory}
-                    onClose={() => setIsCreateModalOpen(false)}
+                    onDismiss={() => {
+                        setIsCreateModalOpen(false);
+                        setEditingThread(null);
+                    }}
                     onContentChange={setNewThreadExcerpt}
+                    onImageSelect={handleForumImageSelect}
                     onSubmit={handleCreateThread}
                     onTitleChange={setNewThreadTitle}
                 />

@@ -11,7 +11,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class CreateForumThreadRequest {
+public class UpdateForumThreadRequest {
     @NotNull
     private ForumThreadCategory category;
 

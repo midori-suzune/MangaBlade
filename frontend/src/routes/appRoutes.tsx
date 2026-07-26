@@ -16,6 +16,7 @@ import {MangaManagement} from "../pages/Admin/MangaManagement/MangaManagement.ts
 import {ChapterReports} from "../pages/Admin/ChapterReports/ChapterReports.tsx";
 import {CommentReports} from "../pages/Admin/CommentReports/CommentReports.tsx";
 import {ContentModeration} from "../pages/Admin/ContentModeration/ContentModeration.tsx";
+import {ForumDraftImages} from "../pages/Admin/ForumDraftImages/ForumDraftImages.tsx";
 import {ReadingHistory} from "../pages/ReadingHistory/ReadingHistory.tsx";
 import {FollowedManga} from "../pages/FollowedManga/FollowedManga.tsx";
 import {RouteError} from "./RouteError.tsx";
@@ -28,7 +29,9 @@ import { AuthorChapterManage } from "../pages/AuthorDashboard/AuthorChapterManag
 import { AuthorChapterUpload } from "../pages/AuthorDashboard/AuthorChapterUpload.tsx";
 import { AuthorStatistics } from "../pages/AuthorDashboard/AuthorStatistics.tsx";
 
-const chatHost = window.location.hostname === "chat.mangablade.online";
+const hostname = window.location.hostname;
+const chatHost = hostname === "chat.mangablade.online";
+const localHost = hostname === "localhost" || hostname === "127.0.0.1";
 
 const chatRoutes: RouteObject[] = [
     {
@@ -86,6 +89,12 @@ const mainRoutes: RouteObject[] = [
                 path: "followed-manga",
                 element: <FollowedManga />
             },
+            ...(localHost ? [
+                {
+                    path: "forum",
+                    element: <ForumPage />
+                }
+            ] : []),
             {
                 path: "login",
                 element: <LoginPage />,
@@ -159,6 +168,10 @@ const mainRoutes: RouteObject[] = [
             {
                 path: "comment-reports",
                 element: <CommentReports />
+            },
+            {
+                path: "forum-draft-images",
+                element: <ForumDraftImages />
             },
             {
                 path: "author-requests",

@@ -7,6 +7,8 @@ import styles from "./Header.module.css";
 
 export function Header() {
     const navigate = useNavigate();
+    const isChatHost = window.location.hostname === "chat.mangablade.online";
+    const mainSiteOrigin = "https://mangablade.online";
     const { isAuthenticated, user, logout, openAuthModal, avatarUrl } = useAuthStore();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
@@ -98,13 +100,25 @@ export function Header() {
         navigate(`/manga/${selectedResult.slug}`);
     }
 
+    const logoContent = (
+        <>
+            <img src="/logo9.png" alt="" className={`${styles.logoImage} ${styles.logoImageLight}`} aria-hidden="true" />
+            <img src="/logo8.png" alt="" className={`${styles.logoImage} ${styles.logoImageDark}`} aria-hidden="true" />
+        </>
+    );
+
     return (
         <header className={styles.topHeaderWrapper}>
             <div className={styles.topHeader}>
-                <Link to="/" className={styles.logo} aria-label="MangaBlade">
-                    <img src="/logo9.png" alt="" className={`${styles.logoImage} ${styles.logoImageLight}`} aria-hidden="true" />
-                    <img src="/logo8.png" alt="" className={`${styles.logoImage} ${styles.logoImageDark}`} aria-hidden="true" />
-                </Link>
+                {isChatHost ? (
+                    <a href={`${mainSiteOrigin}/`} className={styles.logo} aria-label="MangaBlade">
+                        {logoContent}
+                    </a>
+                ) : (
+                    <Link to="/" className={styles.logo} aria-label="MangaBlade">
+                        {logoContent}
+                    </Link>
+                )}
                 <div className={styles.searchBox} ref={searchRef}>
                     <span className={styles.searchIcon} aria-hidden="true">
                         <svg viewBox="0 0 24 24" role="img">

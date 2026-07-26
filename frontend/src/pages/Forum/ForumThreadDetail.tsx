@@ -1,12 +1,15 @@
-import {useMemo, useState} from "react";
-import {MessageCircle, Send, Users} from "lucide-react";
+import {useEffect, useMemo, useRef, useState} from "react";
+import {MessageCircle, MoreHorizontal, Pencil, Send, Trash2, Users} from "lucide-react";
 import type {ForumCommentResponse, ForumThreadResponse} from "../../types/forum.ts";
 import {CommentEditor} from "../../components/CommentEmojiPicker/CommentEditor.tsx";
 import {CommentEmojiPicker} from "../../components/CommentEmojiPicker/CommentEmojiPicker.tsx";
 import {CommentItem} from "./CommentItem.tsx";
+import {ForumMarkdown} from "./ForumMarkdown.tsx";
 import styles from "./ForumPage.module.css";
 import {categoryLabels} from "./forumConstants.ts";
 import {flattenComments, formatTime, getInitial, getRoleBadge} from "./forumUtils.ts";
+
+const hasImageTokenPattern = /!\[[^\]]*]\(([^)\s]+)\)/;
 
 function getRoleBadgeClass(role?: string | null) {
     if (role === "ADMIN") return `${styles.commentBadge} ${styles.adminBadge}`;
@@ -24,10 +27,13 @@ export function ForumThreadDetail({
     isLoadingComments,
     onlineCount,
     replyTarget,
+    userRole,
     userId,
     onCancelReply,
     onDeleteComment,
+    onDeleteThread,
     onDraftChange,
+    onEditThread,
     onLikeComment,
     onReply,
     onSubmitComment
@@ -41,15 +47,20 @@ export function ForumThreadDetail({
     isLoadingComments: boolean;
     onlineCount: number;
     replyTarget: ForumCommentResponse | null;
+    userRole?: string;
     userId?: number;
     onCancelReply: () => void;
     onDeleteComment: (commentId: number) => void;
+    onDeleteThread: (threadId: number) => void;
     onDraftChange: (value: string) => void;
+    onEditThread: (thread: ForumThreadResponse) => void;
     onLikeComment: (commentId: number) => void;
     onReply: (comment: ForumCommentResponse) => void;
     onSubmitComment: () => void;
 }) {
     const [expandedCommentIds, setExpandedCommentIds] = useState<number[]>([]);
+    const [isThreadMenuOpen, setIsThreadMenuOpen] = useState(false);
+    const threadActionMenuRef = useRef<HTMLDivElement | null>(null);
     const flatComments = useMemo(
         () => flattenComments(comments),
         [comments]
@@ -120,6 +131,23 @@ export function ForumThreadDetail({
         );
     }
 
+    const canManageActiveThread = Boolean(
+        activeThread && (activeThread.user?.id === userId || userRole === "ADMIN")
+    );
+
+    useEffect(() => {
+        if (!isThreadMenuOpen) return;
+
+        function handleClickOutside(event: MouseEvent) {
+            if (!threadActionMenuRef.current?.contains(event.target as Node)) {
+                setIsThreadMenuOpen(false);
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [isThreadMenuOpen]);
+
     return (
         <section className={styles.chatPanel} aria-label="Cuộc trò chuyện">
             {errorMessage && <div className={styles.errorBanner}>{errorMessage}</div>}
@@ -151,15 +179,60 @@ export function ForumThreadDetail({
                             </div>
                         </div>
                         <div className={styles.threadHeroContent}>
-                            <span className={`${styles.threadCategory} ${styles.threadHeroCategory}`}>
+                            <span className={`${styles.threadCategory} ${styles.threadHeroCategory} ${activeThread.category === "ANNOUNCEMENT" ? styles.announcementCategory : ""}`}>
                                 {categoryLabels[activeThread.category]}
                             </span>
                             <h2 className={styles.chatTitle}>{activeThread.title}</h2>
-                            <p className={styles.threadPostText}>{activeThread.content}</p>
+                            <div className={styles.threadPostContent}>
+                                <ForumMarkdown attachments={activeThread.attachments} content={activeThread.content} />
+                            </div>
+                            {activeThread.attachments && activeThread.attachments.length > 0 && !hasImageTokenPattern.test(activeThread.content) && (
+                                <div className={styles.threadPostImages}>
+                                    {activeThread.attachments.map((attachment) => (
+                                        <img src={attachment.url} alt="" key={attachment.id} />
+                                    ))}
+                                </div>
+                            )}
                         </div>
                         <div className={styles.chatStats}>
                             <span><MessageCircle size={16} /> {activeThread.commentCount}</span>
                             <span><Users size={16} /> {onlineCount}</span>
+                            {canManageActiveThread && (
+                                <div className={styles.threadActionMenu} ref={threadActionMenuRef}>
+                                    <button
+                                        className={styles.threadActionTrigger}
+                                        type="button"
+                                        aria-label="Tùy chọn bài viết"
+                                        onClick={() => setIsThreadMenuOpen((current) => !current)}
+                                    >
+                                        <MoreHorizontal size={17} />
+                                    </button>
+                                    {isThreadMenuOpen && (
+                                        <div className={styles.threadActionDropdown}>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setIsThreadMenuOpen(false);
+                                                    onEditThread(activeThread);
+                                                }}
+                                            >
+                                                <Pencil size={14} />
+                                                Chỉnh sửa bài viết
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setIsThreadMenuOpen(false);
+                                                    onDeleteThread(activeThread.id);
+                                                }}
+                                            >
+                                                <Trash2 size={14} />
+                                                Gỡ bài viết
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
 

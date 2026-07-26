@@ -4,10 +4,57 @@ import truotTuyetGif from "../../assets/gif_anime/truottuyet.gif";
 import useMyBrainGif from "../../assets/gif_anime/usemybrain.gif";
 import styles from "./DisclaimerModal.module.css";
 
+const DISCLAIMER_ACCEPTED_KEY = "mangablade-disclaimer-accepted";
+const MAIN_DOMAIN = "mangablade.online";
+
+function isChatHost() {
+  return window.location.hostname === `chat.${MAIN_DOMAIN}`;
+}
+
+function isMainHomepageHost() {
+  return window.location.hostname === MAIN_DOMAIN
+      || window.location.hostname === "localhost"
+      || window.location.hostname === "127.0.0.1";
+}
+
+function getCookie(name: string) {
+  return document.cookie
+      .split("; ")
+      .find((cookie) => cookie.startsWith(`${name}=`))
+      ?.split("=")[1];
+}
+
+function hasAcceptedDisclaimer() {
+  return localStorage.getItem(DISCLAIMER_ACCEPTED_KEY) === "true" || getCookie(DISCLAIMER_ACCEPTED_KEY) === "true";
+}
+
+function saveAcceptedDisclaimer() {
+  localStorage.setItem(DISCLAIMER_ACCEPTED_KEY, "true");
+
+  const isMangabladeHost = window.location.hostname === MAIN_DOMAIN || window.location.hostname.endsWith(`.${MAIN_DOMAIN}`);
+  const domain = isMangabladeHost ? `; Domain=.${MAIN_DOMAIN}` : "";
+  const secure = window.location.protocol === "https:" ? "; Secure" : "";
+
+  document.cookie = `${DISCLAIMER_ACCEPTED_KEY}=true; Max-Age=31536000; Path=/; SameSite=Lax${domain}${secure}`;
+}
+
+function shouldOpenDisclaimer() {
+  if (window.location.pathname !== "/" || isChatHost()) {
+    return false;
+  }
+
+  if (isMainHomepageHost()) {
+    return true;
+  }
+
+  return !hasAcceptedDisclaimer();
+}
+
 export function DisclaimerModal() {
-  const [isOpen, setIsOpen] = useState(() => window.location.pathname === "/");
+  const [isOpen, setIsOpen] = useState(shouldOpenDisclaimer);
 
   function acceptDisclaimer() {
+    saveAcceptedDisclaimer();
     setIsOpen(false);
   }
 

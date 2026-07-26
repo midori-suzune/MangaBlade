@@ -34,6 +34,10 @@ public enum ErrorCode {
     AUTHOR_REQUEST_ALREADY_PENDING(400, "Bạn đã có đơn đăng ký đang chờ duyệt", HttpStatus.BAD_REQUEST),
     ALREADY_AUTHOR(400, "Bạn đã là tác giả", HttpStatus.BAD_REQUEST),
     AUTHOR_REQUEST_NOT_FOUND(404, "Không tìm thấy đơn đăng ký", HttpStatus.NOT_FOUND),
+    UPLOAD_FAILED(500, "Upload file thất bại, vui lòng thử lại", HttpStatus.INTERNAL_SERVER_ERROR),
+    FILE_TOO_LARGE(400, "File quá lớn, tối đa 5MB", HttpStatus.BAD_REQUEST),
+    INVALID_FILE_TYPE(400, "Chỉ chấp nhận file ảnh (JPEG, PNG, GIF, WebP)", HttpStatus.BAD_REQUEST),
+    ATTACHMENT_NOT_FOUND(404, "Attachment not found", HttpStatus.NOT_FOUND),
     INTERNAL_ERROR(500, "Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final int code;
