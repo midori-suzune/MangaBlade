@@ -4,7 +4,7 @@
 
 ## Architecture
 
-![MangaBlade architecture](docs/architecture.gif)
+![MangaBlade architecture](docs/architecture-trimmed.gif)
 
 ## Environment Notes
 ```env
