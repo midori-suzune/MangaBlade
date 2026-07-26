@@ -70,6 +70,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 User user = userService.loadUserByUsername(email);
 
+                if (user.isBanned()) {
+                    SecurityContextHolder.clearContext();
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    return;
+                }
+
                 if (jwtService.isTokenValid(token, user)) {
                     var authToken = new UsernamePasswordAuthenticationToken(
                             user, null, user.getAuthorities()
