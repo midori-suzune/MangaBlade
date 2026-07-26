@@ -1,10 +1,13 @@
 package com.mangablade.backend.controllers;
 
+import com.mangablade.backend.dtos.request.AdminForumDraftImageDeleteRequest;
 import com.mangablade.backend.dtos.request.AdminUserUpdateRequest;
 import com.mangablade.backend.dtos.request.AdminChapterReportReviewRequest;
 import com.mangablade.backend.dtos.request.AdminContentReviewRequest;
 import com.mangablade.backend.dtos.request.AdminMangaVisibilityRequest;
 import com.mangablade.backend.dtos.response.AdminChapterReportResponse;
+import com.mangablade.backend.dtos.response.AdminForumDraftImageDeleteResponse;
+import com.mangablade.backend.dtos.response.AdminForumDraftImageListResponse;
 import com.mangablade.backend.dtos.response.AdminMangaResponse;
 import com.mangablade.backend.dtos.response.AdminModerationChapterResponse;
 import com.mangablade.backend.dtos.response.AdminModerationMangaResponse;
@@ -23,6 +26,7 @@ import com.mangablade.backend.services.mangablade.AdminContentModerationService;
 import com.mangablade.backend.services.mangablade.AdminMangaService;
 import com.mangablade.backend.services.mangablade.ChapterReportService;
 import com.mangablade.backend.services.mangablade.CommentReportService;
+import com.mangablade.backend.services.mangablade.ForumAttachmentService;
 import com.mangablade.backend.services.mangablade.UserService;
 
 import jakarta.validation.Valid;
@@ -44,6 +48,7 @@ public class AdminController {
     private final AdminMangaService adminMangaService;
     private final ChapterReportService chapterReportService;
     private final CommentReportService commentReportService;
+    private final ForumAttachmentService forumAttachmentService;
 
     @GetMapping("/users")
     public ResponseEntity<ApiResponse<PageResponse<AdminUserResponse>>> getUsers(
@@ -316,6 +321,56 @@ public class AdminController {
                         .success(true)
                         .message("Cập nhật kiểm duyệt chapter thành công")
                         .payload(chapter)
+                        .build()
+        );
+    }
+
+    @GetMapping("/forum-draft-images")
+    public ResponseEntity<ApiResponse<AdminForumDraftImageListResponse>> getForumDraftImages(
+            @RequestParam(defaultValue = "24") int olderThanHours,
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        AdminForumDraftImageListResponse images = forumAttachmentService.getAdminDraftImages(
+                olderThanHours,
+                normalizeSearch(search),
+                PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"))
+        );
+
+        return ResponseEntity.ok(
+                ApiResponse.<AdminForumDraftImageListResponse>builder()
+                        .success(true)
+                        .message("Lấy danh sách ảnh nháp thành công")
+                        .payload(images)
+                        .build()
+        );
+    }
+
+    @DeleteMapping("/forum-draft-images/{id}")
+    public ResponseEntity<ApiResponse<AdminForumDraftImageDeleteResponse>> deleteForumDraftImage(@PathVariable Long id) {
+        AdminForumDraftImageDeleteResponse deleted = forumAttachmentService.deleteAdminDraftImage(id);
+
+        return ResponseEntity.ok(
+                ApiResponse.<AdminForumDraftImageDeleteResponse>builder()
+                        .success(true)
+                        .message("Xóa ảnh nháp thành công")
+                        .payload(deleted)
+                        .build()
+        );
+    }
+
+    @PostMapping("/forum-draft-images/delete")
+    public ResponseEntity<ApiResponse<AdminForumDraftImageDeleteResponse>> deleteForumDraftImages(
+            @Valid @RequestBody AdminForumDraftImageDeleteRequest request
+    ) {
+        AdminForumDraftImageDeleteResponse deleted = forumAttachmentService.deleteAdminDraftImages(request.getIds());
+
+        return ResponseEntity.ok(
+                ApiResponse.<AdminForumDraftImageDeleteResponse>builder()
+                        .success(true)
+                        .message("Xóa ảnh nháp đã chọn thành công")
+                        .payload(deleted)
                         .build()
         );
     }

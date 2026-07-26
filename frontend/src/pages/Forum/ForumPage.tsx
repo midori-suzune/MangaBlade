@@ -5,10 +5,12 @@ import {
     createForumComment,
     createForumThread,
     deleteForumComment,
+    deleteForumThread,
     getForumComments,
     getForumThread,
     getForumThreads,
     toggleForumCommentLike,
+    updateForumThread,
     uploadForumImage
 } from "../../api/forumApi.ts";
 import {createForumSocketClient, subscribeForumEvent} from "../../api/forumSocket.ts";
@@ -44,6 +46,7 @@ export function ForumPage() {
     const [comments, setComments] = useState<ForumCommentResponse[]>([]);
     const [onlineCounts, setOnlineCounts] = useState<Record<number, number>>({});
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [editingThread, setEditingThread] = useState<ForumThreadResponse | null>(null);
     const [newThreadTitle, setNewThreadTitle] = useState("");
     const [newThreadCategory, setNewThreadCategory] = useState<ForumThreadCategory>("ANNOUNCEMENT");
     const [newThreadExcerpt, setNewThreadExcerpt] = useState("");
@@ -71,6 +74,16 @@ export function ForumPage() {
         setNewThreadExcerpt("");
         setNewThreadAttachments([]);
         setUploadError("");
+    }
+
+    function openEditThreadModal(thread: ForumThreadResponse) {
+        setEditingThread(thread);
+        setNewThreadTitle(thread.title);
+        setNewThreadCategory(thread.category);
+        setNewThreadExcerpt(thread.content);
+        setNewThreadAttachments(thread.attachments ?? []);
+        setUploadError("");
+        setIsCreateModalOpen(true);
     }
 
     const handleThreadDeleted = useCallback((payload: ForumThreadDeletedPayload) => {
@@ -212,6 +225,14 @@ export function ForumPage() {
                     setActiveThreadId((currentActiveId) => currentActiveId ?? thread.id);
                 }
 
+                if (event.type === "THREAD_UPDATED") {
+                    const thread = event.payload as ForumThreadResponse;
+                    setThreads((currentThreads) => upsertThread(currentThreads, thread));
+                    setActiveThreadDetail((currentThread) => (
+                        currentThread?.id === thread.id ? thread : currentThread
+                    ));
+                }
+
                 if (event.type === "THREAD_DELETED") {
                     handleThreadDeleted(event.payload as ForumThreadDeletedPayload);
                 }
@@ -241,6 +262,13 @@ export function ForumPage() {
         const subscription = subscribeForumEvent<unknown>(client, `/topic/forum/threads/${activeThreadId}`, (event) => {
             if (event.type === "THREAD_DELETED") {
                 handleThreadDeleted(event.payload as ForumThreadDeletedPayload);
+            }
+            if (event.type === "THREAD_UPDATED") {
+                const thread = event.payload as ForumThreadResponse;
+                setThreads((currentThreads) => upsertThread(currentThreads, thread));
+                setActiveThreadDetail((currentThread) => (
+                    currentThread?.id === thread.id ? thread : currentThread
+                ));
             }
             if (event.type === "COMMENT_CREATED") {
                 handleCommentCreated(event.payload as ForumCommentResponse);
@@ -288,20 +316,25 @@ export function ForumPage() {
         if (!title || !content) return;
 
         try {
-            const response = await createForumThread({
+            const request = {
                 category: newThreadCategory,
                 title,
                 content,
                 attachmentIds: newThreadAttachments.map((attachment) => attachment.id)
-            });
+            };
+            const response = editingThread
+                ? await updateForumThread(editingThread.id, request)
+                : await createForumThread(request);
             if (response.payload) {
                 setThreads((currentThreads) => upsertThread(currentThreads, response.payload as ForumThreadResponse));
                 setActiveThreadId(response.payload.id);
+                setActiveThreadDetail(response.payload as ForumThreadResponse);
             }
             resetCreateThreadDraft();
+            setEditingThread(null);
             setIsCreateModalOpen(false);
         } catch {
-            setErrorMessage("Không đăng được thread.");
+            setErrorMessage(editingThread ? "Không cập nhật được thread." : "Không đăng được thread.");
         }
     }
 
@@ -403,6 +436,20 @@ export function ForumPage() {
         }
     }
 
+    async function handleDeleteThread(threadId: number) {
+        if (!window.confirm("Gỡ bài viết này?")) return;
+
+        try {
+            await deleteForumThread(threadId);
+            setThreads((currentThreads) => currentThreads.filter((thread) => thread.id !== threadId));
+            setActiveThreadId((currentActiveId) => currentActiveId === threadId ? null : currentActiveId);
+            setActiveThreadDetail((currentThread) => currentThread?.id === threadId ? null : currentThread);
+            setComments([]);
+        } catch {
+            setErrorMessage("Không gỡ được bài viết.");
+        }
+    }
+
     async function handleToggleLike(commentId: number) {
         if (!isAuthenticated) {
             openAuthModal("login");
@@ -436,7 +483,15 @@ export function ForumPage() {
                     isLoadingThreads={isLoadingThreads}
                     onlineCounts={onlineCounts}
                     threads={threads}
-                    onCreateClick={() => isAuthenticated ? setIsCreateModalOpen(true) : openAuthModal("login")}
+                    onCreateClick={() => {
+                        if (!isAuthenticated) {
+                            openAuthModal("login");
+                            return;
+                        }
+                        setEditingThread(null);
+                        resetCreateThreadDraft();
+                        setIsCreateModalOpen(true);
+                    }}
                     onSelectCategory={(category) => {
                         setActiveCategory(category);
                         setActiveThreadId(null);
@@ -457,9 +512,12 @@ export function ForumPage() {
                     onlineCount={activeThread ? onlineCounts[activeThread.id] ?? 0 : 0}
                     replyTarget={replyTarget}
                     userId={user?.id}
+                    userRole={user?.role}
                     onCancelReply={() => setReplyTarget(null)}
                     onDeleteComment={handleDeleteComment}
+                    onDeleteThread={handleDeleteThread}
                     onDraftChange={setDraft}
+                    onEditThread={openEditThreadModal}
                     onLikeComment={handleToggleLike}
                     onReply={setReplyTarget}
                     onSubmitComment={handleSubmitComment}
@@ -472,6 +530,8 @@ export function ForumPage() {
                     category={newThreadCategory}
                     content={newThreadExcerpt}
                     isUploadingImage={isUploadingImage}
+                    modalTitle={editingThread ? "Chỉnh sửa bài viết" : "Tạo thread mới"}
+                    submitLabel={editingThread ? "Lưu thay đổi" : "Đăng bài"}
                     title={newThreadTitle}
                     uploadError={uploadError}
                     onAttachmentRemove={(attachmentId) => {
@@ -491,11 +551,13 @@ export function ForumPage() {
                     }}
                     onCancel={() => {
                         setIsCreateModalOpen(false);
+                        setEditingThread(null);
                         resetCreateThreadDraft();
                     }}
                     onCategoryChange={setNewThreadCategory}
                     onDismiss={() => {
                         setIsCreateModalOpen(false);
+                        setEditingThread(null);
                     }}
                     onContentChange={setNewThreadExcerpt}
                     onImageSelect={handleForumImageSelect}

@@ -5,7 +5,9 @@ import styles from "./Menu.module.css";
 
 export function Menu() {
     const { isAuthenticated, openAuthModal } = useAuthStore();
-    const isChatHost = window.location.hostname === "chat.mangablade.online";
+    const hostname = window.location.hostname;
+    const isChatHost = hostname === "chat.mangablade.online";
+    const isLocalHost = hostname === "localhost" || hostname === "127.0.0.1";
     const mainSiteOrigin = "https://mangablade.online";
     const [theme, setTheme] = useState<"light" | "dark">(() => {
         return localStorage.getItem("mangablade-theme") === "light" ? "light" : "dark";
@@ -56,7 +58,11 @@ export function Menu() {
             <nav className={styles.navLinks} aria-label="Main navigation">
                 {renderMainLink("/", "Trang chủ", { end: true })}
                 {renderMainLink("/category", "Thể loại")}
-                <a href="https://chat.mangablade.online" className={isChatHost ? styles.active : undefined}>Diễn Đàn</a>
+                {isLocalHost ? (
+                    <NavLink to="/forum" className={({ isActive }) => isActive ? styles.active : ''}>Diễn Đàn</NavLink>
+                ) : (
+                    <a href="https://chat.mangablade.online" className={isChatHost ? styles.active : undefined}>Diễn Đàn</a>
+                )}
                 {renderMainLink("/followed-manga", "Theo dõi", { requireAuth: true })}
                 {renderMainLink("/reading-history", "Lịch sử đọc", { requireAuth: true })}
             </nav>

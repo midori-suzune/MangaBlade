@@ -8,6 +8,7 @@ import type {
   ForumThreadCategory,
   ForumThreadResponse,
   PageResponse,
+  UpdateForumThreadRequest,
 } from "../types/forum";
 
 export async function getForumThreads(params?: {
@@ -30,6 +31,14 @@ export async function createForumThread(
   body: CreateForumThreadRequest
 ): Promise<ApiResponse<ForumThreadResponse>> {
   const response = await axiosInstance.post<ApiResponse<ForumThreadResponse>>("/v1/forum/threads", body);
+  return response.data;
+}
+
+export async function updateForumThread(
+  threadId: number,
+  body: UpdateForumThreadRequest
+): Promise<ApiResponse<ForumThreadResponse>> {
+  const response = await axiosInstance.put<ApiResponse<ForumThreadResponse>>(`/v1/forum/threads/${threadId}`, body);
   return response.data;
 }
 

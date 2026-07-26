@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ForumRealtimePublisher {
     public static final String THREAD_CREATED = "THREAD_CREATED";
+    public static final String THREAD_UPDATED = "THREAD_UPDATED";
     public static final String THREAD_DELETED = "THREAD_DELETED";
     public static final String COMMENT_CREATED = "COMMENT_CREATED";
     public static final String COMMENT_DELETED = "COMMENT_DELETED";
@@ -27,6 +28,17 @@ public class ForumRealtimePublisher {
         messagingTemplate.convertAndSend(
                 "/topic/forum/threads",
                 ForumRealtimeEvent.of(THREAD_CREATED, thread)
+        );
+    }
+
+    public void threadUpdated(ForumThreadResponse thread) {
+        messagingTemplate.convertAndSend(
+                "/topic/forum/threads",
+                ForumRealtimeEvent.of(THREAD_UPDATED, thread)
+        );
+        messagingTemplate.convertAndSend(
+                threadTopic(thread.getId()),
+                ForumRealtimeEvent.of(THREAD_UPDATED, thread)
         );
     }
 

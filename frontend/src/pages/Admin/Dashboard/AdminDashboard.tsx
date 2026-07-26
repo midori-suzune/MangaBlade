@@ -8,6 +8,7 @@ import {
   ChevronDown,
   FileCheck,
   FileText,
+  Image as ImageIcon,
   MessageSquare,
   TrendingUp,
   Users,
@@ -175,6 +176,12 @@ export const AdminDashboard: React.FC = () => {
               onClick={() => navigate('/admin/comment-reports')}
             >
               <MessageSquare size={16} /> Báo cáo bình luận
+            </button>
+            <button
+              className={styles.adminNavItem}
+              onClick={() => navigate('/admin/forum-draft-images')}
+            >
+              <ImageIcon size={16} /> Dọn Ảnh
             </button>
             <button
               className={styles.adminNavItem}

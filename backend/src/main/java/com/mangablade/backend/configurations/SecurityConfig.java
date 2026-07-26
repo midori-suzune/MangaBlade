@@ -72,6 +72,9 @@ public class SecurityConfig {
             "/api/v1/admin/chapter-reports/{id}/review",
             "/api/v1/admin/comment-reports",
             "/api/v1/admin/comment-reports/{id}/review",
+            "/api/v1/admin/forum-draft-images",
+            "/api/v1/admin/forum-draft-images/{id}",
+            "/api/v1/admin/forum-draft-images/delete",
             "/api/v1/admin/author-requests",
             "/api/v1/admin/author-requests/{id}/review"
     };

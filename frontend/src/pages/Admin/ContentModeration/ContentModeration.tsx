@@ -12,6 +12,7 @@ import {
   Eye,
   FileCheck,
   FileText,
+  Image as ImageIcon,
   Layers,
   MessageSquare,
   Users,
@@ -570,6 +571,9 @@ export const ContentModeration: React.FC = () => {
             </button>
             <button className={styles.adminNavItem} onClick={() => navigate('/admin/comment-reports')}>
               <MessageSquare size={16} /> Báo cáo bình luận
+            </button>
+            <button className={styles.adminNavItem} onClick={() => navigate('/admin/forum-draft-images')}>
+              <ImageIcon size={16} /> Dọn Ảnh
             </button>
             <button className={styles.adminNavItem} onClick={() => navigate('/admin/author-requests')}>
               <FileText size={16} /> Đơn đăng ký Tác giả

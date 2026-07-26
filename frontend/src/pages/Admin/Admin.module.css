@@ -326,6 +326,24 @@
   font-size: 14px;
 }
 
+.draftImageTable {
+  min-width: 1200px;
+}
+
+.draftPreviewColumn {
+  width: 120px;
+}
+
+.draftImageThumb {
+  display: block;
+  width: 88px;
+  height: 64px;
+  border: 1px solid #d8e0ea;
+  border-radius: 5px;
+  background: #f1f5f9;
+  object-fit: cover;
+}
+
 .historyTable thead {
   background: #FAF6F1;
 }
@@ -357,6 +375,13 @@
   padding: 48px 24px !important;
   color: #667085;
   text-align: center;
+}
+
+.errorMessage {
+  margin-bottom: 14px;
+  color: #b42318;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .userName {
@@ -1332,8 +1357,7 @@
   display: block;
   margin-top: 8px;
   color: #111827;
-  font-size: 30px;
-  font-weight: 900;
+  font-size: 25px;
   line-height: 1;
 }
 

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { authorRequestApi, type AuthorRequestResponse } from '../../../api/authorRequestApi';
 import { useAuthStore } from '../../../stores/authStore';
-import { AlertTriangle, BarChart3, BookOpen, Users, FileCheck, FileText, ChevronDown, Eye, MessageSquare } from 'lucide-react';
+import { AlertTriangle, BarChart3, BookOpen, Users, FileCheck, FileText, ChevronDown, Eye, MessageSquare, Image as ImageIcon } from 'lucide-react';
 import styles from '../Admin.module.css';
 
 interface DetailModalProps {
@@ -376,6 +376,12 @@ export const AuthorRequests: React.FC = () => {
                 onClick={() => navigate('/admin/comment-reports')}
               >
                 <MessageSquare size={16} /> Báo cáo bình luận
+              </button>
+              <button
+                className={styles.adminNavItem}
+                onClick={() => navigate('/admin/forum-draft-images')}
+              >
+                <ImageIcon size={16} /> Dọn Ảnh
               </button>
               <button
                 className={`${styles.adminNavItem} ${activeTab === "author-requests" ? styles.active : ""}`}

@@ -58,6 +58,8 @@ export type CreateForumThreadRequest = {
   attachmentIds?: number[];
 };
 
+export type UpdateForumThreadRequest = CreateForumThreadRequest;
+
 export type CreateForumCommentRequest = {
   content: string;
   replyToCommentId?: number | null;
@@ -77,6 +79,7 @@ export type PageResponse<T> = {
 export type ForumRealtimeEvent<T = unknown> = {
   type:
     | "THREAD_CREATED"
+    | "THREAD_UPDATED"
     | "THREAD_DELETED"
     | "COMMENT_CREATED"
     | "COMMENT_DELETED"

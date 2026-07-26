@@ -2,6 +2,7 @@ package com.mangablade.backend.controllers;
 
 import com.mangablade.backend.dtos.request.CreateForumCommentRequest;
 import com.mangablade.backend.dtos.request.CreateForumThreadRequest;
+import com.mangablade.backend.dtos.request.UpdateForumThreadRequest;
 import com.mangablade.backend.dtos.response.ApiResponse;
 import com.mangablade.backend.dtos.response.CommentLikeResponse;
 import com.mangablade.backend.dtos.response.ForumAttachmentResponse;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -87,6 +89,21 @@ public class ForumController {
                 ApiResponse.<Void>builder()
                         .success(true)
                         .message("success")
+                        .build()
+        );
+    }
+
+    @PutMapping("/threads/{threadId}")
+    public ResponseEntity<ApiResponse<ForumThreadResponse>> updateThread(
+            @PathVariable Long threadId,
+            @Valid @RequestBody UpdateForumThreadRequest request,
+            @AuthenticationPrincipal User user
+    ) {
+        return ResponseEntity.ok(
+                ApiResponse.<ForumThreadResponse>builder()
+                        .success(true)
+                        .message("success")
+                        .payload(forumService.updateThread(threadId, request, user))
                         .build()
         );
     }

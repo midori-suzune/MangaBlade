@@ -2,6 +2,7 @@ package com.mangablade.backend.services.mangablade;
 
 import com.mangablade.backend.dtos.request.CreateForumCommentRequest;
 import com.mangablade.backend.dtos.request.CreateForumThreadRequest;
+import com.mangablade.backend.dtos.request.UpdateForumThreadRequest;
 import com.mangablade.backend.dtos.response.CommentLikeResponse;
 import com.mangablade.backend.dtos.response.ForumAttachmentResponse;
 import com.mangablade.backend.dtos.response.ForumCommentResponse;
@@ -112,17 +113,35 @@ public class ForumService {
         requireAuthenticated(user);
 
         var thread = findReadableThreadOrThrow(threadId);
-        boolean isOwner = thread.getUserId().equals(user.getId());
-        boolean isAdmin = user.getRole() == UserRole.ADMIN;
-        if (!isOwner && !isAdmin) {
-            throw new AppException(ErrorCode.FORBIDDEN);
-        }
+        requireThreadOwnerOrAdmin(thread, user);
 
         var now = Instant.now();
         thread.setStatus(ForumThreadStatus.DELETED);
         thread.setDeletedAt(now);
         thread.setUpdatedAt(now);
         realtimePublisher.threadDeleted(threadId);
+    }
+
+    @Transactional
+    public ForumThreadResponse updateThread(Long threadId, UpdateForumThreadRequest request, User user) {
+        requireAuthenticated(user);
+
+        var thread = findReadableThreadOrThrow(threadId);
+        requireThreadOwnerOrAdmin(thread, user);
+
+        var now = Instant.now();
+        thread.setCategory(request.getCategory());
+        thread.setTitle(request.getTitle().trim());
+        thread.setContent(request.getContent().trim());
+        thread.setUpdatedAt(now);
+
+        if (request.getAttachmentIds() != null && !request.getAttachmentIds().isEmpty()) {
+            forumAttachmentService.attachToThread(request.getAttachmentIds(), thread.getId(), user.getId());
+        }
+
+        var response = toThreadResponse(thread);
+        realtimePublisher.threadUpdated(response);
+        return response;
     }
 
     @Transactional(readOnly = true)
@@ -253,6 +272,14 @@ public class ForumService {
     private void requireAuthenticated(User user) {
         if (user == null) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+    }
+
+    private void requireThreadOwnerOrAdmin(ForumThread thread, User user) {
+        boolean isOwner = thread.getUserId().equals(user.getId());
+        boolean isAdmin = user.getRole() == UserRole.ADMIN;
+        if (!isOwner && !isAdmin) {
+            throw new AppException(ErrorCode.FORBIDDEN);
         }
     }
 

@@ -8,8 +8,8 @@
     grid-template-columns: minmax(290px, 342px) minmax(0, 1fr);
     gap: 22px;
     max-width: 1386px;
-    height: calc(100vh + 120px);
-    min-height: 1080px;
+    height: calc(100vh + 700px);
+    min-height: 1660px;
     margin: 20px auto 0;
     padding: 0 22px;
 }
@@ -356,7 +356,7 @@
     border: none;
     background-color: transparent;
     font-family: inherit;
-    font-size: 14px;
+    font-size: 15px;
     line-height: 1.5;
     letter-spacing: 0;
     white-space: pre-wrap;
@@ -404,7 +404,7 @@
 
 .emptyPreview {
     color: var(--color-text-soft);
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 750;
 }
 
@@ -569,6 +569,10 @@
     font-weight: 900;
 }
 
+.announcementCategory {
+    color: #ef4444;
+}
+
 .threadTitle {
     display: -webkit-box;
     overflow: hidden;
@@ -647,12 +651,29 @@
 .threadHeroContent {
     display: flex;
     min-width: 0;
+    max-height: 750px;
     flex-direction: column;
     gap: 8px;
+    overflow-y: auto;
     padding: 16px;
     border: 1px solid var(--color-border-soft);
     border-top: 2px solid var(--color-accent);
     background-color: var(--color-surface-soft);
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-text-soft) transparent;
+}
+
+.threadHeroContent::-webkit-scrollbar {
+    width: 8px;
+}
+
+.threadHeroContent::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.threadHeroContent::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background-color: var(--color-text-soft);
 }
 
 .threadHeroCategory {
@@ -673,8 +694,8 @@
     display: flex;
     flex-shrink: 0;
     flex-direction: row;
-    align-items: flex-end;
-    gap: 12px;
+    align-items: center;
+    gap: 10px;
     color: var(--color-text-muted);
     font-size: 12px;
     font-weight: 750;
@@ -682,8 +703,68 @@
 
 .chatStats span {
     display: inline-flex;
+    min-height: 28px;
     align-items: center;
     gap: 5px;
+}
+
+.threadActionMenu {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.threadActionTrigger {
+    display: inline-flex;
+    width: 28px;
+    height: 28px;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--color-text-muted);
+    cursor: pointer;
+}
+
+.threadActionTrigger:hover {
+    background-color: var(--color-surface-muted);
+    color: var(--color-text);
+}
+
+.threadActionDropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    z-index: 30;
+    width: 180px;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background-color: var(--color-surface);
+    box-shadow: var(--shadow-dropdown);
+}
+
+.threadActionDropdown button {
+    display: flex;
+    width: 100%;
+    min-height: 36px;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px;
+    border: none;
+    background: transparent;
+    color: var(--color-text);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 750;
+    text-align: left;
+}
+
+.threadActionDropdown button:hover {
+    background-color: var(--color-surface-soft);
+    color: var(--color-accent);
 }
 
 .commentList {
@@ -722,7 +803,7 @@
 
 .markdownContent {
     color: var(--color-text);
-    font-size: 14px;
+    font-size: 15px;
     line-height: 1.65;
     overflow-wrap: anywhere;
 }
@@ -1203,6 +1284,10 @@
     .chatHeader {
         align-items: flex-start;
         flex-direction: column;
+    }
+
+    .threadHeroContent {
+        max-height: 460px;
     }
 
     .chatStats {

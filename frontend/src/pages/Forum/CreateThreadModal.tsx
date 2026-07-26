@@ -32,7 +32,9 @@ export function CreateThreadModal({
     category,
     content,
     isUploadingImage,
+    submitLabel = "Đăng bài",
     title,
+    modalTitle = "Tạo thread mới",
     uploadError,
     onAttachmentRemove,
     onCancel,
@@ -47,7 +49,9 @@ export function CreateThreadModal({
     category: ForumThreadCategory;
     content: string;
     isUploadingImage: boolean;
+    submitLabel?: string;
     title: string;
+    modalTitle?: string;
     uploadError: string;
     onAttachmentRemove: (attachmentId: number) => void;
     onCancel: () => void;
@@ -162,8 +166,7 @@ export function CreateThreadModal({
             <form className={styles.createThreadModal} onSubmit={onSubmit} onPaste={handlePaste}>
                 <div className={styles.modalHeader}>
                     <div>
-                        <h2>Tạo thread mới</h2>
-                        <p>Chọn phân loại để người đọc tìm đúng chủ đề.</p>
+                        <h2>{modalTitle}</h2>
                     </div>
                     <button
                         className={styles.modalCloseButton}
@@ -368,7 +371,7 @@ export function CreateThreadModal({
                         disabled={!title.trim() || !content.trim() || isUploadingImage}
                     >
                         <Plus size={15} />
-                        {isUploadingImage ? "Đang tải ảnh..." : "Đăng bài"}
+                        {isUploadingImage ? "Đang tải ảnh..." : submitLabel}
                     </button>
                 </div>
             </form>
