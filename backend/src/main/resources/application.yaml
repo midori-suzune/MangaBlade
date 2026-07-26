@@ -61,11 +61,11 @@ cloudinary:
   api-secret: ${CLOUDINARY_API_SECRET:}
 
 r2:
-  endpoint: ${R2_ENDPOINT}
-  access-key: ${R2_ACCESS_KEY}
-  secret-key: ${R2_SECRET_KEY}
+  endpoint: ${R2_ENDPOINT:http://localhost:9000}
+  access-key: ${R2_ACCESS_KEY:test}
+  secret-key: ${R2_SECRET_KEY:test}
   bucket: ${R2_BUCKET:mangablade-forum}
-  public-url: ${R2_PUBLIC_URL}
+  public-url: ${R2_PUBLIC_URL:http://localhost:9000/mangablade-forum}
 
 logging:
   charset:
