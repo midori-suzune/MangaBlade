@@ -2,6 +2,10 @@
 
 [![CodeFactor](https://www.codefactor.io/repository/github/midori-suzune/mangablade/badge)](https://www.codefactor.io/repository/github/midori-suzune/mangablade)
 
+## Architecture
+
+![MangaBlade architecture](docs/architecture.gif)
+
 ## Environment Notes
 ```env
 # Google OAuth
