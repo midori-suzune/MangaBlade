@@ -29,6 +29,7 @@ type EditorMode = "write" | "preview";
 
 export function CreateThreadModal({
     attachments,
+    canUseAnnouncementCategory,
     category,
     content,
     isUploadingImage,
@@ -46,6 +47,7 @@ export function CreateThreadModal({
     onTitleChange
 }: {
     attachments: ForumAttachmentResponse[];
+    canUseAnnouncementCategory: boolean;
     category: ForumThreadCategory;
     content: string;
     isUploadingImage: boolean;
@@ -63,6 +65,9 @@ export function CreateThreadModal({
     onTitleChange: (title: string) => void;
 }) {
     const canAddImages = attachments.length < MAX_FORUM_IMAGES && !isUploadingImage;
+    const availableThreadCategories = canUseAnnouncementCategory
+        ? threadCategories
+        : threadCategories.filter((threadCategory) => threadCategory.value !== "ANNOUNCEMENT");
     const contentInputRef = useRef<HTMLTextAreaElement | null>(null);
     const contentHighlightRef = useRef<HTMLPreElement | null>(null);
     const imageInputRef = useRef<HTMLInputElement | null>(null);
@@ -209,7 +214,7 @@ export function CreateThreadModal({
                             }}
                             onChange={(event) => onCategoryChange(event.target.value as ForumThreadCategory)}
                         >
-                            {threadCategories.map((threadCategory) => (
+                            {availableThreadCategories.map((threadCategory) => (
                                 <option key={threadCategory.value} value={threadCategory.value}>{threadCategory.label}</option>
                             ))}
                         </select>

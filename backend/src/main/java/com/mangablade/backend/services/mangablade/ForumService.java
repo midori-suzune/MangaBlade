@@ -77,6 +77,7 @@ public class ForumService {
     @Transactional
     public ForumThreadResponse createThread(CreateForumThreadRequest request, User user) {
         requireAuthenticated(user);
+        requireAnnouncementCategoryAllowed(request.getCategory(), user);
 
         var now = Instant.now();
         var dbUser = userRepository.findById(user.getId()).orElse(user);
@@ -127,7 +128,8 @@ public class ForumService {
         requireAuthenticated(user);
 
         var thread = findReadableThreadOrThrow(threadId);
-        requireThreadOwnerOrAdmin(thread, user);
+        requireThreadOwner(thread, user);
+        requireAnnouncementCategoryAllowed(request.getCategory(), user);
 
         var now = Instant.now();
         thread.setCategory(request.getCategory());
@@ -279,6 +281,18 @@ public class ForumService {
         boolean isOwner = thread.getUserId().equals(user.getId());
         boolean isAdmin = user.getRole() == UserRole.ADMIN;
         if (!isOwner && !isAdmin) {
+            throw new AppException(ErrorCode.FORBIDDEN);
+        }
+    }
+
+    private void requireThreadOwner(ForumThread thread, User user) {
+        if (!thread.getUserId().equals(user.getId())) {
+            throw new AppException(ErrorCode.FORBIDDEN);
+        }
+    }
+
+    private void requireAnnouncementCategoryAllowed(ForumThreadCategory category, User user) {
+        if (category == ForumThreadCategory.ANNOUNCEMENT && user.getRole() != UserRole.ADMIN) {
             throw new AppException(ErrorCode.FORBIDDEN);
         }
     }
