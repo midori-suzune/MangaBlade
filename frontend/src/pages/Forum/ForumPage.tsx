@@ -48,7 +48,7 @@ export function ForumPage() {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [editingThread, setEditingThread] = useState<ForumThreadResponse | null>(null);
     const [newThreadTitle, setNewThreadTitle] = useState("");
-    const [newThreadCategory, setNewThreadCategory] = useState<ForumThreadCategory>("ANNOUNCEMENT");
+    const [newThreadCategory, setNewThreadCategory] = useState<ForumThreadCategory>("DISCUSSION");
     const [newThreadExcerpt, setNewThreadExcerpt] = useState("");
     const [newThreadAttachments, setNewThreadAttachments] = useState<ForumAttachmentResponse[]>([]);
     const [activeCategory, setActiveCategory] = useState<CategoryFilter>("ALL");
@@ -70,7 +70,7 @@ export function ForumPage() {
 
     function resetCreateThreadDraft() {
         setNewThreadTitle("");
-        setNewThreadCategory("ANNOUNCEMENT");
+        setNewThreadCategory(user?.role === "ADMIN" ? "ANNOUNCEMENT" : "DISCUSSION");
         setNewThreadExcerpt("");
         setNewThreadAttachments([]);
         setUploadError("");
@@ -527,6 +527,7 @@ export function ForumPage() {
             {isCreateModalOpen && (
                 <CreateThreadModal
                     attachments={newThreadAttachments}
+                    canUseAnnouncementCategory={user?.role === "ADMIN"}
                     category={newThreadCategory}
                     content={newThreadExcerpt}
                     isUploadingImage={isUploadingImage}

@@ -131,7 +131,10 @@ export function ForumThreadDetail({
         );
     }
 
-    const canManageActiveThread = Boolean(
+    const canEditActiveThread = Boolean(
+        activeThread && activeThread.user?.id === userId
+    );
+    const canDeleteActiveThread = Boolean(
         activeThread && (activeThread.user?.id === userId || userRole === "ADMIN")
     );
 
@@ -197,7 +200,7 @@ export function ForumThreadDetail({
                         <div className={styles.chatStats}>
                             <span><MessageCircle size={16} /> {activeThread.commentCount}</span>
                             <span><Users size={16} /> {onlineCount}</span>
-                            {canManageActiveThread && (
+                            {canDeleteActiveThread && (
                                 <div className={styles.threadActionMenu} ref={threadActionMenuRef}>
                                     <button
                                         className={styles.threadActionTrigger}
@@ -209,16 +212,18 @@ export function ForumThreadDetail({
                                     </button>
                                     {isThreadMenuOpen && (
                                         <div className={styles.threadActionDropdown}>
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    setIsThreadMenuOpen(false);
-                                                    onEditThread(activeThread);
-                                                }}
-                                            >
-                                                <Pencil size={14} />
-                                                Chỉnh sửa bài viết
-                                            </button>
+                                            {canEditActiveThread && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setIsThreadMenuOpen(false);
+                                                        onEditThread(activeThread);
+                                                    }}
+                                                >
+                                                    <Pencil size={14} />
+                                                    Chỉnh sửa bài viết
+                                                </button>
+                                            )}
                                             <button
                                                 type="button"
                                                 onClick={() => {
