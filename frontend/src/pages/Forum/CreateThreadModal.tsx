@@ -27,6 +27,24 @@ const MAX_FORUM_IMAGES = 5;
 const imageMarkdownPattern = /!\[[^\]]*]\([^)]+\)/g;
 type EditorMode = "write" | "preview";
 
+function getClipboardImageFiles(event: ClipboardEvent): File[] {
+    const filesFromClipboard = Array.from(event.clipboardData.files)
+        .filter((file) => file.type.startsWith("image/"));
+    const existingFileKeys = new Set(filesFromClipboard.map((file) => `${file.name}-${file.size}-${file.type}`));
+    const filesFromItems = Array.from(event.clipboardData.items)
+        .filter((item) => item.kind === "file" && item.type.startsWith("image/"))
+        .map((item) => item.getAsFile())
+        .filter((file): file is File => Boolean(file))
+        .filter((file) => {
+            const fileKey = `${file.name}-${file.size}-${file.type}`;
+            if (existingFileKeys.has(fileKey)) return false;
+            existingFileKeys.add(fileKey);
+            return true;
+        });
+
+    return [...filesFromClipboard, ...filesFromItems];
+}
+
 export function CreateThreadModal({
     attachments,
     canUseAnnouncementCategory,
@@ -73,11 +91,8 @@ export function CreateThreadModal({
     const imageInputRef = useRef<HTMLInputElement | null>(null);
     const [editorMode, setEditorMode] = useState<EditorMode>("write");
 
-    function handlePaste(event: ClipboardEvent<HTMLFormElement>) {
-        const imageFiles = Array.from(event.clipboardData.items)
-            .filter((item) => item.kind === "file" && item.type.startsWith("image/"))
-            .map((item) => item.getAsFile())
-            .filter((file): file is File => Boolean(file));
+    function handlePaste(event: ClipboardEvent<HTMLTextAreaElement>) {
+        const imageFiles = getClipboardImageFiles(event);
 
         if (imageFiles.length === 0) return;
 
@@ -168,7 +183,7 @@ export function CreateThreadModal({
                 }
             }}
         >
-            <form className={styles.createThreadModal} onSubmit={onSubmit} onPaste={handlePaste}>
+            <form className={styles.createThreadModal} onSubmit={onSubmit}>
                 <div className={styles.modalHeader}>
                     <div>
                         <h2>{modalTitle}</h2>
@@ -322,6 +337,7 @@ export function CreateThreadModal({
                                     rows={7}
                                     spellCheck={false}
                                     onChange={(event) => onContentChange(event.target.value)}
+                                    onPaste={handlePaste}
                                     onScroll={syncHighlightScroll}
                                 />
                             </div>

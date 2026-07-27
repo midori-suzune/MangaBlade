@@ -42,6 +42,7 @@ public class CommentQuery {
                 c.createdAt as createdAt,
                 u.id as userId,
                 u.username as username,
+                u.avatarUrl as avatarUrl,
                 m.slug as mangaSlug,
                 m.title as mangaTitle,
                 ch.chapterNumber as chapterNumber,

@@ -57,6 +57,16 @@ function getCommentAuthorName(userId: number, username: string) {
     return cachedName || getPublicUsername(username);
 }
 
+function getCommentAvatar(userId?: number | null, serverAvatarUrl?: string | null) {
+    if (!userId) return serverAvatarUrl || null;
+    const currentUser = useAuthStore.getState().user;
+    if (currentUser && currentUser.id === userId) {
+        return useAuthStore.getState().avatarUrl || serverAvatarUrl || null;
+    }
+    const cachedAvatar = localStorage.getItem(`avatar_${userId}`);
+    return cachedAvatar || serverAvatarUrl || null;
+}
+
 const EMPTY_CHAPTERS: MangaDetailResponse["chapters"] = [];
 const EMPTY_AUTHORS: MangaDetailResponse["authors"] = [];
 const EMPTY_CATEGORIES: MangaDetailResponse["categories"] = [];
@@ -108,6 +118,53 @@ interface MangaReplyItemProps {
     user: UserInfo | null;
 }
 
+function MangaReplyAuthorBadge({ isAuthor }: { isAuthor?: boolean }) {
+    if (!isAuthor) return null;
+    return (
+        <span 
+            style={{ 
+                marginLeft: "8px", 
+                fontSize: "11px", 
+                padding: "2px 8px", 
+                borderRadius: "12px", 
+                backgroundColor: "#e0e7ff",
+                color: "#4f46e5",
+                border: "1px solid #c7d2fe",
+                fontWeight: "bold",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "4px",
+                verticalAlign: "middle"
+            }}
+            title="Tác giả của bộ truyện"
+        >
+            <PenTool size={11} /> Tác giả
+        </span>
+    );
+}
+
+function MangaReplyTitleBadge({ activeTitle, activeTitleColor }: { activeTitle?: string | null; activeTitleColor?: string | null }) {
+    if (!activeTitle) return null;
+    const color = activeTitleColor || '#6b7280';
+    return (
+        <span 
+            style={{ 
+                marginLeft: "8px", 
+                fontSize: "10px", 
+                padding: "1px 6px", 
+                borderRadius: "3px", 
+                backgroundColor: `${color}18`,
+                color: color,
+                border: `1px solid ${color}`,
+                fontWeight: "bold",
+                verticalAlign: "middle"
+            }}
+        >
+            {activeTitle}
+        </span>
+    );
+}
+
 function MangaReplyItem({
     reply,
     commentId,
@@ -124,55 +181,24 @@ function MangaReplyItem({
     handleOpenReportModal,
     user
 }: MangaReplyItemProps) {
+    const authorName = getCommentAuthorName(reply.user.id, reply.user.username);
+    const avatarUrl = getCommentAvatar(reply.user.id, reply.user?.avatarUrl);
+
     return (
         <article className={styles.replyItem}>
             <div className={styles.replyAvatar}>
-                {getCommentAuthorName(reply.user.id, reply.user.username).slice(0, 1).toUpperCase()}
+                {avatarUrl ? (
+                    <img src={avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                ) : (
+                    authorName.slice(0, 1).toUpperCase()
+                )}
             </div>
             <div className={styles.replyBody}>
                 <div className={`${styles.commentBubble} ${getCommentRoleClass(reply)}`}>
                     <div className={styles.commentAuthorRow}>
-                        <span className={styles.commentAuthor}>
-                            {getCommentAuthorName(reply.user.id, reply.user.username)}
-                        </span>
-                        {(reply.isAuthor || reply.user?.isAuthor) && (
-                            <span 
-                                style={{ 
-                                    marginLeft: "8px", 
-                                    fontSize: "11px", 
-                                    padding: "2px 8px", 
-                                    borderRadius: "12px", 
-                                    backgroundColor: "#e0e7ff",
-                                    color: "#4f46e5",
-                                    border: "1px solid #c7d2fe",
-                                    fontWeight: "bold",
-                                    display: "inline-flex",
-                                    alignItems: "center",
-                                    gap: "4px",
-                                    verticalAlign: "middle"
-                                }}
-                                title="Tác giả của bộ truyện"
-                            >
-                                <PenTool size={11} /> Tác giả
-                            </span>
-                        )}
-                        {reply.user.activeTitle && (
-                            <span 
-                                style={{ 
-                                    marginLeft: "8px", 
-                                    fontSize: "10px", 
-                                    padding: "1px 6px", 
-                                    borderRadius: "3px", 
-                                    backgroundColor: `${reply.user.activeTitleColor || '#6b7280'}18`,
-                                    color: reply.user.activeTitleColor || '#6b7280',
-                                    border: `1px solid ${reply.user.activeTitleColor || '#6b7280'}`,
-                                    fontWeight: "bold",
-                                    verticalAlign: "middle"
-                                }}
-                            >
-                                {reply.user.activeTitle}
-                            </span>
-                        )}
+                        <span className={styles.commentAuthor}>{authorName}</span>
+                        <MangaReplyAuthorBadge isAuthor={Boolean(reply.isAuthor || reply.user?.isAuthor)} />
+                        <MangaReplyTitleBadge activeTitle={reply.user.activeTitle} activeTitleColor={reply.user.activeTitleColor} />
                     </div>
                     <p className={styles.commentText}>
                         <CommentText content={reply.content} />
@@ -199,7 +225,7 @@ function MangaReplyItem({
                         onClick={() => {
                             setReplyParentId(commentId);
                             setReplyContent("");
-                            setReplyingToUsername(getCommentAuthorName(reply.user.id, reply.user.username));
+                            setReplyingToUsername(authorName);
                             setReplyError(null);
                         }}
                         style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}
@@ -263,7 +289,11 @@ function MangaReplyInput({
     return (
         <div className={styles.replyInputBox}>
             <div className={styles.replyAvatar}>
-                {user?.username?.slice(0, 1).toUpperCase() ?? "U"}
+                {getCommentAvatar(user?.id, user?.avatarUrl) ? (
+                    <img src={getCommentAvatar(user?.id, user?.avatarUrl)!} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                ) : (
+                    user?.username?.slice(0, 1).toUpperCase() ?? "U"
+                )}
             </div>
             <div className={styles.commentInputWrapper}>
                 <CommentEditor
@@ -464,7 +494,11 @@ function MangaCommentItem({
     return (
         <article className={styles.commentItem}>
             <div className={styles.commentAvatar}>
-                {getCommentAuthorName(comment.user.id, comment.user.username).slice(0, 1).toUpperCase()}
+                {getCommentAvatar(comment.user.id, comment.user?.avatarUrl) ? (
+                    <img src={getCommentAvatar(comment.user.id, comment.user?.avatarUrl)!} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                ) : (
+                    getCommentAuthorName(comment.user.id, comment.user.username).slice(0, 1).toUpperCase()
+                )}
             </div>
             <div className={styles.commentBody}>
                 <CommentBubble
@@ -1009,7 +1043,11 @@ export function MangaDetailPage() {
                     <h2 className={styles.sectionTitle}>Bình Luận</h2>
                     <div className={styles.commentInputBox}>
                         <div className={styles.commentAvatar}>
-                            {user?.username?.slice(0, 1).toUpperCase() ?? "U"}
+                            {getCommentAvatar(user?.id, user?.avatarUrl) ? (
+                                <img src={getCommentAvatar(user?.id, user?.avatarUrl)!} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                            ) : (
+                                user?.username?.slice(0, 1).toUpperCase() ?? "U"
+                            )}
                         </div>
                         <div className={styles.commentInputWrapper}>
                             <CommentEditor

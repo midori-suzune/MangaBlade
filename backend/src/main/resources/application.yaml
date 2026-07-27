@@ -15,6 +15,11 @@ spring:
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD}
 
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 25MB
+
   jpa:
     hibernate:
       ddl-auto: validate
@@ -81,3 +86,19 @@ logging:
 server:
   address: 0.0.0.0
   port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true

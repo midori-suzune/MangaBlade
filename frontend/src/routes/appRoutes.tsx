@@ -1,6 +1,7 @@
 import type {RouteObject} from "react-router-dom";
 import {MainLayout} from "../layouts/MainLayout.tsx";
 import {AdminLayout} from "../layouts/AdminLayout.tsx";
+import ProtectedRoute from "../components/ProtectedRoute.tsx";
 import {Home} from "../pages/Home/Home.tsx";
 import {LoginPage} from "../pages/Login/LoginPage.tsx";
 import {RegisterPage} from "../pages/Register/RegisterPage.tsx";
@@ -113,70 +114,75 @@ const mainRoutes: RouteObject[] = [
         ]
     },
     {
-        path: "/admin",
-        element: <AdminLayout />,
-        errorElement: <RouteError />,
+        element: <ProtectedRoute allowedRoles={["ADMIN"]} redirectPath="/login" />,
         children: [
             {
-                index: true,
-                element: <AdminDashboard />
+                path: "/admin",
+                element: <AdminLayout />,
+                errorElement: <RouteError />,
+                children: [
+                    {
+                        index: true,
+                        element: <AdminDashboard />
+                    },
+                    {
+                        path: "author/manga",
+                        element: <AuthorMangaList />
+                    },
+                    {
+                        path: "author/manga/create",
+                        element: <AuthorMangaCreate />
+                    },
+                    {
+                        path: "author/manga/:mangaId/edit",
+                        element: <AuthorMangaEdit />
+                    },
+                    {
+                        path: "author/manga/:mangaId/chapters",
+                        element: <AuthorChapterManage />
+                    },
+                    {
+                        path: "author/manga/:mangaId/chapters/:chapterId/upload",
+                        element: <AuthorChapterUpload />
+                    },
+                    {
+                        path: "author/statistics",
+                        element: <AuthorStatistics />
+                    },
+                    {
+                        path: "dashboard",
+                        element: <AdminDashboard />
+                    },
+                    {
+                        path: "users",
+                        element: <UserManagement />
+                    },
+                    {
+                        path: "manga",
+                        element: <MangaManagement />
+                    },
+                    {
+                        path: "content-moderation",
+                        element: <ContentModeration />
+                    },
+                    {
+                        path: "chapter-reports",
+                        element: <ChapterReports />
+                    },
+                    {
+                        path: "comment-reports",
+                        element: <CommentReports />
+                    },
+                    {
+                        path: "forum-draft-images",
+                        element: <ForumDraftImages />
+                    },
+                    {
+                        path: "author-requests",
+                        element: <AuthorRequests />
+                    }
+                ]
             },
-            {
-                path: "author/manga",
-                element: <AuthorMangaList />
-            },
-            {
-                path: "author/manga/create",
-                element: <AuthorMangaCreate />
-            },
-            {
-                path: "author/manga/:mangaId/edit",
-                element: <AuthorMangaEdit />
-            },
-            {
-                path: "author/manga/:mangaId/chapters",
-                element: <AuthorChapterManage />
-            },
-            {
-                path: "author/manga/:mangaId/chapters/:chapterId/upload",
-                element: <AuthorChapterUpload />
-            },
-            {
-                path: "author/statistics",
-                element: <AuthorStatistics />
-            },
-            {
-                path: "dashboard",
-                element: <AdminDashboard />
-            },
-            {
-                path: "users",
-                element: <UserManagement />
-            },
-            {
-                path: "manga",
-                element: <MangaManagement />
-            },
-            {
-                path: "content-moderation",
-                element: <ContentModeration />
-            },
-            {
-                path: "chapter-reports",
-                element: <ChapterReports />
-            },
-            {
-                path: "comment-reports",
-                element: <CommentReports />
-            },
-            {
-                path: "forum-draft-images",
-                element: <ForumDraftImages />
-            },
-            {
-                path: "author-requests",
-                element: <AuthorRequests />
-            }
         ]
     },
 ];

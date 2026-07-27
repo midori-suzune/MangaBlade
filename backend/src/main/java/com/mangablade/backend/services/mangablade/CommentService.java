@@ -211,6 +211,7 @@ public class CommentService {
                 .user(MangaCommentResponse.User.builder()
                         .id(userId)
                         .username(nameToDisplay)
+                        .avatarUrl(u != null ? u.getAvatarUrl() : null)
                         .activeTitle(activeTitle)
                         .activeTitleColor(activeTitleColor)
                         .isAuthor(isAuthor)

@@ -16,6 +16,16 @@ function getCommentRoleClass(comment: MangaCommentResponse) {
     return styles.memberComment;
 }
 
+function getCommentAvatar(userId?: number | null, serverAvatarUrl?: string | null) {
+    if (!userId) return serverAvatarUrl || null;
+    const currentUser = useAuthStore.getState().user;
+    if (currentUser && currentUser.id === userId) {
+        return useAuthStore.getState().avatarUrl || serverAvatarUrl || null;
+    }
+    const cachedAvatar = localStorage.getItem(`avatar_${userId}`);
+    return cachedAvatar || serverAvatarUrl || null;
+}
+
 interface CommentItemProps {
     comment: MangaCommentResponse;
     chapterLabel: string;
@@ -215,7 +225,11 @@ function ReplyInput({
     return (
         <div className={styles.replyInputBox}>
             <div className={styles.replyAvatar}>
-                {getAvatarLabel(user?.username)}
+                {getCommentAvatar(user?.id, user?.avatarUrl) ? (
+                    <img src={getCommentAvatar(user?.id, user?.avatarUrl)!} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                ) : (
+                    getAvatarLabel(user?.username)
+                )}
             </div>
             <div className={styles.commentInputWrapper}>
                 <CommentEditor
@@ -277,7 +291,11 @@ function ReplyItem({
     return (
         <article className={styles.replyItem}>
             <div className={styles.replyAvatar}>
-                {getAvatarLabel(authorName)}
+                {getCommentAvatar(comment.user.id, comment.user?.avatarUrl) ? (
+                    <img src={getCommentAvatar(comment.user.id, comment.user?.avatarUrl)!} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                ) : (
+                    getAvatarLabel(authorName)
+                )}
             </div>
             <div className={styles.replyBody}>
                 <CommentBubble comment={comment} authorName={authorName} />
@@ -390,7 +408,11 @@ function CommentItem({
     return (
         <article className={styles.commentItem}>
             <div className={`${styles.commentAvatar} ${styles.sampleAvatar}`}>
-                {getAvatarLabel(authorName)}
+                {getCommentAvatar(comment.user.id, comment.user?.avatarUrl) ? (
+                    <img src={getCommentAvatar(comment.user.id, comment.user?.avatarUrl)!} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                ) : (
+                    getAvatarLabel(authorName)
+                )}
             </div>
             <div className={styles.commentBody}>
                 <CommentBubble comment={comment} authorName={authorName} chapterLabel={chapterLabel} />
@@ -1023,7 +1045,13 @@ function CommentSectionContent({ slug, chapterNumber, chapterLabel }: CommentSec
     return (
         <>
             <div className={styles.commentInputBox}>
-                <div className={styles.commentAvatar}>{getAvatarLabel(user?.username)}</div>
+                <div className={styles.commentAvatar}>
+                    {getCommentAvatar(user?.id, user?.avatarUrl) ? (
+                        <img src={getCommentAvatar(user?.id, user?.avatarUrl)!} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                    ) : (
+                        getAvatarLabel(user?.username)
+                    )}
+                </div>
                 <div className={styles.commentInputWrapper}>
                     <CommentEditor
                         placeholder="Nhập bình luận của bạn..."
