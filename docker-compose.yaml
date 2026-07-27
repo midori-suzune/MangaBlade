@@ -50,6 +50,45 @@ services:
       elasticsearch:
         condition: service_started
 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: mangablade-prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on:
+      - spring-boot
+      - cadvisor
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: mangablade-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: mangablade-cadvisor
+    privileged: true
+    expose:
+      - 8080
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:9.4.1
     container_name: mangablade-elasticsearch
@@ -74,3 +113,4 @@ services:
       - mysql_data:/var/lib/mysql
 volumes:
   mysql_data:
+  grafana_data:
