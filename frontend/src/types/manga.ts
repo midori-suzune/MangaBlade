@@ -54,6 +54,7 @@ export type RecentCommentResponse = {
     chapterNumber?: string | null,
     activeTitle?: string | null,
     activeTitleColor?: string | null,
+    avatarUrl?: string | null,
 }
 
 export interface ChapterResponse {

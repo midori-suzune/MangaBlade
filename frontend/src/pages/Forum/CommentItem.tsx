@@ -3,6 +3,8 @@ import {CommentText} from "../../components/CommentEmojiPicker/CommentText.tsx";
 import styles from "./ForumPage.module.css";
 import {formatTime, getInitial, getRoleBadge} from "./forumUtils.ts";
 
+import { useAuthStore } from "../../stores/authStore.ts";
+
 function getRoleBadgeClass(role?: string | null) {
     if (role === "ADMIN") return `${styles.commentBadge} ${styles.adminBadge}`;
     if (role === "AUTHOR") return `${styles.commentBadge} ${styles.authorBadge}`;
@@ -34,11 +36,17 @@ export function CommentItem({
             ? styles.authorComment
             : styles.memberComment;
 
+    const currentUser = useAuthStore((s) => s.user);
+    const currentAvatarUrl = useAuthStore((s) => s.avatarUrl);
+    const userAvatar = (currentUser && comment.user?.id && currentUser.id === comment.user.id)
+        ? (currentAvatarUrl || comment.user?.avatarUrl)
+        : (localStorage.getItem(`avatar_${comment.user?.id}`) || comment.user?.avatarUrl);
+
     return (
         <article className={`${styles.commentItem} ${isReply ? styles.replyItem : ""}`}>
             <div className={styles.commentAvatar}>
-                {comment.user?.avatarUrl ? (
-                    <img src={comment.user.avatarUrl} alt={authorName} className={styles.avatarImg} />
+                {userAvatar ? (
+                    <img src={userAvatar} alt={authorName} className={styles.avatarImg} />
                 ) : (
                     getInitial(authorName)
                 )}

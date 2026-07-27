@@ -57,6 +57,16 @@ function getCommentAuthorName(userId: number, username: string) {
     return cachedName || getPublicUsername(username);
 }
 
+function getCommentAvatar(userId?: number | null, serverAvatarUrl?: string | null) {
+    if (!userId) return serverAvatarUrl || null;
+    const currentUser = useAuthStore.getState().user;
+    if (currentUser && currentUser.id === userId) {
+        return useAuthStore.getState().avatarUrl || serverAvatarUrl || null;
+    }
+    const cachedAvatar = localStorage.getItem(`avatar_${userId}`);
+    return cachedAvatar || serverAvatarUrl || null;
+}
+
 const EMPTY_CHAPTERS: MangaDetailResponse["chapters"] = [];
 const EMPTY_AUTHORS: MangaDetailResponse["authors"] = [];
 const EMPTY_CATEGORIES: MangaDetailResponse["categories"] = [];
@@ -127,8 +137,8 @@ function MangaReplyItem({
     return (
         <article className={styles.replyItem}>
             <div className={styles.replyAvatar}>
-                {reply.user?.avatarUrl ? (
-                    <img src={reply.user.avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                {getCommentAvatar(reply.user.id, reply.user?.avatarUrl) ? (
+                    <img src={getCommentAvatar(reply.user.id, reply.user?.avatarUrl)!} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
                 ) : (
                     getCommentAuthorName(reply.user.id, reply.user.username).slice(0, 1).toUpperCase()
                 )}
@@ -267,8 +277,8 @@ function MangaReplyInput({
     return (
         <div className={styles.replyInputBox}>
             <div className={styles.replyAvatar}>
-                {user?.avatarUrl ? (
-                    <img src={user.avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                {getCommentAvatar(user?.id, user?.avatarUrl) ? (
+                    <img src={getCommentAvatar(user?.id, user?.avatarUrl)!} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
                 ) : (
                     user?.username?.slice(0, 1).toUpperCase() ?? "U"
                 )}
@@ -472,8 +482,8 @@ function MangaCommentItem({
     return (
         <article className={styles.commentItem}>
             <div className={styles.commentAvatar}>
-                {comment.user?.avatarUrl ? (
-                    <img src={comment.user.avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                {getCommentAvatar(comment.user.id, comment.user?.avatarUrl) ? (
+                    <img src={getCommentAvatar(comment.user.id, comment.user?.avatarUrl)!} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
                 ) : (
                     getCommentAuthorName(comment.user.id, comment.user.username).slice(0, 1).toUpperCase()
                 )}
@@ -1021,8 +1031,8 @@ export function MangaDetailPage() {
                     <h2 className={styles.sectionTitle}>Bình Luận</h2>
                     <div className={styles.commentInputBox}>
                         <div className={styles.commentAvatar}>
-                            {user?.avatarUrl ? (
-                                <img src={user.avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                            {getCommentAvatar(user?.id, user?.avatarUrl) ? (
+                                <img src={getCommentAvatar(user?.id, user?.avatarUrl)!} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
                             ) : (
                                 user?.username?.slice(0, 1).toUpperCase() ?? "U"
                             )}

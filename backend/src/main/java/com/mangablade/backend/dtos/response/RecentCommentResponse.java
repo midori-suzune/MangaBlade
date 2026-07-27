@@ -22,4 +22,6 @@ public interface RecentCommentResponse {
     String getActiveTitle();
 
     String getActiveTitleColor();
+
+    String getAvatarUrl();
 }

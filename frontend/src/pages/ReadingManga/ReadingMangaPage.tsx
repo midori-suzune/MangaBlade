@@ -16,6 +16,16 @@ function getCommentRoleClass(comment: MangaCommentResponse) {
     return styles.memberComment;
 }
 
+function getCommentAvatar(userId?: number | null, serverAvatarUrl?: string | null) {
+    if (!userId) return serverAvatarUrl || null;
+    const currentUser = useAuthStore.getState().user;
+    if (currentUser && currentUser.id === userId) {
+        return useAuthStore.getState().avatarUrl || serverAvatarUrl || null;
+    }
+    const cachedAvatar = localStorage.getItem(`avatar_${userId}`);
+    return cachedAvatar || serverAvatarUrl || null;
+}
+
 interface CommentItemProps {
     comment: MangaCommentResponse;
     chapterLabel: string;
@@ -215,8 +225,8 @@ function ReplyInput({
     return (
         <div className={styles.replyInputBox}>
             <div className={styles.replyAvatar}>
-                {user?.avatarUrl ? (
-                    <img src={user.avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                {getCommentAvatar(user?.id, user?.avatarUrl) ? (
+                    <img src={getCommentAvatar(user?.id, user?.avatarUrl)!} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
                 ) : (
                     getAvatarLabel(user?.username)
                 )}
@@ -281,8 +291,8 @@ function ReplyItem({
     return (
         <article className={styles.replyItem}>
             <div className={styles.replyAvatar}>
-                {comment.user?.avatarUrl ? (
-                    <img src={comment.user.avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                {getCommentAvatar(comment.user.id, comment.user?.avatarUrl) ? (
+                    <img src={getCommentAvatar(comment.user.id, comment.user?.avatarUrl)!} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
                 ) : (
                     getAvatarLabel(authorName)
                 )}
@@ -398,8 +408,8 @@ function CommentItem({
     return (
         <article className={styles.commentItem}>
             <div className={`${styles.commentAvatar} ${styles.sampleAvatar}`}>
-                {comment.user?.avatarUrl ? (
-                    <img src={comment.user.avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                {getCommentAvatar(comment.user.id, comment.user?.avatarUrl) ? (
+                    <img src={getCommentAvatar(comment.user.id, comment.user?.avatarUrl)!} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
                 ) : (
                     getAvatarLabel(authorName)
                 )}
@@ -1036,8 +1046,8 @@ function CommentSectionContent({ slug, chapterNumber, chapterLabel }: CommentSec
         <>
             <div className={styles.commentInputBox}>
                 <div className={styles.commentAvatar}>
-                    {user?.avatarUrl ? (
-                        <img src={user.avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                    {getCommentAvatar(user?.id, user?.avatarUrl) ? (
+                        <img src={getCommentAvatar(user?.id, user?.avatarUrl)!} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
                     ) : (
                         getAvatarLabel(user?.username)
                     )}
