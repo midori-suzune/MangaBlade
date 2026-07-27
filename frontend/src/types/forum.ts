@@ -1,4 +1,4 @@
-export type ForumThreadCategory = "ANNOUNCEMENT" | "DISCUSSION" | "FIND_MANGA" | "FEEDBACK";
+export type ForumThreadCategory = "ANNOUNCEMENT" | "DISCUSSION" | "FIND_MANGA" | "FEEDBACK" | "SUGGESTION";
 
 export type ForumThreadStatus = "VISIBLE" | "HIDDEN" | "DELETED" | "LOCKED";
 

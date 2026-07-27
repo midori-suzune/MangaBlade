@@ -34,6 +34,79 @@ const hostname = window.location.hostname;
 const chatHost = hostname === "chat.mangablade.online";
 const localHost = hostname === "localhost" || hostname === "127.0.0.1";
 
+const adminRoute: RouteObject = {
+    element: <ProtectedRoute allowedRoles={["ADMIN"]} redirectPath="/login" />,
+    children: [
+        {
+            path: "/admin",
+            element: <AdminLayout />,
+            errorElement: <RouteError />,
+            children: [
+                {
+                    index: true,
+                    element: <AdminDashboard />
+                },
+                {
+                    path: "author/manga",
+                    element: <AuthorMangaList />
+                },
+                {
+                    path: "author/manga/create",
+                    element: <AuthorMangaCreate />
+                },
+                {
+                    path: "author/manga/:mangaId/edit",
+                    element: <AuthorMangaEdit />
+                },
+                {
+                    path: "author/manga/:mangaId/chapters",
+                    element: <AuthorChapterManage />
+                },
+                {
+                    path: "author/manga/:mangaId/chapters/:chapterId/upload",
+                    element: <AuthorChapterUpload />
+                },
+                {
+                    path: "author/statistics",
+                    element: <AuthorStatistics />
+                },
+                {
+                    path: "dashboard",
+                    element: <AdminDashboard />
+                },
+                {
+                    path: "users",
+                    element: <UserManagement />
+                },
+                {
+                    path: "manga",
+                    element: <MangaManagement />
+                },
+                {
+                    path: "content-moderation",
+                    element: <ContentModeration />
+                },
+                {
+                    path: "chapter-reports",
+                    element: <ChapterReports />
+                },
+                {
+                    path: "comment-reports",
+                    element: <CommentReports />
+                },
+                {
+                    path: "forum-draft-images",
+                    element: <ForumDraftImages />
+                },
+                {
+                    path: "author-requests",
+                    element: <AuthorRequests />
+                }
+            ]
+        },
+    ]
+};
+
 const chatRoutes: RouteObject[] = [
     {
         path: "/",
@@ -49,7 +122,8 @@ const chatRoutes: RouteObject[] = [
                 element: <ForumPage />
             }
         ]
-    }
+    },
+    adminRoute
 ];
 
 const mainRoutes: RouteObject[] = [
@@ -113,78 +187,7 @@ const mainRoutes: RouteObject[] = [
             },
         ]
     },
-    {
-        element: <ProtectedRoute allowedRoles={["ADMIN"]} redirectPath="/login" />,
-        children: [
-            {
-                path: "/admin",
-                element: <AdminLayout />,
-                errorElement: <RouteError />,
-                children: [
-                    {
-                        index: true,
-                        element: <AdminDashboard />
-                    },
-                    {
-                        path: "author/manga",
-                        element: <AuthorMangaList />
-                    },
-                    {
-                        path: "author/manga/create",
-                        element: <AuthorMangaCreate />
-                    },
-                    {
-                        path: "author/manga/:mangaId/edit",
-                        element: <AuthorMangaEdit />
-                    },
-                    {
-                        path: "author/manga/:mangaId/chapters",
-                        element: <AuthorChapterManage />
-                    },
-                    {
-                        path: "author/manga/:mangaId/chapters/:chapterId/upload",
-                        element: <AuthorChapterUpload />
-                    },
-                    {
-                        path: "author/statistics",
-                        element: <AuthorStatistics />
-                    },
-                    {
-                        path: "dashboard",
-                        element: <AdminDashboard />
-                    },
-                    {
-                        path: "users",
-                        element: <UserManagement />
-                    },
-                    {
-                        path: "manga",
-                        element: <MangaManagement />
-                    },
-                    {
-                        path: "content-moderation",
-                        element: <ContentModeration />
-                    },
-                    {
-                        path: "chapter-reports",
-                        element: <ChapterReports />
-                    },
-                    {
-                        path: "comment-reports",
-                        element: <CommentReports />
-                    },
-                    {
-                        path: "forum-draft-images",
-                        element: <ForumDraftImages />
-                    },
-                    {
-                        path: "author-requests",
-                        element: <AuthorRequests />
-                    }
-                ]
-            },
-        ]
-    },
+    adminRoute,
 ];
 
 let appRoutes = mainRoutes;
