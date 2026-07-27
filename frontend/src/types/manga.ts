@@ -99,6 +99,7 @@ export type MangaCommentResponse = {
     user: {
         id: number,
         username: string,
+        avatarUrl?: string | null,
         activeTitle?: string | null,
         activeTitleColor?: string | null,
         isAuthor?: boolean | null,

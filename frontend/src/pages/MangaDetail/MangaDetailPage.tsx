@@ -127,7 +127,11 @@ function MangaReplyItem({
     return (
         <article className={styles.replyItem}>
             <div className={styles.replyAvatar}>
-                {getCommentAuthorName(reply.user.id, reply.user.username).slice(0, 1).toUpperCase()}
+                {reply.user?.avatarUrl ? (
+                    <img src={reply.user.avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                ) : (
+                    getCommentAuthorName(reply.user.id, reply.user.username).slice(0, 1).toUpperCase()
+                )}
             </div>
             <div className={styles.replyBody}>
                 <div className={`${styles.commentBubble} ${getCommentRoleClass(reply)}`}>
@@ -263,7 +267,11 @@ function MangaReplyInput({
     return (
         <div className={styles.replyInputBox}>
             <div className={styles.replyAvatar}>
-                {user?.username?.slice(0, 1).toUpperCase() ?? "U"}
+                {user?.avatarUrl ? (
+                    <img src={user.avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                ) : (
+                    user?.username?.slice(0, 1).toUpperCase() ?? "U"
+                )}
             </div>
             <div className={styles.commentInputWrapper}>
                 <CommentEditor
@@ -464,7 +472,11 @@ function MangaCommentItem({
     return (
         <article className={styles.commentItem}>
             <div className={styles.commentAvatar}>
-                {getCommentAuthorName(comment.user.id, comment.user.username).slice(0, 1).toUpperCase()}
+                {comment.user?.avatarUrl ? (
+                    <img src={comment.user.avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                ) : (
+                    getCommentAuthorName(comment.user.id, comment.user.username).slice(0, 1).toUpperCase()
+                )}
             </div>
             <div className={styles.commentBody}>
                 <CommentBubble
@@ -1009,7 +1021,11 @@ export function MangaDetailPage() {
                     <h2 className={styles.sectionTitle}>Bình Luận</h2>
                     <div className={styles.commentInputBox}>
                         <div className={styles.commentAvatar}>
-                            {user?.username?.slice(0, 1).toUpperCase() ?? "U"}
+                            {user?.avatarUrl ? (
+                                <img src={user.avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                            ) : (
+                                user?.username?.slice(0, 1).toUpperCase() ?? "U"
+                            )}
                         </div>
                         <div className={styles.commentInputWrapper}>
                             <CommentEditor

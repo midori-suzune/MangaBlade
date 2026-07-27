@@ -215,7 +215,11 @@ function ReplyInput({
     return (
         <div className={styles.replyInputBox}>
             <div className={styles.replyAvatar}>
-                {getAvatarLabel(user?.username)}
+                {user?.avatarUrl ? (
+                    <img src={user.avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                ) : (
+                    getAvatarLabel(user?.username)
+                )}
             </div>
             <div className={styles.commentInputWrapper}>
                 <CommentEditor
@@ -277,7 +281,11 @@ function ReplyItem({
     return (
         <article className={styles.replyItem}>
             <div className={styles.replyAvatar}>
-                {getAvatarLabel(authorName)}
+                {comment.user?.avatarUrl ? (
+                    <img src={comment.user.avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                ) : (
+                    getAvatarLabel(authorName)
+                )}
             </div>
             <div className={styles.replyBody}>
                 <CommentBubble comment={comment} authorName={authorName} />
@@ -390,7 +398,11 @@ function CommentItem({
     return (
         <article className={styles.commentItem}>
             <div className={`${styles.commentAvatar} ${styles.sampleAvatar}`}>
-                {getAvatarLabel(authorName)}
+                {comment.user?.avatarUrl ? (
+                    <img src={comment.user.avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                ) : (
+                    getAvatarLabel(authorName)
+                )}
             </div>
             <div className={styles.commentBody}>
                 <CommentBubble comment={comment} authorName={authorName} chapterLabel={chapterLabel} />
@@ -1023,7 +1035,13 @@ function CommentSectionContent({ slug, chapterNumber, chapterLabel }: CommentSec
     return (
         <>
             <div className={styles.commentInputBox}>
-                <div className={styles.commentAvatar}>{getAvatarLabel(user?.username)}</div>
+                <div className={styles.commentAvatar}>
+                    {user?.avatarUrl ? (
+                        <img src={user.avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                    ) : (
+                        getAvatarLabel(user?.username)
+                    )}
+                </div>
                 <div className={styles.commentInputWrapper}>
                     <CommentEditor
                         placeholder="Nhập bình luận của bạn..."

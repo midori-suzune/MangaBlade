@@ -34,6 +34,7 @@ public class MangaCommentResponse {
     public static class User {
         private Long id;
         private String username;
+        private String avatarUrl;
         private String activeTitle;
         private String activeTitleColor;
         private Boolean isAuthor;

@@ -36,7 +36,13 @@ export function CommentItem({
 
     return (
         <article className={`${styles.commentItem} ${isReply ? styles.replyItem : ""}`}>
-            <div className={styles.commentAvatar}>{getInitial(authorName)}</div>
+            <div className={styles.commentAvatar}>
+                {comment.user?.avatarUrl ? (
+                    <img src={comment.user.avatarUrl} alt={authorName} className={styles.avatarImg} />
+                ) : (
+                    getInitial(authorName)
+                )}
+            </div>
             <div className={styles.commentBody}>
                 <div className={`${styles.commentBubble} ${roleClass}`}>
                     <div className={styles.commentAuthorRow}>
