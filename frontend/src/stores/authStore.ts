@@ -163,9 +163,18 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       const res = await userProfileApi.updateAvatar(file);
       if (res.success && res.payload) {
-        set({ avatarUrl: res.payload.avatarUrl || null });
-        if (res.payload.avatarUrl) {
-          localStorage.setItem(`avatar_${res.payload.id}`, res.payload.avatarUrl);
+        const newAvatar = res.payload.avatarUrl || null;
+        const currentUser = useAuthStore.getState().user;
+        const updatedUser = currentUser ? { ...currentUser, avatarUrl: newAvatar } : null;
+        set({ 
+          avatarUrl: newAvatar,
+          user: updatedUser
+        });
+        if (newAvatar && res.payload.id) {
+          localStorage.setItem(`avatar_${res.payload.id}`, newAvatar);
+        }
+        if (updatedUser) {
+          localStorage.setItem('user', JSON.stringify(updatedUser));
         }
       }
     } catch (err) {
