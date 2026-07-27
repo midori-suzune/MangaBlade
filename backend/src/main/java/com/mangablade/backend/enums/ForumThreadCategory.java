@@ -4,5 +4,6 @@ public enum ForumThreadCategory {
     ANNOUNCEMENT,
     DISCUSSION,
     FIND_MANGA,
-    FEEDBACK
+    FEEDBACK,
+    SUGGESTION
 }
