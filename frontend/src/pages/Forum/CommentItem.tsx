@@ -11,6 +11,30 @@ function getRoleBadgeClass(role?: string | null) {
     return `${styles.commentBadge} ${styles.memberBadge}`;
 }
 
+function resolveUserAvatar(user?: ForumCommentResponse['user']) {
+    if (!user?.id) return null;
+    const currentUser = useAuthStore.getState().user;
+    const currentAvatarUrl = useAuthStore.getState().avatarUrl;
+    if (currentUser && currentUser.id === user.id) {
+        return currentAvatarUrl || user.avatarUrl || null;
+    }
+    return localStorage.getItem(`avatar_${user.id}`) || user.avatarUrl || null;
+}
+
+function CommentBadge({ user }: { user?: ForumCommentResponse['user'] }) {
+    if (user?.activeTitle) {
+        return (
+            <span
+                className={`${styles.commentBadge} ${styles.titleBadge}`}
+                style={user.activeTitleColor ? {color: user.activeTitleColor} : undefined}
+            >
+                {user.activeTitle}
+            </span>
+        );
+    }
+    return <span className={getRoleBadgeClass(user?.role)}>{getRoleBadge(user?.role)}</span>;
+}
+
 export function CommentItem({
     comment,
     currentUserId,
@@ -36,11 +60,7 @@ export function CommentItem({
             ? styles.authorComment
             : styles.memberComment;
 
-    const currentUser = useAuthStore((s) => s.user);
-    const currentAvatarUrl = useAuthStore((s) => s.avatarUrl);
-    const userAvatar = (currentUser && comment.user?.id && currentUser.id === comment.user.id)
-        ? (currentAvatarUrl || comment.user?.avatarUrl)
-        : (localStorage.getItem(`avatar_${comment.user?.id}`) || comment.user?.avatarUrl);
+    const userAvatar = resolveUserAvatar(comment.user);
 
     return (
         <article className={`${styles.commentItem} ${isReply ? styles.replyItem : ""}`}>
@@ -55,17 +75,7 @@ export function CommentItem({
                 <div className={`${styles.commentBubble} ${roleClass}`}>
                     <div className={styles.commentAuthorRow}>
                         <span className={styles.commentAuthor}>{authorName}</span>
-                        {comment.user?.activeTitle && (
-                            <span
-                                className={`${styles.commentBadge} ${styles.titleBadge}`}
-                                style={comment.user.activeTitleColor ? {color: comment.user.activeTitleColor} : undefined}
-                            >
-                                {comment.user.activeTitle}
-                            </span>
-                        )}
-                        {!comment.user?.activeTitle && (
-                            <span className={getRoleBadgeClass(comment.user?.role)}>{getRoleBadge(comment.user?.role)}</span>
-                        )}
+                        <CommentBadge user={comment.user} />
                     </div>
                     <p className={styles.commentText}>
                         {replyToUsername && <span className={styles.replyMention}>@{replyToUsername}</span>}
