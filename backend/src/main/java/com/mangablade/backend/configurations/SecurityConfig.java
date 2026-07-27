@@ -76,7 +76,10 @@ public class SecurityConfig {
             "/api/v1/admin/forum-draft-images/{id}",
             "/api/v1/admin/forum-draft-images/delete",
             "/api/v1/admin/author-requests",
-            "/api/v1/admin/author-requests/{id}/review"
+            "/api/v1/admin/author-requests/{id}/review",
+            "/actuator/health",
+            "/actuator/info",
+            "/actuator/prometheus"
     };
 
     @Bean
