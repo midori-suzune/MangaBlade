@@ -54,6 +54,7 @@ export type RecentCommentResponse = {
     chapterNumber?: string | null,
     activeTitle?: string | null,
     activeTitleColor?: string | null,
+    avatarUrl?: string | null,
 }
 
 export interface ChapterResponse {
@@ -99,6 +100,7 @@ export type MangaCommentResponse = {
     user: {
         id: number,
         username: string,
+        avatarUrl?: string | null,
         activeTitle?: string | null,
         activeTitleColor?: string | null,
         isAuthor?: boolean | null,

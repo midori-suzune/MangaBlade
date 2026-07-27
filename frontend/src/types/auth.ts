@@ -2,6 +2,7 @@ export interface LoginRequest {
   email: string;
   password: string;
   turnstileToken: string;
+  rememberMe: boolean;
 }
 
 export interface RegisterRequest {

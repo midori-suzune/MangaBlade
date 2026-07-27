@@ -136,12 +136,12 @@ export function AuthModal() {
   function validateLogin(): boolean {
     const errors: Record<string, string> = {};
     if (!email.trim()) {
-      errors.email = "Email is required";
+      errors.email = "Vui lòng nhập email";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errors.email = "Please enter a valid email address";
+      errors.email = "Vui lòng nhập địa chỉ email hợp lệ";
     }
     if (!password) {
-      errors.password = "Password is required";
+      errors.password = "Vui lòng nhập mật khẩu";
     }
     if (!turnstileToken) {
       errors.turnstileToken = turnstileError || "Vui lòng xác minh bạn không phải bot";
@@ -153,15 +153,15 @@ export function AuthModal() {
   function validateRegister(): boolean {
     const errors: Record<string, string> = {};
     if (!username.trim()) {
-      errors.username = "Username is required";
+      errors.username = "Vui lòng nhập tên người dùng";
     } else if (username.length > 50) {
-      errors.username = "Username must be at most 50 characters";
+      errors.username = "Tên người dùng tối đa 50 ký tự";
     }
 
     if (!email.trim()) {
-      errors.email = "Email is required";
+      errors.email = "Vui lòng nhập email";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errors.email = "Please enter a valid email address";
+      errors.email = "Vui lòng nhập địa chỉ email hợp lệ";
     }
 
     if (!password) {
@@ -179,9 +179,9 @@ export function AuthModal() {
     }
 
     if (!confirmPassword) {
-      errors.confirmPassword = "Please confirm your password";
+      errors.confirmPassword = "Vui lòng xác nhận lại mật khẩu";
     } else if (password !== confirmPassword) {
-      errors.confirmPassword = "Passwords do not match";
+      errors.confirmPassword = "Mật khẩu xác nhận không trùng khớp";
     }
     if (!turnstileToken) {
       errors.turnstileToken = turnstileError || "Vui lòng xác minh bạn không phải bot";
@@ -200,7 +200,7 @@ export function AuthModal() {
 
     setLoading(true);
     try {
-      const result = await loginApi({ email, password, turnstileToken });
+      const result = await loginApi({ email, password, turnstileToken, rememberMe });
       if (result.success) {
         authLogin(result.payload.userInfo, rememberMe);
         closeAuthModal();
@@ -211,7 +211,7 @@ export function AuthModal() {
         if (result.fieldsErrors) {
           setFieldErrors(result.fieldsErrors);
         }
-        setError(result.message || "Login failed");
+        setError(result.message || "Đăng nhập thất bại");
       }
     } catch (err: unknown) {
       if (axios.isAxiosError(err) && err.response?.data) {
@@ -225,10 +225,10 @@ export function AuthModal() {
           setView("verify");
           setSuccess("Tài khoản chưa được xác thực. Vui lòng nhập mã OTP gửi tới Email của bạn.");
         } else {
-          setError(data.message || "Login failed");
+          setError(data.message || "Đăng nhập thất bại");
         }
       } else {
-        setError("An error occurred. Please try again later.");
+        setError("Đã xảy ra lỗi. Vui lòng thử lại sau.");
       }
     } finally {
       setLoading(false);
@@ -258,7 +258,7 @@ export function AuthModal() {
         if (result.fieldsErrors) {
           setFieldErrors(result.fieldsErrors);
         }
-        setError(result.message || "Registration failed");
+        setError(result.message || "Đăng ký thất bại");
       }
     } catch (err: unknown) {
       if (axios.isAxiosError(err) && err.response?.data) {
@@ -266,9 +266,9 @@ export function AuthModal() {
         if (data.fieldsErrors) {
           setFieldErrors(data.fieldsErrors);
         }
-        setError(data.message || "Registration failed");
+        setError(data.message || "Đăng ký thất bại");
       } else {
-        setError("An error occurred. Please try again later.");
+        setError("Đã xảy ra lỗi. Vui lòng thử lại sau.");
       }
     } finally {
       setLoading(false);
@@ -283,10 +283,10 @@ export function AuthModal() {
     setSuccess("");
 
     if (!email.trim()) {
-      setFieldErrors({ email: "Email is required" });
+      setFieldErrors({ email: "Vui lòng nhập email" });
       return;
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setFieldErrors({ email: "Please enter a valid email address" });
+      setFieldErrors({ email: "Vui lòng nhập địa chỉ email hợp lệ" });
       return;
     }
 
@@ -295,14 +295,14 @@ export function AuthModal() {
       const result = await forgotPasswordApi({ email });
       if (result.success) {
         setSuccess(
-            "Password reset link has been sent to your email. Please check your inbox.",
+            "Liên kết đặt lại mật khẩu đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư.",
         );
         setEmail("");
       } else {
         if (result.fieldsErrors) {
           setFieldErrors(result.fieldsErrors);
         }
-        setError(result.message || "Failed to send recovery request");
+        setError(result.message || "Gửi yêu cầu khôi phục thất bại");
       }
     } catch (err: unknown) {
       if (axios.isAxiosError(err) && err.response?.data) {
@@ -310,9 +310,9 @@ export function AuthModal() {
         if (data.fieldsErrors) {
           setFieldErrors(data.fieldsErrors);
         }
-        setError(data.message || "Failed to send recovery request");
+        setError(data.message || "Gửi yêu cầu khôi phục thất bại");
       } else {
-        setError("An error occurred. Please try again later.");
+        setError("Đã xảy ra lỗi. Vui lòng thử lại sau.");
       }
     } finally {
       setLoading(false);

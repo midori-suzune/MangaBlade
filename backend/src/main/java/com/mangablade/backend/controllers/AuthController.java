@@ -38,11 +38,14 @@ public class AuthController {
     ){
         AuthResponse auth = authService.login(request);
 
+        // rememberMe=true → persistent cookie (30 days), false → session cookie (dies on browser close)
+        long cookieMaxAge = request.isRememberMe() ? 60L * 60 * 24 * 30 : -1;
+
         return ResponseEntity.status(HttpStatus.OK)
-                .header(HttpHeaders.SET_COOKIE, buildAccessTokenCookie(auth.getAccessToken(), servletRequest, 60 * 60 * 24 * 7).toString())
+                .header(HttpHeaders.SET_COOKIE, buildAccessTokenCookie(auth.getAccessToken(), servletRequest, cookieMaxAge).toString())
                 .body(ApiResponse.<AuthResponse>builder()
                         .success(true)
-                        .message("Login successful")
+                        .message("Đăng nhập thành công")
                         .payload(auth)
                         .build());
     }
@@ -53,7 +56,7 @@ public class AuthController {
                 .header(HttpHeaders.SET_COOKIE, buildAccessTokenCookie("", servletRequest, 0).toString())
                 .body(ApiResponse.<Void>builder()
                         .success(true)
-                        .message("Logout successful")
+                        .message("Đăng xuất thành công")
                         .build());
     }
 
@@ -63,7 +66,7 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 ApiResponse.<Void>builder()
                         .success(true)
-                        .message("Registration successful")
+                        .message("Đăng ký tài khoản thành công")
                         .payload(null)
                         .error(null)
                         .fieldsErrors(null)
@@ -77,7 +80,7 @@ public class AuthController {
         return ResponseEntity.ok(
                 ApiResponse.<Void>builder()
                         .success(true)
-                        .message("Email verified successfully")
+                        .message("Xác thực email thành công")
                         .build()
         );
     }
@@ -88,7 +91,7 @@ public class AuthController {
         return ResponseEntity.ok(
                 ApiResponse.<Void>builder()
                         .success(true)
-                        .message("Verification code resent successfully")
+                        .message("Đã gửi lại mã xác nhận OTP thành công")
                         .build()
         );
     }
@@ -99,7 +102,7 @@ public class AuthController {
         return ResponseEntity.ok(
                 ApiResponse.<Void>builder()
                         .success(true)
-                        .message("Password reset link has been sent to your email")
+                        .message("Liên kết đặt lại mật khẩu đã được gửi đến email của bạn")
                         .build()
         );
     }
@@ -110,7 +113,7 @@ public class AuthController {
         return ResponseEntity.ok(
                 ApiResponse.<Void>builder()
                         .success(true)
-                        .message("Password has been updated successfully")
+                        .message("Cập nhật mật khẩu mới thành công")
                         .build()
         );
     }
@@ -125,7 +128,7 @@ public class AuthController {
                 .header(HttpHeaders.SET_COOKIE, buildAccessTokenCookie(auth.getAccessToken(), servletRequest, 60 * 60 * 24 * 7).toString())
                 .body(ApiResponse.<AuthResponse>builder()
                         .success(true)
-                        .message("Google login successful")
+                        .message("Đăng nhập bằng Google thành công")
                         .payload(auth)
                         .build()
                 );
@@ -140,7 +143,7 @@ public class AuthController {
         return ResponseEntity.ok(
                 ApiResponse.<Void>builder()
                         .success(true)
-                        .message("Password updated successfully")
+                        .message("Đổi mật khẩu thành công")
                         .build()
         );
     }

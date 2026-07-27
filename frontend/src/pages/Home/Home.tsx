@@ -54,6 +54,8 @@ export function Home() {
     const [ranking, setRanking] = useState<MangaRankingResponse[]>([]);
     const [readingHistory, setReadingHistory] = useState<ReadingHistoryResponse[]>([]);
     const [recentComments, setRecentComments] = useState<RecentCommentResponse[]>([]);
+    const currentUser = useAuthStore((s) => s.user);
+    const currentAvatarUrl = useAuthStore((s) => s.avatarUrl);
     const [error, setError] = useState<string | null>(null);
     const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
@@ -258,9 +260,19 @@ export function Home() {
                                 ? `${comment.mangaTitle} - Chương ${comment.chapterNumber}`
                                 : comment.mangaTitle;
 
+                            const userAvatar = (currentUser && currentUser.id === comment.userId)
+                                ? (currentAvatarUrl || comment.avatarUrl)
+                                : (localStorage.getItem(`avatar_${comment.userId}`) || comment.avatarUrl);
+
                             return (
                                 <article className={styles.commentItem} key={comment.id}>
-                                    <div className={styles.commentAvatar}>{getCommentAuthorName(comment.userId, comment.username).slice(0, 1).toUpperCase()}</div>
+                                    <div className={styles.commentAvatar}>
+                                        {userAvatar ? (
+                                            <img src={userAvatar} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                                        ) : (
+                                            getCommentAuthorName(comment.userId, comment.username).slice(0, 1).toUpperCase()
+                                        )}
+                                    </div>
                                     <div className={styles.commentContent}>
                                         <div className={styles.commentHeader} style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
                                             <span className={styles.commentAuthor}>{getCommentAuthorName(comment.userId, comment.username)}</span>
