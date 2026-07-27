@@ -38,6 +38,72 @@ import {
     upsertThread
 } from "./forumUtils.ts";
 
+const MAX_FORUM_IMAGE_SIZE = 5 * 1024 * 1024;
+const ALLOWED_FORUM_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+
+function normalizeForumImageFile(file: File): Promise<File> {
+    if (ALLOWED_FORUM_IMAGE_TYPES.includes(file.type)) {
+        return Promise.resolve(file);
+    }
+
+    if (!file.type.startsWith("image/")) {
+        return Promise.reject(new Error(`Ảnh "${file.name || "đã chọn"}" không đúng định dạng hỗ trợ.`));
+    }
+
+    return new Promise((resolve, reject) => {
+        const imageUrl = URL.createObjectURL(file);
+        const image = new Image();
+
+        image.onload = () => {
+            const canvas = document.createElement("canvas");
+            canvas.width = image.naturalWidth;
+            canvas.height = image.naturalHeight;
+            const context = canvas.getContext("2d");
+            if (!context) {
+                URL.revokeObjectURL(imageUrl);
+                reject(new Error("Không thể xử lý ảnh từ clipboard."));
+                return;
+            }
+
+            context.drawImage(image, 0, 0);
+            canvas.toBlob((blob) => {
+                URL.revokeObjectURL(imageUrl);
+                if (!blob) {
+                    reject(new Error("Không thể chuyển ảnh clipboard sang PNG."));
+                    return;
+                }
+
+                const baseName = file.name && file.name.includes(".")
+                    ? file.name.slice(0, file.name.lastIndexOf("."))
+                    : file.name || "clipboard-image";
+                resolve(new File([blob], `${baseName}.png`, {type: "image/png"}));
+            }, "image/png");
+        };
+
+        image.onerror = () => {
+            URL.revokeObjectURL(imageUrl);
+            reject(new Error(`Không đọc được ảnh "${file.name || "từ clipboard"}".`));
+        };
+
+        image.src = imageUrl;
+    });
+}
+
+function getUploadErrorMessage(error: unknown) {
+    if (typeof error === "object" && error !== null && "response" in error) {
+        const response = (error as {response?: {data?: {message?: string}}}).response;
+        if (response?.data?.message) {
+            return response.data.message;
+        }
+    }
+
+    if (error instanceof Error && error.message) {
+        return error.message;
+    }
+
+    return "Không tải được ảnh đính kèm.";
+}
+
 export function ForumPage() {
     const {isAuthenticated, openAuthModal, user, displayName} = useAuthStore();
     const [threads, setThreads] = useState<ForumThreadResponse[]>([]);
@@ -348,22 +414,23 @@ export function ForumPage() {
             return;
         }
 
-        const oversizedFile = selectedFiles.find((file) => file.size > 5 * 1024 * 1024);
+        const oversizedFile = selectedFiles.find((file) => file.size > MAX_FORUM_IMAGE_SIZE);
         if (oversizedFile) {
             setUploadError(`Ảnh "${oversizedFile.name}" vượt quá 5MB.`);
-            return;
-        }
-
-        const invalidFile = selectedFiles.find((file) => !["image/jpeg", "image/png", "image/gif", "image/webp"].includes(file.type));
-        if (invalidFile) {
-            setUploadError(`Ảnh "${invalidFile.name}" không đúng định dạng hỗ trợ.`);
             return;
         }
 
         setIsUploadingImage(true);
         setUploadError("");
         try {
-            const uploadedAttachments = await Promise.all(selectedFiles.map(async (file) => {
+            const uploadableFiles = await Promise.all(selectedFiles.map(normalizeForumImageFile));
+            const normalizedOversizedFile = uploadableFiles.find((file) => file.size > MAX_FORUM_IMAGE_SIZE);
+            if (normalizedOversizedFile) {
+                setUploadError(`Ảnh "${normalizedOversizedFile.name}" vượt quá 5MB sau khi xử lý.`);
+                return;
+            }
+
+            const uploadedAttachments = await Promise.all(uploadableFiles.map(async (file) => {
                 const response = await uploadForumImage(file);
                 return response.payload;
             }));
@@ -395,8 +462,8 @@ export function ForumPage() {
             if (files.length > selectedFiles.length) {
                 setUploadError("Chỉ 5 ảnh đầu tiên được đính kèm vào thread.");
             }
-        } catch {
-            setUploadError("Không tải được ảnh đính kèm.");
+        } catch (error) {
+            setUploadError(getUploadErrorMessage(error));
         } finally {
             setIsUploadingImage(false);
         }

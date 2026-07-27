@@ -29,7 +29,7 @@ export function MangaSlider({manga}: MangaSliderProps) {
     if (!activeManga) {
         return (
             <div className={styles.sliderPlaceholder}>
-                <span>Slide Động</span>
+                <span>Không tải được truyện</span>
             </div>
         );
     }

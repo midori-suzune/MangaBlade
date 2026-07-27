@@ -15,6 +15,11 @@ spring:
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD}
 
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 25MB
+
   jpa:
     hibernate:
       ddl-auto: validate
