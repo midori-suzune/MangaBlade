@@ -4,7 +4,7 @@ import axios from 'axios';
 import {
   BarChart3,
   BookOpen,
-  ChevronDown,
+  Home,
   Eye,
   EyeOff,
   FileCheck,
@@ -249,13 +249,13 @@ export const MangaManagement: React.FC = () => {
                   Kiểm tra kho truyện, lọc nội dung, cập nhật trạng thái hoặc xử lý truyện cần gỡ.
                 </p>
               </div>
-              <button className={styles.adminUserChip} type="button" aria-label="Tài khoản quản trị">
+              <button className={styles.adminUserChip} type="button" aria-label="Về trang chủ" onClick={() => navigate("/")}>
                 <span className={styles.adminAvatar}>{(displayName || 'A').charAt(0).toUpperCase()}</span>
                 <span className={styles.adminUserMeta}>
                   <span className={styles.adminUserName}>{displayName || 'Admin'}</span>
                   <span className={styles.adminUserRole}>Super Admin</span>
                 </span>
-                <ChevronDown size={16} className={styles.chipIcon} />
+                <Home size={16} className={styles.chipIcon} />
               </button>
             </div>
 

@@ -5,7 +5,7 @@ import {
   AlertTriangle,
   BarChart3,
   BookOpen,
-  ChevronDown,
+  Home,
   Eye,
   FileCheck,
   FileText,
@@ -218,13 +218,13 @@ export const ForumDraftImages: React.FC = () => {
               <div>
                 <h2 className={styles.pageTitle}>Dọn ảnh nháp</h2>
               </div>
-              <button className={styles.adminUserChip} type="button" aria-label="Tài khoản quản trị">
+              <button className={styles.adminUserChip} type="button" aria-label="Về trang chủ" onClick={() => navigate("/")}>
                 <span className={styles.adminAvatar}>{(displayName || "A").charAt(0).toUpperCase()}</span>
                 <span className={styles.adminUserMeta}>
                   <span className={styles.adminUserName}>{displayName || "Admin"}</span>
                   <span className={styles.adminUserRole}>Super Admin</span>
                 </span>
-                <ChevronDown size={16} className={styles.chipIcon} />
+                <Home size={16} className={styles.chipIcon} />
               </button>
             </div>
 

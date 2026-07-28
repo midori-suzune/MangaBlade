@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { authorRequestApi, type AuthorRequestResponse } from '../../../api/authorRequestApi';
 import { useAuthStore } from '../../../stores/authStore';
-import { AlertTriangle, BarChart3, BookOpen, Users, FileCheck, FileText, ChevronDown, Eye, MessageSquare, Image as ImageIcon } from 'lucide-react';
+import { AlertTriangle, BarChart3, BookOpen, Users, FileCheck, FileText, Home, Eye, MessageSquare, Image as ImageIcon } from 'lucide-react';
 import styles from '../Admin.module.css';
 
 interface DetailModalProps {
@@ -399,13 +399,13 @@ export const AuthorRequests: React.FC = () => {
                     Xem, duyệt hoặc từ chối các đơn đăng ký trở thành Tác giả của người dùng.
                   </p>
                 </div>
-                <button className={styles.adminUserChip} type="button" aria-label="Tài khoản quản trị">
+                <button className={styles.adminUserChip} type="button" aria-label="Về trang chủ" onClick={() => navigate("/")}>
                   <span className={styles.adminAvatar}>{(displayName || "A").charAt(0).toUpperCase()}</span>
                   <span className={styles.adminUserMeta}>
                     <span className={styles.adminUserName}>{displayName || "Admin"}</span>
                     <span className={styles.adminUserRole}>Super Admin</span>
                   </span>
-                  <ChevronDown size={16} className={styles.chipIcon} />
+                  <Home size={16} className={styles.chipIcon} />
                 </button>
               </div>
 
