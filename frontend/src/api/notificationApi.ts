@@ -2,7 +2,7 @@ import axiosClient from './axiosClient';
 import type { SpringPageResponse } from '../types/user';
 import type { ApiResponse } from '../types/auth';
 
-export type NotificationTargetType = 'MANGA' | 'CHAPTER' | 'AUTHOR_REQUEST';
+export type NotificationTargetType = 'MANGA' | 'CHAPTER' | 'AUTHOR_REQUEST' | 'FORUM_THREAD' | 'FORUM_COMMENT' | 'COMMENT';
 
 export interface NotificationItem {
   id: number;

@@ -37,6 +37,7 @@ public class CommentService {
     private final TaskService taskService;
     private final UserRepository userRepository;
     private final CommentLikeRepository commentLikeRepository;
+    private final NotificationService notificationService;
 
     public List<RecentCommentResponse> findRecentDistinctUserComments() {
         return commentRepository.findRecentDistinctUserComments(CommentStatus.VISIBLE, PageRequest.of(0, 5));
@@ -104,6 +105,17 @@ public class CommentService {
                 .getId();
 
         User dbUser = userRepository.findById(user.getId()).orElse(user);
+        Comment parentComment = null;
+        if (request.getParentId() != null) {
+            parentComment = commentRepository.findById(request.getParentId())
+                    .orElseThrow(() -> new AppException(ErrorCode.COMMENT_NOT_FOUND));
+            if (!manga.getId().equals(parentComment.getMangaId())
+                    || (chapterId != null && !chapterId.equals(parentComment.getChapterId()))
+                    || parentComment.getStatus() == CommentStatus.DELETED
+                    || parentComment.getStatus() == CommentStatus.HIDDEN) {
+                throw new AppException(ErrorCode.COMMENT_NOT_FOUND);
+            }
+        }
 
         var comment = Comment.builder()
                 .userId(dbUser.getId())
@@ -120,6 +132,9 @@ public class CommentService {
         savedComment.setUser(dbUser);
         
         taskService.handleCommentPosted(dbUser.getId());
+        if (parentComment != null) {
+            notificationService.createMangaCommentReplyNotification(parentComment, manga, savedComment, dbUser);
+        }
 
         return toResponse(savedComment, manga.getOwnerUserId(), dbUser);
     }

@@ -9,8 +9,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.mangablade.backend.dtos.response.NotificationResponse;
 import com.mangablade.backend.entities.Chapter;
+import com.mangablade.backend.entities.Comment;
+import com.mangablade.backend.entities.ForumComment;
+import com.mangablade.backend.entities.ForumThread;
 import com.mangablade.backend.entities.Manga;
 import com.mangablade.backend.entities.Notification;
+import com.mangablade.backend.entities.User;
 import com.mangablade.backend.enums.ApprovalStatus;
 import com.mangablade.backend.enums.AuthorRequestStatus;
 import com.mangablade.backend.exceptions.AppException;
@@ -176,6 +180,51 @@ public class NotificationService {
         }
     }
 
+    public void createForumThreadReplyNotification(ForumThread thread, ForumComment comment, User actor) {
+        if (thread.getUserId() == null || thread.getUserId().equals(comment.getUserId())) {
+            return;
+        }
+
+        create(
+                thread.getUserId(),
+                "FORUM_THREAD_REPLY",
+                "Thread của bạn có trả lời mới",
+                displayName(actor) + " đã trả lời trong thread của bạn.",
+                "FORUM_THREAD",
+                thread.getId()
+        );
+    }
+
+    public void createForumCommentReplyNotification(ForumComment parentComment, ForumThread thread, ForumComment reply, User actor) {
+        if (parentComment.getUserId() == null || parentComment.getUserId().equals(reply.getUserId())) {
+            return;
+        }
+
+        create(
+                parentComment.getUserId(),
+                "FORUM_COMMENT_REPLY",
+                "Bình luận forum của bạn có trả lời",
+                displayName(actor) + " đã trả lời bình luận của bạn trong thread.",
+                "FORUM_THREAD",
+                thread.getId()
+        );
+    }
+
+    public void createMangaCommentReplyNotification(Comment parentComment, Manga manga, Comment reply, User actor) {
+        if (parentComment.getUserId() == null || parentComment.getUserId().equals(reply.getUserId())) {
+            return;
+        }
+
+        create(
+                parentComment.getUserId(),
+                "MANGA_COMMENT_REPLY",
+                "Bình luận của bạn có trả lời",
+                displayName(actor) + " đã trả lời bình luận của bạn trong truyện \"" + manga.getTitle() + "\".",
+                "COMMENT",
+                reply.getId()
+        );
+    }
+
     private void create(Long userId, String type, String title, String message, String targetType, Long targetId) {
         notificationRepository.save(Notification.builder()
                 .userId(userId)
@@ -198,5 +247,21 @@ public class NotificationService {
         }
 
         return "Một chương";
+    }
+
+    private String displayName(User user) {
+        if (user == null) {
+            return "Có người";
+        }
+
+        if (user.getDisplayName() != null && !user.getDisplayName().isBlank()) {
+            return user.getDisplayName().trim();
+        }
+
+        if (user.getUsername() != null && !user.getUsername().isBlank()) {
+            return user.getUsername();
+        }
+
+        return "Có người";
     }
 }

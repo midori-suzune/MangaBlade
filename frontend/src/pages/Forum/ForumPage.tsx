@@ -1,5 +1,6 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import type {FormEvent} from "react";
+import {useNavigate, useParams} from "react-router-dom";
 import type {Client, StompSubscription} from "@stomp/stompjs";
 import {
     createForumComment,
@@ -106,6 +107,8 @@ function getUploadErrorMessage(error: unknown) {
 
 export function ForumPage() {
     const {isAuthenticated, openAuthModal, user, displayName} = useAuthStore();
+    const navigate = useNavigate();
+    const {threadId} = useParams<{threadId?: string}>();
     const [threads, setThreads] = useState<ForumThreadResponse[]>([]);
     const [activeThreadId, setActiveThreadId] = useState<number | null>(null);
     const [activeThreadDetail, setActiveThreadDetail] = useState<ForumThreadResponse | null>(null);
@@ -133,6 +136,14 @@ export function ForumPage() {
         () => activeThreadDetail ?? threads.find((thread) => thread.id === activeThreadId) ?? null,
         [activeThreadDetail, activeThreadId, threads]
     );
+    const requestedThreadId = useMemo(() => {
+        if (!threadId) {
+            return null;
+        }
+
+        const parsedThreadId = Number(threadId);
+        return Number.isInteger(parsedThreadId) && parsedThreadId > 0 ? parsedThreadId : null;
+    }, [threadId]);
 
     function resetCreateThreadDraft() {
         setNewThreadTitle("");
@@ -201,6 +212,10 @@ export function ForumPage() {
             const nextThreads = response.payload?.content ?? [];
             setThreads(nextThreads);
             setActiveThreadId((currentActiveId) => {
+                if (requestedThreadId) {
+                    return requestedThreadId;
+                }
+
                 if (currentActiveId && nextThreads.some((thread) => thread.id === currentActiveId)) {
                     return currentActiveId;
                 }
@@ -211,7 +226,7 @@ export function ForumPage() {
         } finally {
             setIsLoadingThreads(false);
         }
-    }, [activeCategory]);
+    }, [activeCategory, requestedThreadId]);
 
     useEffect(() => {
         let cancelled = false;
@@ -564,8 +579,12 @@ export function ForumPage() {
                         setActiveThreadId(null);
                         setActiveThreadDetail(null);
                         setComments([]);
+                        navigate("/forum");
                     }}
-                    onSelectThread={setActiveThreadId}
+                    onSelectThread={(threadId) => {
+                        setActiveThreadId(threadId);
+                        navigate(`/forum/post/${threadId}`);
+                    }}
                 />
 
                 <ForumThreadDetail

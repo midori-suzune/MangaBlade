@@ -211,6 +211,18 @@ export function Header() {
             return "/profile?tab=author-manga";
         }
 
+        if (notification.targetType === "FORUM_THREAD") {
+            if (!notification.targetId) {
+                return isChatHost ? "/" : "/forum";
+            }
+
+            return isChatHost ? `/post/${notification.targetId}` : `/forum/post/${notification.targetId}`;
+        }
+
+        if (notification.targetType === "FORUM_COMMENT") {
+            return isChatHost ? "/" : "/forum";
+        }
+
         return null;
     }
 
@@ -368,7 +380,6 @@ export function Header() {
                                                     className={`${styles.notificationItem} ${notification.readAt ? "" : styles.notificationUnread}`}
                                                     onClick={() => openNotification(notification)}
                                                 >
-                                                    <span className={styles.notificationTitle}>{notification.title}</span>
                                                     <span className={styles.notificationMessage}>{notification.message}</span>
                                                     <span className={styles.notificationTime}>{getTimeAgo(notification.createdAt)}</span>
                                                 </button>

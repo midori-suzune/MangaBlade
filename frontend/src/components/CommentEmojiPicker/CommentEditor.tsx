@@ -1,4 +1,4 @@
-import {useEffect, useId, useRef} from "react";
+import {useCallback, useEffect, useId, useRef} from "react";
 
 import {getCommentEmojiByKey} from "./commentEmojiAssets.ts";
 import styles from "./CommentEditor.module.css";
@@ -7,6 +7,7 @@ type CommentEditorProps = {
     value: string;
     placeholder: string;
     minRows?: number;
+    autoFocusKey?: string | number | null;
     onChange: (value: string) => void;
     onSubmit?: () => void;
 };
@@ -132,13 +133,13 @@ function insertTextAtSelection(text: string) {
     selection.addRange(range);
 }
 
-export function CommentEditor({value, placeholder, minRows = 3, onChange, onSubmit}: CommentEditorProps) {
+export function CommentEditor({value, placeholder, minRows = 3, autoFocusKey, onChange, onSubmit}: CommentEditorProps) {
     const editorId = useId();
     const editorRef = useRef<HTMLDivElement>(null);
     const isComposingRef = useRef(false);
     const savedRangeRef = useRef<Range | null>(null);
 
-    function saveSelection() {
+    const saveSelection = useCallback(() => {
         const editor = editorRef.current;
         const selection = window.getSelection();
         if (!editor || !selection || selection.rangeCount === 0) return;
@@ -148,7 +149,7 @@ export function CommentEditor({value, placeholder, minRows = 3, onChange, onSubm
             savedRangeRef.current = range.cloneRange();
             activeCommentEditorId = editorId;
         }
-    }
+    }, [editorId]);
 
     useEffect(() => {
         function handleInsertEmoji(event: Event) {
@@ -204,6 +205,17 @@ export function CommentEditor({value, placeholder, minRows = 3, onChange, onSubm
             moveCaretToEnd(editor);
         }
     }, [value]);
+
+    useEffect(() => {
+        if (autoFocusKey === undefined || autoFocusKey === null) return;
+
+        const editor = editorRef.current;
+        if (!editor) return;
+
+        editor.focus();
+        moveCaretToEnd(editor);
+        saveSelection();
+    }, [autoFocusKey, saveSelection]);
 
     return (
         <div
