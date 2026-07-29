@@ -567,15 +567,16 @@ const ChapterModal: React.FC<ChapterModalProps> = ({
       zIndex: 1000
     }}>
       <div style={{
-        backgroundColor: 'white',
-        borderRadius: 'var(--border-radius-md)',
+        backgroundColor: 'var(--color-surface, #ffffff)',
+        border: '1px solid var(--color-border, #e5e7eb)',
+        borderRadius: '16px',
         padding: '28px',
         width: '100%',
         maxWidth: '450px',
-        boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)'
+        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.2)'
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h3 style={{ fontSize: '18px', fontWeight: '800', margin: 0 }}>
+          <h3 style={{ fontSize: '18px', fontWeight: '800', margin: 0, color: 'var(--color-text-main)' }}>
             {editingChapter ? 'Sửa thông tin chương' : 'Thêm chương mới'}
           </h3>
           <button
