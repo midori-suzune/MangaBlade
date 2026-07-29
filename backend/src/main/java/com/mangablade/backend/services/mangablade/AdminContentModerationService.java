@@ -67,6 +67,14 @@ public class AdminContentModerationService {
         Chapter chapter = chapterRepository.findById(chapterId)
                 .orElseThrow(() -> new AppException(ErrorCode.CHAPTER_NOT_FOUND));
 
+        if (request.getStatus() == ApprovalStatus.APPROVED) {
+            Manga manga = mangaRepository.findById(chapter.getMangaId())
+                    .orElseThrow(() -> new AppException(ErrorCode.MANGA_NOT_FOUND));
+            if (manga.getApprovalStatus() != ApprovalStatus.APPROVED) {
+                throw new AppException(ErrorCode.MANGA_NOT_APPROVED_YET);
+            }
+        }
+
         chapter.setApprovalStatus(request.getStatus());
         chapter.setReviewedAt(Instant.now());
         chapter.setReviewedBy(adminId);

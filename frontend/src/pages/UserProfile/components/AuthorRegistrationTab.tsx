@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Feather, CheckCircle, Clock, BookOpen, BarChart3, MessageSquare, AlertCircle, X } from "lucide-react";
+import { Feather, CheckCircle, BookOpen, BarChart3, MessageSquare, AlertCircle, X } from "lucide-react";
 import { authorRequestApi, type AuthorRequestResponse } from "../../../api/authorRequestApi";
 import styles from "../UserProfile.module.css";
 
