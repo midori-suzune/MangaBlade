@@ -120,6 +120,14 @@ const chatRoutes: RouteObject[] = [
             {
                 path: "forum",
                 element: <ForumPage />
+            },
+            {
+                path: "forum/post/:threadId",
+                element: <ForumPage />
+            },
+            {
+                path: "post/:threadId",
+                element: <ForumPage />
             }
         ]
     },
@@ -167,6 +175,10 @@ const mainRoutes: RouteObject[] = [
             ...(localHost ? [
                 {
                     path: "forum",
+                    element: <ForumPage />
+                },
+                {
+                    path: "forum/post/:threadId",
                     element: <ForumPage />
                 }
             ] : []),

@@ -4,7 +4,7 @@ import axios from 'axios';
 import { adminUserApi } from '../../../api/userApi';
 import type { UserType, UserRole, SpringPageResponse } from '../../../types/user';
 import { useAuthStore } from '../../../stores/authStore';
-import { AlertTriangle, BarChart3, BookOpen, Users, FileCheck, FileText, ChevronDown, Pencil, Trash2, MessageSquare, Image as ImageIcon } from 'lucide-react';
+import { AlertTriangle, BarChart3, BookOpen, Users, FileCheck, FileText, Home, Pencil, Trash2, MessageSquare, Image as ImageIcon } from 'lucide-react';
 import styles from '../Admin.module.css';
 
 type UserRoleFilter = 'ALL' | UserRole;
@@ -395,13 +395,13 @@ export const UserManagement: React.FC = () => {
                     Xem danh sách, tìm kiếm, sửa thông tin, khóa/mở khóa hoặc xóa tài khoản.
                   </p>
                 </div>
-                <button className={styles.adminUserChip} type="button" aria-label="Tài khoản quản trị">
+                <button className={styles.adminUserChip} type="button" aria-label="Về trang chủ" onClick={() => navigate("/")}>
                   <span className={styles.adminAvatar}>{(displayName || "A").charAt(0).toUpperCase()}</span>
                   <span className={styles.adminUserMeta}>
                     <span className={styles.adminUserName}>{displayName || "Admin"}</span>
                     <span className={styles.adminUserRole}>Super Admin</span>
                   </span>
-                  <ChevronDown size={16} className={styles.chipIcon} />
+                  <Home size={16} className={styles.chipIcon} />
                 </button>
               </div>
 

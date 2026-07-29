@@ -19,6 +19,12 @@ public interface ForumCommentRepository extends JpaRepository<ForumComment, Long
     );
 
     @EntityGraph(attributePaths = {"user", "user.activeTitle"})
+    List<ForumComment> findByThreadIdAndStatusOrderByCreatedAtAsc(
+            Long threadId,
+            CommentStatus status
+    );
+
+    @EntityGraph(attributePaths = {"user", "user.activeTitle"})
     List<ForumComment> findByReplyToCommentIdInAndStatusOrderByCreatedAtAsc(
             Collection<Long> replyToCommentIds,
             CommentStatus status

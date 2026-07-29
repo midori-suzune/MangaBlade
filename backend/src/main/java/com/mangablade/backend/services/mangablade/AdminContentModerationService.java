@@ -30,6 +30,7 @@ public class AdminContentModerationService {
     private final ChapterRepository chapterRepository;
     private final ChapterPageRepository chapterPageRepository;
     private final MangaCategoryRepository mangaCategoryRepository;
+    private final NotificationService notificationService;
 
     @Transactional(readOnly = true)
     public Page<AdminModerationMangaResponse> findManga(ApprovalStatus status, String search, Pageable pageable) {
@@ -57,7 +58,10 @@ public class AdminContentModerationService {
         manga.setRejectionReason(request.getStatus() == ApprovalStatus.REJECTED ? request.getRejectReason().trim() : null);
         manga.setUpdatedAt(now);
 
-        return mapManga(mangaRepository.save(manga));
+        Manga saved = mangaRepository.save(manga);
+        notificationService.createMangaReviewNotification(saved, request.getStatus());
+
+        return mapManga(saved);
     }
 
     @Transactional
@@ -75,12 +79,18 @@ public class AdminContentModerationService {
             }
         }
 
+        Instant now = Instant.now();
         chapter.setApprovalStatus(request.getStatus());
-        chapter.setReviewedAt(Instant.now());
+        chapter.setReviewedAt(now);
         chapter.setReviewedBy(adminId);
         chapter.setRejectionReason(request.getStatus() == ApprovalStatus.REJECTED ? request.getRejectReason().trim() : null);
 
-        return mapChapter(chapterRepository.save(chapter));
+        Chapter saved = chapterRepository.save(chapter);
+        Manga manga = mangaRepository.findById(saved.getMangaId())
+                .orElseThrow(() -> new AppException(ErrorCode.MANGA_NOT_FOUND));
+        notificationService.createChapterReviewNotification(saved, manga, request.getStatus());
+
+        return mapChapter(saved);
     }
 
     private AdminModerationMangaResponse mapManga(Manga manga) {

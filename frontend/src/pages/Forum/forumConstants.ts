@@ -5,7 +5,8 @@ export const threadCategories: Array<{label: string; value: ForumThreadCategory}
     {label: "Thảo luận", value: "DISCUSSION"},
     {label: "Tìm truyện", value: "FIND_MANGA"},
     {label: "Góp ý", value: "FEEDBACK"},
-    {label: "Gợi ý", value: "SUGGESTION"}
+    {label: "Gợi ý", value: "SUGGESTION"},
+    {label: "Hướng dẫn", value: "GUIDE"}
 ];
 
 export const THREAD_TITLE_MAX_LENGTH = 150;

@@ -1181,7 +1181,7 @@
 }
 
 .commentInputWrapper :global([data-comment-editor]) {
-    font-size: 13px;
+    font-size: 16px;
 }
 
 .commentInputWrapper :global([data-comment-editor]:focus) {
