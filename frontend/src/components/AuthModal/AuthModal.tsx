@@ -16,12 +16,9 @@ import axios from "axios";
 import { useGoogleLogin } from '@react-oauth/google';
 import { googleLogin as googleLoginApi } from '../../api/authApi';
 
-import { useNavigate } from "react-router-dom";
-
 const turnstileSiteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined;
 
 export function AuthModal() {
-  const navigate = useNavigate();
   const {
     isAuthModalOpen,
     authModalTab,
@@ -109,9 +106,6 @@ export function AuthModal() {
         if (result.success) {
           authLogin(result.payload.userInfo, true);
           closeAuthModal();
-          if (result.payload.userInfo.role === 'AUTHOR') {
-            navigate('/profile?tab=author-manga');
-          }
         } else {
           setError(result.message || 'Google login failed');
         }
@@ -204,9 +198,6 @@ export function AuthModal() {
       if (result.success) {
         authLogin(result.payload.userInfo, rememberMe);
         closeAuthModal();
-        if (result.payload.userInfo.role === 'AUTHOR') {
-          navigate('/profile?tab=author-manga');
-        }
       } else {
         if (result.fieldsErrors) {
           setFieldErrors(result.fieldsErrors);

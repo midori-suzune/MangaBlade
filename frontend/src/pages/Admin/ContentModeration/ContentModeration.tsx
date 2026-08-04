@@ -6,7 +6,7 @@ import {
   BarChart3,
   BookOpen,
   Check,
-  ChevronDown,
+  Home,
   ChevronLeft,
   ChevronRight,
   Eye,
@@ -372,20 +372,20 @@ export const ContentModeration: React.FC = () => {
     return 'Có lỗi xảy ra';
   };
 
-  const mapChapter = (chapter: AdminModerationChapter): ChapterReviewItem => ({
+  const mapChapter = useCallback((chapter: AdminModerationChapter): ChapterReviewItem => ({
     ...chapter,
     title: chapter.title || '',
     rejectionReason: chapter.rejectionReason || undefined,
     thumbnail: chapter.thumbnail || FALLBACK_COVER,
-  });
+  }), []);
 
-  const mapManga = (manga: AdminModerationManga): ReviewManga => ({
+  const mapManga = useCallback((manga: AdminModerationManga): ReviewManga => ({
     ...manga,
     description: manga.description || '',
     rejectionReason: manga.rejectionReason || undefined,
     thumbnail: manga.thumbnail || FALLBACK_COVER,
     chapters: manga.chapters.map(mapChapter),
-  });
+  }), [mapChapter]);
 
   const loadSummary = useCallback(async () => {
     try {
@@ -432,7 +432,7 @@ export const ContentModeration: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [scope, search, statusFilter]);
+  }, [mapChapter, mapManga, scope, search, statusFilter]);
 
   useEffect(() => {
     Promise.resolve().then(() => loadSummary());
@@ -588,13 +588,13 @@ export const ContentModeration: React.FC = () => {
                   Duyệt hoặc từ chối truyện và từng chapter do tác giả gửi lên trước khi public.
                 </p>
               </div>
-              <button className={styles.adminUserChip} type="button" aria-label="Tài khoản quản trị">
+              <button className={styles.adminUserChip} type="button" aria-label="Về trang chủ" onClick={() => navigate("/")}>
                 <span className={styles.adminAvatar}>{(displayName || 'A').charAt(0).toUpperCase()}</span>
                 <span className={styles.adminUserMeta}>
                   <span className={styles.adminUserName}>{displayName || 'Admin'}</span>
                   <span className={styles.adminUserRole}>Super Admin</span>
                 </span>
-                <ChevronDown size={16} className={styles.chipIcon} />
+                <Home size={16} className={styles.chipIcon} />
               </button>
             </div>
 

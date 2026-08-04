@@ -316,6 +316,16 @@ public class AuthorMangaServiceImpl implements AuthorMangaService {
     public void submitChapter(User user, Long chapterId) {
         Chapter chapter = findChapterAndVerifyOwner(user, chapterId);
 
+        Manga manga = mangaRepository.findById(chapter.getMangaId())
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bộ truyện!"));
+
+        if (manga.getApprovalStatus() == ApprovalStatus.DRAFT) {
+            throw new IllegalArgumentException("Vui lòng gửi duyệt bộ truyện trước khi gửi duyệt chương!");
+        }
+        if (manga.getApprovalStatus() == ApprovalStatus.REJECTED) {
+            throw new IllegalArgumentException("Bộ truyện đã bị từ chối, không thể gửi duyệt chương!");
+        }
+
         int pageCount = chapterPageRepository.countByChapterId(chapterId);
         if (pageCount == 0) {
             throw new IllegalArgumentException("Vui lòng tải lên ít nhất 1 ảnh trang truyện trước khi gửi duyệt!");

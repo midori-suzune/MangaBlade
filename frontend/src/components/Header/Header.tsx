@@ -1,9 +1,44 @@
 import { useEffect, useRef, useState } from "react";
+import type { MutableRefObject, RefObject } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { searchManga } from "../../api/mangaApi";
+import { notificationApi } from "../../api/notificationApi";
 import { useAuthStore } from "../../stores/authStore";
+import { getTimeAgo } from "../../utils/time";
 import type { MangaSearchResponse } from "../../types/manga";
+import type { NotificationItem } from "../../api/notificationApi";
+import type { UserInfo } from "../../types/auth";
 import styles from "./Header.module.css";
+
+type SearchDropdownProps = {
+    isLoading: boolean;
+    results: MangaSearchResponse[];
+    activeIndex: number;
+    itemRefs: MutableRefObject<Array<HTMLAnchorElement | null>>;
+    onClose: () => void;
+    onActivate: (index: number) => void;
+};
+
+type NotificationMenuProps = {
+    isOpen: boolean;
+    unreadCount: number;
+    notifications: NotificationItem[];
+    isLoading: boolean;
+    containerRef: RefObject<HTMLDivElement | null>;
+    onToggle: () => void;
+    onMarkAllRead: () => void;
+    onOpenNotification: (notification: NotificationItem) => void;
+};
+
+type UserMenuProps = {
+    user: UserInfo;
+    avatarUrl: string | null;
+    isOpen: boolean;
+    containerRef: RefObject<HTMLDivElement | null>;
+    onToggle: () => void;
+    onClose: () => void;
+    onLogout: () => void;
+};
 
 export function Header() {
     const navigate = useNavigate();
@@ -16,14 +51,24 @@ export function Header() {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [isSearchLoading, setIsSearchLoading] = useState(false);
     const [activeSearchIndex, setActiveSearchIndex] = useState(-1);
+    const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+    const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+    const [unreadCount, setUnreadCount] = useState(0);
+    const [isNotificationLoading, setIsNotificationLoading] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const notificationRef = useRef<HTMLDivElement>(null);
     const searchRef = useRef<HTMLDivElement>(null);
     const searchItemRefs = useRef<Array<HTMLAnchorElement | null>>([]);
+    const userId = user?.id;
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
                 setIsDropdownOpen(false);
+            }
+
+            if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
+                setIsNotificationOpen(false);
             }
 
             if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
@@ -71,6 +116,35 @@ export function Header() {
         };
     }, [searchQuery]);
 
+    useEffect(() => {
+        if (!isAuthenticated || !userId) {
+            return;
+        }
+
+        let cancelled = false;
+
+        async function loadUnreadCount() {
+            try {
+                const response = await notificationApi.getUnreadCount();
+                if (!cancelled && response.success) {
+                    setUnreadCount(response.payload);
+                }
+            } catch {
+                if (!cancelled) {
+                    setUnreadCount(0);
+                }
+            }
+        }
+
+        void loadUnreadCount();
+        const intervalId = window.setInterval(loadUnreadCount, 60000);
+
+        return () => {
+            cancelled = true;
+            window.clearInterval(intervalId);
+        };
+    }, [isAuthenticated, userId]);
+
     const trimmedSearchQuery = searchQuery.trim();
     const shouldShowSearchDropdown = isSearchOpen && trimmedSearchQuery.length >= 2;
 
@@ -98,6 +172,90 @@ export function Header() {
 
         closeSearch();
         navigate(`/manga/${selectedResult.slug}`);
+    }
+
+    async function loadNotifications() {
+        setIsNotificationLoading(true);
+        try {
+            const response = await notificationApi.getNotifications(0, 10);
+            if (response.success) {
+                setNotifications(response.payload.content);
+            }
+        } catch {
+            setNotifications([]);
+        } finally {
+            setIsNotificationLoading(false);
+        }
+    }
+
+    async function toggleNotifications() {
+        const nextOpen = !isNotificationOpen;
+        setIsNotificationOpen(nextOpen);
+        setIsDropdownOpen(false);
+
+        if (nextOpen) {
+            await loadNotifications();
+        }
+    }
+
+    async function markAllNotificationsRead() {
+        try {
+            await notificationApi.markAllRead();
+            setNotifications((items) => items.map((item) => ({ ...item, readAt: item.readAt ?? new Date().toISOString() })));
+            setUnreadCount(0);
+        } catch {
+            // Keep the current badge if the request fails.
+        }
+    }
+
+    async function openNotification(notification: NotificationItem) {
+        if (!notification.readAt) {
+            try {
+                await notificationApi.markRead(notification.id);
+                setNotifications((items) =>
+                    items.map((item) =>
+                        item.id === notification.id ? { ...item, readAt: new Date().toISOString() } : item
+                    )
+                );
+                setUnreadCount((count) => Math.max(0, count - 1));
+            } catch {
+                // Navigation is still useful even if mark-read fails.
+            }
+        }
+
+        setIsNotificationOpen(false);
+        const targetPath = resolveNotificationPath(notification);
+        if (targetPath) {
+            navigate(targetPath);
+        }
+    }
+
+    function resolveNotificationPath(notification: NotificationItem) {
+        if (notification.targetType === "AUTHOR_REQUEST") {
+            return "/profile?tab=author";
+        }
+
+        if (notification.targetType === "MANGA") {
+            return "/profile?tab=author-manga";
+        }
+
+        if (notification.targetType === "CHAPTER") {
+            return "/profile?tab=author-manga";
+        }
+
+        if (notification.targetType === "FORUM_THREAD") {
+            if (!notification.targetId) {
+                return isChatHost ? "/" : "/forum";
+            }
+
+            return isChatHost ? `/post/${notification.targetId}` : `/forum/post/${notification.targetId}`;
+        }
+
+        if (notification.targetType === "FORUM_COMMENT") {
+            return isChatHost ? "/" : "/forum";
+        }
+
+        return null;
     }
 
     const logoContent = (
@@ -177,162 +335,40 @@ export function Header() {
                     />
 
                     {shouldShowSearchDropdown && (
-                        <div className={styles.searchDropdown}>
-                            {isSearchLoading ? (
-                                <div className={styles.searchState}>Đang tìm...</div>
-                            ) : searchResults.length > 0 ? (
-                                searchResults.map((item, index) => (
-                                    <Link
-                                        ref={(element) => {
-                                            searchItemRefs.current[index] = element;
-                                        }}
-                                        to={`/manga/${item.slug}`}
-                                        className={`${styles.searchItem} ${index === activeSearchIndex ? styles.searchItemActive : ""}`}
-                                        key={item.slug}
-                                        onClick={closeSearch}
-                                        onMouseEnter={() => setActiveSearchIndex(index)}
-                                    >
-                                        <span className={styles.searchThumb}>
-                                            {item.thumbUrl && <img src={item.thumbUrl} alt={item.title} />}
-                                        </span>
-                                        <span className={styles.searchInfo}>
-                                            <span className={styles.searchTitle}>{item.title}</span>
-                                            <span className={styles.searchMeta}>
-                                                {item.latestChapterNumber ? `Chương ${item.latestChapterNumber}` : "Chưa có chương"}
-                                            </span>
-                                            {item.authors.length > 0 && (
-                                                <span className={styles.searchAuthors}>{item.authors.join(", ")}</span>
-                                            )}
-                                        </span>
-                                    </Link>
-                                ))
-                            ) : (
-                                <div className={styles.searchState}>Không tìm thấy truyện</div>
-                            )}
-                        </div>
+                        <SearchDropdown
+                            isLoading={isSearchLoading}
+                            results={searchResults}
+                            activeIndex={activeSearchIndex}
+                            itemRefs={searchItemRefs}
+                            onClose={closeSearch}
+                            onActivate={setActiveSearchIndex}
+                        />
                     )}
                 </div>
                 {isAuthenticated && user ? (
                     <div className={styles.headerRightActions}>
-                        <button className={styles.btnNotification} aria-label="Thông báo" onClick={() => alert('Tính năng thông báo đang được phát triển!')}>
-                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                            </svg>
-                        </button>
-                        
-                        <div className={styles.userMenuContainer} ref={dropdownRef}>
-                            <button className={styles.avatarBtn} onClick={() => setIsDropdownOpen(!isDropdownOpen)} aria-label="Menu cá nhân">
-                                {avatarUrl ? (
-                                    <img src={avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                ) : (
-                                    <span>{user.username.charAt(0).toUpperCase()}</span>
-                                )}
-                            </button>
-                            {isDropdownOpen && (
-                                <div className={`${styles.dropdownMenu} ${styles.show}`}>
-                                    <div className={styles.dropdownUserInfo}>
-                                        <span className={styles.dropdownUserName}>{user.username}</span>
-                                        <span className={styles.dropdownUserEmail}>{user.email}</span>
-                                    </div>
-                                    <div className={styles.dropdownDivider}></div>
-                                    <Link to="/profile?tab=settings" onClick={() => setIsDropdownOpen(false)} className={styles.dropdownItem}>
-                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
-                                            <circle cx="12" cy="12" r="3"></circle>
-                                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                                        </svg>
-                                        Cài đặt tài khoản
-                                    </Link>
-                                    <Link to="/profile?tab=manga" onClick={() => setIsDropdownOpen(false)} className={styles.dropdownItem}>
-                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
-                                            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-                                        </svg>
-                                        Theo dõi
-                                    </Link>
-                                    <Link to="/profile?tab=tasks" onClick={() => setIsDropdownOpen(false)} className={styles.dropdownItem}>
-                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
-                                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                                            <line x1="16" y1="2" x2="16" y2="6"></line>
-                                            <line x1="8" y1="2" x2="8" y2="6"></line>
-                                            <line x1="3" y1="10" x2="21" y2="10"></line>
-                                            <polyline points="9 16 11 18 15 14"></polyline>
-                                        </svg>
-                                        Nhiệm vụ hàng ngày
-                                    </Link>
-                                    <Link to="/profile?tab=history" onClick={() => setIsDropdownOpen(false)} className={styles.dropdownItem}>
-                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
-                                            <circle cx="12" cy="12" r="10"></circle>
-                                            <polyline points="12 6 12 12 16 14"></polyline>
-                                        </svg>
-                                        Lịch sử đọc
-                                    </Link>
-                                    <Link to="/profile?tab=password" onClick={() => setIsDropdownOpen(false)} className={styles.dropdownItem}>
-                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
-                                            <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
-                                        </svg>
-                                        Thay đổi mật khẩu
-                                    </Link>
-
-                                    {/* Các tùy chọn tác giả / đăng ký tác giả hiển thị ở cuối */}
-                                    {user.role === 'AUTHOR' ? (
-                                        <>
-                                            <Link to="/profile?tab=author-manga" onClick={() => setIsDropdownOpen(false)} className={styles.dropdownItem}>
-                                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
-                                                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
-                                                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
-                                                </svg>
-                                                Truyện của tôi
-                                            </Link>
-                                            <Link to="/profile?tab=author-manga-create" onClick={() => setIsDropdownOpen(false)} className={styles.dropdownItem}>
-                                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
-                                                    <circle cx="12" cy="12" r="10"></circle>
-                                                    <line x1="12" y1="8" x2="12" y2="16"></line>
-                                                    <line x1="8" y1="12" x2="16" y2="12"></line>
-                                                </svg>
-                                                Đăng truyện mới
-                                            </Link>
-                                            <Link to="/profile?tab=author-statistics" onClick={() => setIsDropdownOpen(false)} className={styles.dropdownItem}>
-                                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
-                                                    <line x1="18" y1="20" x2="18" y2="10"></line>
-                                                    <line x1="12" y1="20" x2="12" y2="4"></line>
-                                                    <line x1="6" y1="20" x2="6" y2="14"></line>
-                                                </svg>
-                                                Thống kê tác phẩm
-                                            </Link>
-                                        </>
-                                    ) : (
-                                        user.role !== 'ADMIN' && (
-                                            <Link to="/profile?tab=author" onClick={() => setIsDropdownOpen(false)} className={styles.dropdownItem}>
-                                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
-                                                    <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path>
-                                                    <line x1="16" y1="8" x2="2" y2="22"></line>
-                                                    <line x1="17.5" y1="15" x2="9" y2="15"></line>
-                                                </svg>
-                                                Đăng ký Tác giả
-                                            </Link>
-                                        )
-                                    )}
-                                    {user.role === 'ADMIN' && (
-                                        <Link to="/admin/users" onClick={() => setIsDropdownOpen(false)} className={styles.dropdownItem}>
-                                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
-                                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                                                <line x1="9" y1="3" x2="9" y2="21"></line>
-                                            </svg>
-                                            Quản lý Admin
-                                        </Link>
-                                    )}
-                                    <div className={styles.dropdownDivider}></div>
-                                    <button onClick={() => { setIsDropdownOpen(false); logout(); }} className={`${styles.dropdownItem} ${styles.logout}`}>
-                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
-                                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                                            <polyline points="16 17 21 12 16 7"></polyline>
-                                            <line x1="21" y1="12" x2="9" y2="12"></line>
-                                        </svg>
-                                        Đăng xuất
-                                    </button>
-                                </div>
-                            )}
-                        </div>
+                        <NotificationMenu
+                            isOpen={isNotificationOpen}
+                            unreadCount={unreadCount}
+                            notifications={notifications}
+                            isLoading={isNotificationLoading}
+                            containerRef={notificationRef}
+                            onToggle={toggleNotifications}
+                            onMarkAllRead={markAllNotificationsRead}
+                            onOpenNotification={openNotification}
+                        />
+                        <UserMenu
+                            user={user}
+                            avatarUrl={avatarUrl}
+                            isOpen={isDropdownOpen}
+                            containerRef={dropdownRef}
+                            onToggle={() => setIsDropdownOpen(!isDropdownOpen)}
+                            onClose={() => setIsDropdownOpen(false)}
+                            onLogout={() => {
+                                setIsDropdownOpen(false);
+                                void logout();
+                            }}
+                        />
                     </div>
                 ) : (
                     <div className={styles.authButtons}>
@@ -341,5 +377,272 @@ export function Header() {
                 )}
             </div>
         </header>
+    );
+}
+
+function SearchDropdown({ isLoading, results, activeIndex, itemRefs, onClose, onActivate }: SearchDropdownProps) {
+    if (isLoading) {
+        return (
+            <div className={styles.searchDropdown}>
+                <div className={styles.searchState}>Đang tìm...</div>
+            </div>
+        );
+    }
+
+    if (results.length === 0) {
+        return (
+            <div className={styles.searchDropdown}>
+                <div className={styles.searchState}>Không tìm thấy truyện</div>
+            </div>
+        );
+    }
+
+    return (
+        <div className={styles.searchDropdown}>
+            {results.map((item, index) => (
+                <Link
+                    ref={(element) => {
+                        itemRefs.current[index] = element;
+                    }}
+                    to={`/manga/${item.slug}`}
+                    className={`${styles.searchItem} ${index === activeIndex ? styles.searchItemActive : ""}`}
+                    key={item.slug}
+                    onClick={onClose}
+                    onMouseEnter={() => onActivate(index)}
+                >
+                    <span className={styles.searchThumb}>
+                        {item.thumbUrl && <img src={item.thumbUrl} alt={item.title} />}
+                    </span>
+                    <span className={styles.searchInfo}>
+                        <span className={styles.searchTitle}>{item.title}</span>
+                        <span className={styles.searchMeta}>
+                            {item.latestChapterNumber ? `Chương ${item.latestChapterNumber}` : "Chưa có chương"}
+                        </span>
+                        {item.authors.length > 0 && (
+                            <span className={styles.searchAuthors}>{item.authors.join(", ")}</span>
+                        )}
+                    </span>
+                </Link>
+            ))}
+        </div>
+    );
+}
+
+function NotificationMenu({
+    isOpen,
+    unreadCount,
+    notifications,
+    isLoading,
+    containerRef,
+    onToggle,
+    onMarkAllRead,
+    onOpenNotification,
+}: NotificationMenuProps) {
+    return (
+        <div className={styles.notificationContainer} ref={containerRef}>
+            <button
+                className={styles.btnNotification}
+                aria-label="Thông báo"
+                aria-expanded={isOpen}
+                onClick={onToggle}
+            >
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+                {unreadCount > 0 && (
+                    <span className={styles.notificationBadge}>
+                        {unreadCount > 99 ? "99+" : unreadCount}
+                    </span>
+                )}
+            </button>
+            {isOpen && (
+                <NotificationDropdown
+                    unreadCount={unreadCount}
+                    notifications={notifications}
+                    isLoading={isLoading}
+                    onMarkAllRead={onMarkAllRead}
+                    onOpenNotification={onOpenNotification}
+                />
+            )}
+        </div>
+    );
+}
+
+function NotificationDropdown({
+    unreadCount,
+    notifications,
+    isLoading,
+    onMarkAllRead,
+    onOpenNotification,
+}: Omit<NotificationMenuProps, "isOpen" | "containerRef" | "onToggle">) {
+    return (
+        <div className={styles.notificationDropdown}>
+            <div className={styles.notificationHeader}>
+                <span>Thông báo</span>
+                {unreadCount > 0 && (
+                    <button type="button" onClick={onMarkAllRead}>
+                        Đọc tất cả
+                    </button>
+                )}
+            </div>
+            <div className={styles.notificationList}>
+                {isLoading ? (
+                    <div className={styles.notificationState}>Đang tải...</div>
+                ) : notifications.length === 0 ? (
+                    <div className={styles.notificationState}>Chưa có thông báo</div>
+                ) : (
+                    notifications.map((notification) => (
+                        <button
+                            type="button"
+                            key={notification.id}
+                            className={`${styles.notificationItem} ${notification.readAt ? "" : styles.notificationUnread}`}
+                            onClick={() => onOpenNotification(notification)}
+                        >
+                            <span className={styles.notificationMessage}>{notification.message}</span>
+                            <span className={styles.notificationTime}>{getTimeAgo(notification.createdAt)}</span>
+                        </button>
+                    ))
+                )}
+            </div>
+        </div>
+    );
+}
+
+function UserMenu({ user, avatarUrl, isOpen, containerRef, onToggle, onClose, onLogout }: UserMenuProps) {
+    return (
+        <div className={styles.userMenuContainer} ref={containerRef}>
+            <button className={styles.avatarBtn} onClick={onToggle} aria-label="Menu cá nhân">
+                {avatarUrl ? (
+                    <img src={avatarUrl} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                ) : (
+                    <span>{user.username.charAt(0).toUpperCase()}</span>
+                )}
+            </button>
+            {isOpen && <UserDropdownMenu user={user} onClose={onClose} onLogout={onLogout} />}
+        </div>
+    );
+}
+
+function UserDropdownMenu({ user, onClose, onLogout }: Pick<UserMenuProps, "user" | "onClose" | "onLogout">) {
+    return (
+        <div className={`${styles.dropdownMenu} ${styles.show}`}>
+            <div className={styles.dropdownUserInfo}>
+                <span className={styles.dropdownUserName}>{user.username}</span>
+                <span className={styles.dropdownUserEmail}>{user.email}</span>
+            </div>
+            <div className={styles.dropdownDivider}></div>
+            <Link to="/profile?tab=settings" onClick={onClose} className={styles.dropdownItem}>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "8px" }}>
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+                Cài đặt tài khoản
+            </Link>
+            <Link to="/profile?tab=manga" onClick={onClose} className={styles.dropdownItem}>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "8px" }}>
+                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                </svg>
+                Theo dõi
+            </Link>
+            <Link to="/profile?tab=tasks" onClick={onClose} className={styles.dropdownItem}>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "8px" }}>
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                    <polyline points="9 16 11 18 15 14"></polyline>
+                </svg>
+                Nhiệm vụ hàng ngày
+            </Link>
+            <Link to="/profile?tab=history" onClick={onClose} className={styles.dropdownItem}>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "8px" }}>
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                Lịch sử đọc
+            </Link>
+            <Link to="/profile?tab=password" onClick={onClose} className={styles.dropdownItem}>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "8px" }}>
+                    <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
+                </svg>
+                Thay đổi mật khẩu
+            </Link>
+
+            <AuthorMenuItems role={user.role} onClose={onClose} />
+            <AdminMenuItem role={user.role} onClose={onClose} />
+            <div className={styles.dropdownDivider}></div>
+            <button onClick={onLogout} className={`${styles.dropdownItem} ${styles.logout}`}>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "8px" }}>
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                Đăng xuất
+            </button>
+        </div>
+    );
+}
+
+function AuthorMenuItems({ role, onClose }: Pick<UserInfo, "role"> & Pick<UserMenuProps, "onClose">) {
+    if (role === "AUTHOR") {
+        return (
+            <>
+                <Link to="/profile?tab=author-manga" onClick={onClose} className={styles.dropdownItem}>
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "8px" }}>
+                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                    </svg>
+                    Truyện của tôi
+                </Link>
+                <Link to="/profile?tab=author-manga-create" onClick={onClose} className={styles.dropdownItem}>
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "8px" }}>
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="16"></line>
+                        <line x1="8" y1="12" x2="16" y2="12"></line>
+                    </svg>
+                    Đăng truyện mới
+                </Link>
+                <Link to="/profile?tab=author-statistics" onClick={onClose} className={styles.dropdownItem}>
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "8px" }}>
+                        <line x1="18" y1="20" x2="18" y2="10"></line>
+                        <line x1="12" y1="20" x2="12" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                    </svg>
+                    Thống kê tác phẩm
+                </Link>
+            </>
+        );
+    }
+
+    if (role === "ADMIN") {
+        return null;
+    }
+
+    return (
+        <Link to="/profile?tab=author" onClick={onClose} className={styles.dropdownItem}>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "8px" }}>
+                <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path>
+                <line x1="16" y1="8" x2="2" y2="22"></line>
+                <line x1="17.5" y1="15" x2="9" y2="15"></line>
+            </svg>
+            Đăng ký Tác giả
+        </Link>
+    );
+}
+
+function AdminMenuItem({ role, onClose }: Pick<UserInfo, "role"> & Pick<UserMenuProps, "onClose">) {
+    if (role !== "ADMIN") {
+        return null;
+    }
+
+    return (
+        <Link to="/admin/users" onClick={onClose} className={styles.dropdownItem}>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "8px" }}>
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="9" y1="3" x2="9" y2="21"></line>
+            </svg>
+            Quản lý Admin
+        </Link>
     );
 }

@@ -5,7 +5,7 @@ import {
   AlertTriangle,
   BarChart3,
   BookOpen,
-  ChevronDown,
+  Home,
   FileCheck,
   FileText,
   Image as ImageIcon,
@@ -13,6 +13,8 @@ import {
   TrendingUp,
   Users,
 } from 'lucide-react';
+import { adminCommentReportApi } from '../../../api/adminCommentReportApi';
+import { adminContentModerationApi } from '../../../api/adminContentModerationApi';
 import { dashboardApi, type DashboardReadingStats, type DashboardStatistic } from '../../../api/dashboardApi';
 import { useAuthStore } from '../../../stores/authStore';
 import styles from '../Admin.module.css';
@@ -80,6 +82,8 @@ export const AdminDashboard: React.FC = () => {
   const { displayName } = useAuthStore();
   const [statistics, setStatistics] = useState<DashboardStatistic>(fallbackStatistics);
   const [readingStats, setReadingStats] = useState<DashboardReadingStats>(fallbackReadingStats);
+  const [pendingContentCount, setPendingContentCount] = useState(0);
+  const [pendingCommentReportCount, setPendingCommentReportCount] = useState(0);
 
   useEffect(() => {
     dashboardApi.getStatistics()
@@ -94,6 +98,27 @@ export const AdminDashboard: React.FC = () => {
       .catch((error) => {
         console.error('Lỗi khi tải thống kê lượt đọc:', error);
         setReadingStats(fallbackReadingStats);
+      });
+
+    Promise.all([
+      adminContentModerationApi.getManga({ status: 'PENDING', page: 0, size: 1 }),
+      adminContentModerationApi.getChapters({ status: 'PENDING', page: 0, size: 1 }),
+    ])
+      .then(([pendingManga, pendingChapters]) => {
+        setPendingContentCount(pendingManga.data.totalElements + pendingChapters.data.totalElements);
+      })
+      .catch((error) => {
+        console.error('Lỗi khi tải thống kê kiểm duyệt nội dung:', error);
+        setPendingContentCount(0);
+      });
+
+    adminCommentReportApi.getCommentReports({ status: 'PENDING', page: 0, size: 1 })
+      .then((response) => {
+        setPendingCommentReportCount(response.data.totalElements);
+      })
+      .catch((error) => {
+        console.error('Lỗi khi tải thống kê báo cáo bình luận:', error);
+        setPendingCommentReportCount(0);
       });
   }, []);
 
@@ -199,13 +224,13 @@ export const AdminDashboard: React.FC = () => {
                   Theo dõi nhanh dữ liệu vận hành, nội dung và hoạt động kiểm duyệt.
                 </p>
               </div>
-              <button className={styles.adminUserChip} type="button" aria-label="Tài khoản quản trị">
+              <button className={styles.adminUserChip} type="button" aria-label="Về trang chủ" onClick={() => navigate("/")}>
                 <span className={styles.adminAvatar}>{(displayName || 'A').charAt(0).toUpperCase()}</span>
                 <span className={styles.adminUserMeta}>
                   <span className={styles.adminUserName}>{displayName || 'Admin'}</span>
                   <span className={styles.adminUserRole}>Super Admin</span>
                 </span>
-                <ChevronDown size={16} className={styles.chipIcon} />
+                <Home size={16} className={styles.chipIcon} />
               </button>
             </div>
 
@@ -290,8 +315,14 @@ export const AdminDashboard: React.FC = () => {
                   <button type="button" onClick={() => navigate('/admin/author-requests')}>
                     <FileText size={16} /> Duyệt {statistics.pendingAuthorRequests.toLocaleString('vi-VN')} đơn tác giả
                   </button>
+                  <button type="button" onClick={() => navigate('/admin/content-moderation')}>
+                    <FileCheck size={16} /> Kiểm duyệt {pendingContentCount.toLocaleString('vi-VN')} nội dung
+                  </button>
                   <button type="button" onClick={() => navigate('/admin/chapter-reports')}>
                     <AlertTriangle size={16} /> Kiểm tra {statistics.pendingChapterReports.toLocaleString('vi-VN')} báo cáo lỗi chương
+                  </button>
+                  <button type="button" onClick={() => navigate('/admin/comment-reports')}>
+                    <MessageSquare size={16} /> Kiểm tra {pendingCommentReportCount.toLocaleString('vi-VN')} báo cáo bình luận
                   </button>
                 </div>
               </article>

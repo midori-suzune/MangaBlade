@@ -14,6 +14,7 @@ public enum ErrorCode {
     INVALID_TOKEN(400, "Liên kết khôi phục mật khẩu không hợp lệ hoặc đã được sử dụng", HttpStatus.BAD_REQUEST),
     EXPIRED_TOKEN(400, "Liên kết khôi phục mật khẩu đã hết hạn", HttpStatus.BAD_REQUEST),
     MANGA_NOT_FOUND(404, "Không tìm thấy truyện tranh", HttpStatus.NOT_FOUND),
+    MANGA_NOT_APPROVED_YET(400, "Truyện chưa được duyệt, không thể duyệt chương!", HttpStatus.BAD_REQUEST),
     CHAPTER_NOT_FOUND(404, "Không tìm thấy chương truyện", HttpStatus.NOT_FOUND),
     CHAPTER_REPORT_NOT_FOUND(404, "Không tìm thấy báo cáo lỗi chương", HttpStatus.NOT_FOUND),
     COMMENT_NOT_FOUND(404, "Không tìm thấy bình luận", HttpStatus.NOT_FOUND),

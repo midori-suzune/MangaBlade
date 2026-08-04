@@ -5,14 +5,12 @@ import java.util.stream.Collectors;
 
 import com.mangablade.backend.dtos.response.AdminMangaResponse;
 import com.mangablade.backend.entities.Manga;
-import com.mangablade.backend.entities.Notification;
 import com.mangablade.backend.enums.MangaSourceType;
 import com.mangablade.backend.exceptions.AppException;
 import com.mangablade.backend.exceptions.ErrorCode;
 import com.mangablade.backend.repositories.ChapterReadEventRepository;
 import com.mangablade.backend.repositories.ChapterRepository;
 import com.mangablade.backend.repositories.MangaRepository;
-import com.mangablade.backend.repositories.NotificationRepository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,7 +26,7 @@ public class AdminMangaService {
     private final ChapterRepository chapterRepository;
     private final ChapterReadEventRepository chapterReadEventRepository;
     private final AuthorService authorService;
-    private final NotificationRepository notificationRepository;
+    private final NotificationService notificationService;
 
     @Transactional(readOnly = true)
     public Page<AdminMangaResponse> findManga(String search, String status, String origin, Pageable pageable) {
@@ -61,11 +59,12 @@ public class AdminMangaService {
             manga.setDeletedAt(now);
             manga.setDeletedBy(adminId);
             manga.setHiddenReason(normalizedReason);
-            createAuthorHiddenNotification(manga);
+            notificationService.createMangaHiddenNotification(manga);
         } else {
             manga.setDeletedAt(null);
             manga.setDeletedBy(null);
             manga.setHiddenReason(null);
+            notificationService.createMangaRestoredNotification(manga);
         }
 
         manga.setUpdatedAt(now);
@@ -122,19 +121,4 @@ public class AdminMangaService {
         return authors.isBlank() ? "-" : authors;
     }
 
-    private void createAuthorHiddenNotification(Manga manga) {
-        if (manga.getOwnerUserId() == null) {
-            return;
-        }
-
-        notificationRepository.save(Notification.builder()
-                .userId(manga.getOwnerUserId())
-                .type("MANGA_HIDDEN")
-                .title("Truyện bị ẩn")
-                .message("Truyện \"" + manga.getTitle() + "\" đã bị ẩn. Vui lòng xem lý do trong trang quản lý truyện.")
-                .targetType("MANGA")
-                .targetId(manga.getId())
-                .createdAt(Instant.now())
-                .build());
-    }
 }

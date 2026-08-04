@@ -6,7 +6,7 @@ import {
   BarChart3,
   BookOpen,
   Check,
-  ChevronDown,
+  Home,
   Eye,
   FileCheck,
   FileText,
@@ -276,13 +276,13 @@ export const ChapterReports: React.FC = () => {
                   Xem và xử lý các báo cáo lỗi người đọc gửi về từng chương.
                 </p>
               </div>
-              <button className={styles.adminUserChip} type="button" aria-label="Tài khoản quản trị">
+              <button className={styles.adminUserChip} type="button" aria-label="Về trang chủ" onClick={() => navigate("/")}>
                 <span className={styles.adminAvatar}>{(displayName || 'A').charAt(0).toUpperCase()}</span>
                 <span className={styles.adminUserMeta}>
                   <span className={styles.adminUserName}>{displayName || 'Admin'}</span>
                   <span className={styles.adminUserRole}>Super Admin</span>
                 </span>
-                <ChevronDown size={16} className={styles.chipIcon} />
+                <Home size={16} className={styles.chipIcon} />
               </button>
             </div>
 

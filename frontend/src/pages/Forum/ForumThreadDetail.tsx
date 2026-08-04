@@ -259,6 +259,7 @@ export function ForumThreadDetail({
                                 value={draft}
                                 placeholder={isAuthenticated ? "Nhập bình luận..." : "Đăng nhập để bình luận..."}
                                 minRows={3}
+                                autoFocusKey={replyTarget?.id ?? null}
                                 onChange={onDraftChange}
                                 onSubmit={onSubmitComment}
                             />

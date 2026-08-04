@@ -25,6 +25,7 @@ public class AuthorRequestService {
 
     private final AuthorRequestRepository authorRequestRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public AuthorRequestResponse submitRequest(User user, AuthorRequestCreateRequest req) {
@@ -92,11 +93,21 @@ public class AuthorRequestService {
                 user.setDisplayName(authorRequest.getPenName().trim());
             }
             userRepository.save(user);
+            notificationService.createAuthorRequestNotification(
+                    authorRequest.getUserId(),
+                    authorRequest.getId(),
+                    AuthorRequestStatus.APPROVED
+            );
         } else if ("REJECT".equalsIgnoreCase(req.getAction())) {
             authorRequest.setStatus(AuthorRequestStatus.REJECTED);
             authorRequest.setRejectReason(req.getRejectReason());
             authorRequest.setReviewedAt(now);
             authorRequest.setReviewedBy(admin.getId());
+            notificationService.createAuthorRequestNotification(
+                    authorRequest.getUserId(),
+                    authorRequest.getId(),
+                    AuthorRequestStatus.REJECTED
+            );
         } else {
             throw new AppException(ErrorCode.INTERNAL_ERROR);
         }

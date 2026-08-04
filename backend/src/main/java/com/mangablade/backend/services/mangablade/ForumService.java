@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -48,6 +49,7 @@ public class ForumService {
     private final UserRepository userRepository;
     private final TaskService taskService;
     private final ForumRealtimePublisher realtimePublisher;
+    private final NotificationService notificationService;
 
     private final ForumAttachmentService forumAttachmentService;
 
@@ -150,26 +152,29 @@ public class ForumService {
     public List<ForumCommentResponse> findComments(Long threadId, User currentUser) {
         findReadableThreadOrThrow(threadId);
 
-        var rootComments = forumCommentRepository
-                .findByThreadIdAndReplyToCommentIdIsNullAndStatusOrderByCreatedAtAsc(threadId, CommentStatus.VISIBLE);
-        var parentIds = rootComments.stream().map(ForumComment::getId).toList();
+        var allComments = forumCommentRepository.findByThreadIdAndStatusOrderByCreatedAtAsc(threadId, CommentStatus.VISIBLE);
+        Map<Long, ForumCommentResponse> responseById = allComments.stream()
+                .collect(Collectors.toMap(ForumComment::getId, comment -> toCommentResponse(comment, currentUser)));
+        List<ForumCommentResponse> roots = new ArrayList<>();
 
-        Map<Long, List<ForumCommentResponse>> repliesByParentId = parentIds.isEmpty()
-                ? Map.of()
-                : forumCommentRepository
-                .findByReplyToCommentIdInAndStatusOrderByCreatedAtAsc(parentIds, CommentStatus.VISIBLE)
-                .stream()
-                .collect(Collectors.groupingBy(
-                        ForumComment::getReplyToCommentId,
-                        Collectors.mapping(comment -> toCommentResponse(comment, currentUser), Collectors.toList())
-                ));
+        allComments.forEach(comment -> {
+            var response = responseById.get(comment.getId());
+            Long parentId = comment.getReplyToCommentId();
+            if (parentId == null) {
+                roots.add(response);
+                return;
+            }
 
-        return rootComments.stream()
-                .map(comment -> {
-                    var response = toCommentResponse(comment, currentUser);
-                    response.setReplies(repliesByParentId.getOrDefault(comment.getId(), List.of()));
-                    return response;
-                })
+            var parent = responseById.get(parentId);
+            if (parent == null) {
+                roots.add(response);
+                return;
+            }
+
+            parent.getReplies().add(response);
+        });
+
+        return roots.stream()
                 .toList();
     }
 
@@ -182,10 +187,11 @@ public class ForumService {
             throw new AppException(ErrorCode.FORUM_THREAD_LOCKED);
         }
 
+        ForumComment parentComment = null;
         if (request.getReplyToCommentId() != null) {
-            var parent = forumCommentRepository.findByIdAndStatus(request.getReplyToCommentId(), CommentStatus.VISIBLE)
+            parentComment = forumCommentRepository.findByIdAndStatus(request.getReplyToCommentId(), CommentStatus.VISIBLE)
                     .orElseThrow(() -> new AppException(ErrorCode.COMMENT_NOT_FOUND));
-            if (!threadId.equals(parent.getThreadId())) {
+            if (!threadId.equals(parentComment.getThreadId())) {
                 throw new AppException(ErrorCode.INVALID_REQUEST);
             }
         }
@@ -211,6 +217,11 @@ public class ForumService {
         taskService.handleCommentPosted(dbUser.getId());
 
         var response = toCommentResponse(savedComment, dbUser);
+        if (parentComment != null) {
+            notificationService.createForumCommentReplyNotification(parentComment, thread, savedComment, dbUser);
+        } else {
+            notificationService.createForumThreadReplyNotification(thread, savedComment, dbUser);
+        }
         realtimePublisher.commentCreated(response);
         return response;
     }
