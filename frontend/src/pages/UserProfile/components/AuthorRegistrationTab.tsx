@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Feather, CheckCircle, Clock, BookOpen, BarChart3, MessageSquare, AlertCircle, X } from "lucide-react";
+import { Feather, CheckCircle, BookOpen, BarChart3, MessageSquare, AlertCircle, X } from "lucide-react";
 import { authorRequestApi, type AuthorRequestResponse } from "../../../api/authorRequestApi";
 import styles from "../UserProfile.module.css";
 
@@ -258,16 +258,11 @@ function AuthorStatusView({
         </div>
         
         <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          padding: '12px 0',
-          color: '#4f46e5',
-          fontWeight: 600,
-          fontSize: '14.5px',
+          color: '#f59e0b',
+          fontWeight: 700,
+          fontSize: '15px',
           marginBottom: '24px'
         }}>
-          <Clock size={18} />
           Trạng thái: Đang chờ duyệt
         </div>
 
@@ -390,13 +385,14 @@ function OtpVerificationModal({
       zIndex: 1000
     }}>
       <div style={{
-        backgroundColor: 'white',
-        borderRadius: '12px',
+        backgroundColor: 'var(--color-surface, #ffffff)',
+        border: '1px solid var(--color-border, #e5e7eb)',
+        borderRadius: '16px',
         padding: '32px',
         maxWidth: '400px',
         width: '90%',
         position: 'relative',
-        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2)'
       }}>
         <button
           onClick={onClose}
@@ -413,10 +409,10 @@ function OtpVerificationModal({
           <X size={20} />
         </button>
         
-        <h3 style={{ fontSize: '18px', fontWeight: 600, color: '#1e293b', marginBottom: '8px' }}>
+        <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-text-main)', marginBottom: '8px' }}>
           Xác minh số điện thoại
         </h3>
-        <p style={{ fontSize: '13px', color: '#64748b', lineHeight: 1.5, marginBottom: '20px' }}>
+        <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', lineHeight: 1.5, marginBottom: '20px' }}>
           Mã xác minh đã gửi tới SĐT của bạn <strong style={{ color: 'var(--color-accent)' }}>(Demo: Nhập 123456)</strong>
         </p>
 
@@ -436,14 +432,16 @@ function OtpVerificationModal({
               textAlign: 'center',
               letterSpacing: '6px',
               fontWeight: 600,
-              border: '1px solid #cbd5e1',
+              backgroundColor: 'var(--color-surface-soft, #f8fafc)',
+              color: 'var(--color-text-main)',
+              border: '1px solid var(--color-border, #cbd5e1)',
               borderRadius: 'var(--border-radius-sm)',
               outline: 'none'
             }}
           />
 
           {otpError && (
-            <p style={{ fontSize: '12px', color: '#9b1c1c', margin: 0 }}>{otpError}</p>
+            <p style={{ fontSize: '12px', color: '#ef4444', margin: 0 }}>{otpError}</p>
           )}
 
           <button
